@@ -267,6 +267,7 @@
     </div>
     <div class="topbar-right">
       <span class="date-label" id="today-date"></span>
+      <button onclick="exportReport()" style="background:var(--orange-light);border-color:transparent;color:var(--orange-dark);font-weight:600">⬇ Rapport PDF</button>
       <button class="green" onclick="openMembersModal()">+ Collaborateurs</button>
     </div>
   </div>
@@ -354,6 +355,57 @@
   </div>
 
   <div class="app-footer">Dashboard collaboratif &mdash; <strong>CHAMORIN</strong></div>
+</div>
+
+<!-- ═══ Modal : Rapport ═══ -->
+<div class="modal-overlay" id="report-modal-overlay" onclick="closeReportModalOnBg(event)">
+  <div class="modal" style="width:600px">
+    <div class="modal-header">
+      <h2>Générer un rapport</h2>
+      <button class="modal-close" onclick="closeReportModal()">×</button>
+    </div>
+    <div class="field">
+      <label>Titre du rapport</label>
+      <input id="rp-title" placeholder="ex: Bilan de la semaine — Sprint 3" />
+    </div>
+    <div class="field">
+      <label>Destinataire (responsable)</label>
+      <input id="rp-to" placeholder="ex: M. Dupont, Directeur Commercial" />
+    </div>
+    <div class="field">
+      <label>Préparé par</label>
+      <input id="rp-from" placeholder="ex: Julien" />
+    </div>
+    <div class="field">
+      <label>Période couverte</label>
+      <input id="rp-period" placeholder="ex: Semaine du 22 au 28 avril 2026" />
+    </div>
+    <div class="field">
+      <label>Commentaire général (optionnel)</label>
+      <textarea id="rp-comment" placeholder="Points marquants, contexte, difficultés rencontrées..."></textarea>
+    </div>
+    <div class="field">
+      <label>Inclure dans le rapport</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);font-weight:400;cursor:pointer">
+          <input type="checkbox" id="rp-inc-done" checked style="width:auto;padding:0"/> Tâches terminées
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);font-weight:400;cursor:pointer">
+          <input type="checkbox" id="rp-inc-prog" checked style="width:auto;padding:0"/> Tâches en cours
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);font-weight:400;cursor:pointer">
+          <input type="checkbox" id="rp-inc-todo" style="width:auto;padding:0"/> Tâches à venir
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);font-weight:400;cursor:pointer">
+          <input type="checkbox" id="rp-inc-kpi" checked style="width:auto;padding:0"/> Indicateurs (KPIs)
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="ghost" onclick="closeReportModal()">Annuler</button>
+      <button class="primary" onclick="generateReport()">⬇ Exporter le rapport</button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ Modal : Détail tâche ═══ -->
@@ -749,6 +801,170 @@ function deleteMember(id){
   if(!confirm('Supprimer ce collaborateur ?'))return;
   state.members=state.members.filter(m=>m.id!==id);
   renderMemberList(); renderMemberSelects(); renderKanban(); saveState();
+}
+
+// ═══════════════════════════════════════════
+//  RAPPORT PDF
+// ═══════════════════════════════════════════
+function exportReport(){
+  // Pré-remplir depuis le 1er membre
+  const me = state.members[0];
+  document.getElementById('rp-from').value = me ? me.name : '';
+  document.getElementById('rp-period').value = 'Semaine du ' + new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('report-modal-overlay').classList.add('open');
+}
+function closeReportModal(){ document.getElementById('report-modal-overlay').classList.remove('open'); }
+function closeReportModalOnBg(e){ if(e.target===document.getElementById('report-modal-overlay')) closeReportModal(); }
+
+function generateReport(){
+  const title   = document.getElementById('rp-title').value.trim()  || 'Rapport d\'activité';
+  const to      = document.getElementById('rp-to').value.trim()     || '—';
+  const from    = document.getElementById('rp-from').value.trim()   || '—';
+  const period  = document.getElementById('rp-period').value.trim() || '—';
+  const comment = document.getElementById('rp-comment').value.trim();
+  const incDone = document.getElementById('rp-inc-done').checked;
+  const incProg = document.getElementById('rp-inc-prog').checked;
+  const incTodo = document.getElementById('rp-inc-todo').checked;
+  const incKpi  = document.getElementById('rp-inc-kpi').checked;
+
+  const today = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const done  = state.tasks.filter(t=>t.status==='done');
+  const prog  = state.tasks.filter(t=>t.status==='prog');
+  const todo  = state.tasks.filter(t=>t.status==='todo');
+  const pct   = state.tasks.length ? Math.round(done.length/state.tasks.length*100) : 0;
+
+  const memberName = id => { const m=memberById(id); return m?m.name:id; };
+
+  const taskRows = (tasks) => tasks.map(t=>`
+    <tr>
+      <td style="padding:10px 14px;border-bottom:1px solid #F0EDE8;font-size:13px;color:#1C1C1A;line-height:1.5">
+        <strong>${t.title}</strong>
+        ${t.desc ? `<div style="color:#6B6966;font-size:12px;margin-top:3px">${t.desc}</div>` : ''}
+        ${t.done&&t.done.length ? `<ul style="margin:6px 0 0 16px;padding:0;color:#2E8B57;font-size:12px">${t.done.map(d=>`<li style="margin-bottom:2px">✓ ${d}</li>`).join('')}</ul>` : ''}
+      </td>
+      <td style="padding:10px 14px;border-bottom:1px solid #F0EDE8;font-size:12px;color:#6B6966;white-space:nowrap;vertical-align:top">${memberName(t.member)}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top">
+        <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:${t.tag==='Dev'?'#E6F4ED':t.tag==='Design'?'#FEF0E8':t.tag==='Marketing'?'#FDE8D8':'#F5EDE3'};color:${t.tag==='Dev'?'#1E6040':t.tag==='Design'?'#C9602A':t.tag==='Marketing'?'#C9602A':'#7A5C3A'}">${t.tag}</span>
+      </td>
+    </tr>`).join('');
+
+  const section = (label, color, bg, tasks) => `
+    <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${color};margin:28px 0 10px;display:flex;align-items:center;gap:8px">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color}"></span>${label}
+      <span style="font-weight:400;color:#9A9894;font-size:12px;text-transform:none;letter-spacing:0">(${tasks.length} tâche${tasks.length>1?'s':''})</span>
+    </h3>
+    <table style="width:100%;border-collapse:collapse;background:${bg};border-radius:10px;overflow:hidden">
+      <thead>
+        <tr style="background:${color}15">
+          <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:${color};text-transform:uppercase;letter-spacing:.05em;width:55%">Tâche</th>
+          <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:${color};text-transform:uppercase;letter-spacing:.05em">Responsable</th>
+          <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:${color};text-transform:uppercase;letter-spacing:.05em">Catégorie</th>
+        </tr>
+      </thead>
+      <tbody>${taskRows(tasks)}</tbody>
+    </table>`;
+
+  const kpiBlock = `
+    <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1C1C1A;margin:28px 0 10px">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#F4874B;margin-right:8px"></span>Indicateurs clés
+    </h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px">
+      ${[
+        {lbl:'Tâches terminées', val:done.length, color:'#2E8B57', bg:'#E6F4ED'},
+        {lbl:'En cours',         val:prog.length, color:'#C9602A', bg:'#FEF0E8'},
+        {lbl:'Avancement global',val:pct+'%',     color:'#1C1C1A', bg:'#F7F7F5'},
+      ].map(k=>`<div style="background:${k.bg};border-radius:10px;padding:14px 16px">
+        <div style="font-size:11px;font-weight:600;color:${k.color};text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${k.lbl}</div>
+        <div style="font-size:26px;font-weight:700;color:${k.color}">${k.val}</div>
+      </div>`).join('')}
+    </div>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<title>${title} — CHAMORIN</title>
+<style>
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print { display: none !important; }
+    @page { margin: 18mm 15mm; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; color: #1C1C1A; }
+  .page { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 60px; min-height: 100vh; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- En-tête -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;padding-bottom:24px;border-bottom:2px solid #F0EDE8">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.5px">CH</div>
+        <div style="font-size:22px;font-weight:700;letter-spacing:.02em;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div>
+      </div>
+      <div style="font-size:22px;font-weight:600;color:#1C1C1A;margin-bottom:4px">${title}</div>
+      <div style="font-size:13px;color:#9A9894">${period}</div>
+    </div>
+    <div style="text-align:right;font-size:13px;color:#6B6966;line-height:1.8">
+      <div><span style="color:#9A9894">Destinataire :</span> <strong style="color:#1C1C1A">${to}</strong></div>
+      <div><span style="color:#9A9894">Préparé par :</span> <strong style="color:#1C1C1A">${from}</strong></div>
+      <div><span style="color:#9A9894">Date :</span> ${today}</div>
+    </div>
+  </div>
+
+  <!-- Bandeau résumé -->
+  <div style="background:linear-gradient(135deg,#FEF0E8,#E6F4ED);border-radius:12px;padding:18px 22px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div style="font-size:14px;color:#5A5956"><strong style="color:#1C1C1A">${state.tasks.length} tâche${state.tasks.length>1?'s':''}</strong> au total — <strong style="color:#2E8B57">${done.length} terminée${done.length>1?'s':''}</strong>, <strong style="color:#C9602A">${prog.length} en cours</strong>, <strong style="color:#8A8880">${todo.length} à venir</strong></div>
+    <div style="font-size:20px;font-weight:700;color:${pct>=75?'#2E8B57':pct>=40?'#C9602A':'#8A8880'}">${pct}% accompli</div>
+  </div>
+
+  <!-- Commentaire général -->
+  ${comment ? `<div style="background:#F7F7F5;border-left:3px solid #F4874B;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#3A3936;line-height:1.7"><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#9A9894;margin-bottom:6px">Note du responsable</strong>${comment}</div>` : ''}
+
+  <!-- Sections tâches -->
+  ${incDone && done.length  ? section('Réalisations', '#2E8B57', '#FAFFFE', done) : ''}
+  ${incProg && prog.length  ? section('En cours',     '#C9602A', '#FFFCFA', prog) : ''}
+  ${incTodo && todo.length  ? section('À venir',      '#8A8880', '#FAFAF8', todo) : ''}
+
+  <!-- KPIs -->
+  ${incKpi ? kpiBlock : ''}
+
+  <!-- Agenda -->
+  ${state.events.length ? `
+  <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1C1C1A;margin:28px 0 10px">
+    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4A7C8A;margin-right:8px"></span>Agenda
+  </h3>
+  <table style="width:100%;border-collapse:collapse">
+    ${[...state.events].sort((a,b)=>a.time.localeCompare(b.time)).map(e=>`
+    <tr>
+      <td style="padding:8px 14px;border-bottom:1px solid #F0EDE8;font-size:12px;color:#9A9894;width:60px;white-space:nowrap">${e.time}</td>
+      <td style="padding:8px 14px;border-bottom:1px solid #F0EDE8;font-size:13px;color:#1C1C1A">${e.title}</td>
+    </tr>`).join('')}
+  </table>` : ''}
+
+  <!-- Pied de page -->
+  <div style="margin-top:48px;padding-top:18px;border-top:1px solid #F0EDE8;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#C0BDB8">
+    <span>CHAMORIN &mdash; Document confidentiel</span>
+    <span>Généré le ${today}</span>
+  </div>
+
+  <!-- Bouton impression -->
+  <div class="no-print" style="text-align:center;margin-top:28px">
+    <button onclick="window.print()" style="background:#F4874B;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit">🖨 Imprimer / Enregistrer en PDF</button>
+  </div>
+
+</div>
+</body>
+</html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const win  = window.open(url, '_blank');
+  if(win) win.focus();
+  closeReportModal();
 }
 
 // ═══════════════════════════════════════════
