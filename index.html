@@ -275,11 +275,25 @@
       <div id="kpi-list"></div>
     </div>
     <div class="card">
-      <div class="section-title">Annonces</div>
-      <div id="announce-list"></div>
-      <div class="announce-add">
-        <input id="new-announce" placeholder="Écrire une annonce..." />
-        <button class="green" onclick="postAnnounce()">Publier</button>
+      <div class="section-title">Planning — Absences</div>
+      <div id="absence-list"></div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="new-abs-member" style="flex:1;min-width:80px"></select>
+          <select id="new-abs-type" style="flex:1;min-width:80px">
+            <option value="CP">🏖 Congé payé</option>
+            <option value="RTT">⏱ RTT</option>
+            <option value="Maladie">🤒 Maladie</option>
+            <option value="Autre">📋 Autre</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="date" id="new-abs-start" style="flex:1;min-width:100px"/>
+          <span style="font-size:12px;color:var(--text3)">→</span>
+          <input type="date" id="new-abs-end" style="flex:1;min-width:100px"/>
+        </div>
+        <input id="new-abs-note" placeholder="Note (optionnel)..." style="width:100%"/>
+        <button class="primary" onclick="addAbsence()" style="width:100%">+ Ajouter une absence</button>
       </div>
     </div>
   </div>
@@ -541,9 +555,10 @@ function dateStatus(t){
 // ════════════════════════════════════════════
 function renderAll(){
   renderMemberSelects();
+  renderAbsMemberSelect();
   renderKanban();
   renderAgenda();
-  renderAnnounces();
+  renderAbsences();
 }
 
 // ════════════════════════════════════════════
@@ -737,28 +752,80 @@ window.deleteEvent=function(id){
 }
 
 // ════════════════════════════════════════════
-//  ANNONCES
+//  PLANNING — ABSENCES
 // ════════════════════════════════════════════
-function renderAnnounces(){
-  document.getElementById('announce-list').innerHTML=state.announces.map(a=>{
-    const m=state.members.find(x=>x.name===a.author);
-    const p=m?getPalette(m):PALETTES[0];
-    return `<div class="msg">
-      <div class="avatar" style="background:${p.bg};color:${p.color}">${a.author[0].toUpperCase()}</div>
-      <div class="msg-body">
-        <div class="msg-author">${a.author}</div>
-        <div class="msg-text">${a.text}</div>
-        <div class="msg-time">${a.time}</div>
-      </div>
-    </div>`;
-  }).join('');
+const ABS_TYPES = {
+  CP:      {label:'Congé payé',  icon:'🏖',  color:'#185fa5', bg:'#E6F1FB'},
+  RTT:     {label:'RTT',         icon:'⏱',  color:'#534AB7', bg:'#EEEDFE'},
+  Maladie: {label:'Maladie',     icon:'🤒', color:'#993356', bg:'#FBEAF0'},
+  Autre:   {label:'Autre',       icon:'📋', color:'#7A5C3A', bg:'#F5EDE3'},
+};
+
+function countWorkDays(start, end){
+  let count=0, cur=new Date(start);
+  const last=new Date(end);
+  while(cur<=last){ const d=cur.getDay(); if(d!==0&&d!==6)count++; cur.setDate(cur.getDate()+1); }
+  return count;
 }
-window.postAnnounce=function(){
-  const txt=document.getElementById('new-announce').value.trim();if(!txt)return;
-  const me=state.members[0];
-  state.announces.unshift({author:me?me.name:'Moi',text:txt,time:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});
-  document.getElementById('new-announce').value='';
-  renderAnnounces();saveState();
+
+function renderAbsences(){
+  const list=document.getElementById('absence-list');
+  const abs=[...(state.absences||[])].sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
+  if(!abs.length){
+    list.innerHTML=`<div style="font-size:13px;color:var(--text3);padding:12px 0;text-align:center">Aucune absence enregistrée</div>`;
+    return;
+  }
+  const today=toISO(new Date());
+  list.innerHTML=abs.map(a=>{
+    const m=memberById(a.member);
+    const p=m?getPalette(m):PALETTES[0];
+    const t=ABS_TYPES[a.type]||ABS_TYPES['Autre'];
+    const days=countWorkDays(a.dateStart,a.dateEnd);
+    const isPast=a.dateEnd<today;
+    const isCurrent=a.dateStart<=today&&a.dateEnd>=today;
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border);opacity:${isPast?'0.55':'1'}">
+      <span style="font-size:18px;line-height:1;margin-top:2px">${t.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px">
+          <span style="font-size:13px;font-weight:600;color:var(--text)">${m?m.name:a.member}</span>
+          <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${t.bg};color:${t.color}">${t.label}</span>
+          ${isCurrent?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--orange-light);color:var(--orange-dark)">EN COURS</span>`:''}
+        </div>
+        <div style="font-size:12px;color:var(--text2)">${fmtDate(a.dateStart)}${a.dateStart!==a.dateEnd?' → '+fmtDate(a.dateEnd):''} &bull; <strong>${days}</strong> jour${days>1?'s':''} ouvré${days>1?'s':''}</div>
+        ${a.note?`<div style="font-size:12px;color:var(--text3);margin-top:2px;font-style:italic">${a.note}</div>`:''}
+      </div>
+      <button style="background:none;border:none;color:var(--text3);font-size:16px;padding:0 3px;cursor:pointer;flex-shrink:0;opacity:0.5;line-height:1" onmouseover="this.style.color='var(--red)';this.style.opacity=1" onmouseout="this.style.color='var(--text3)';this.style.opacity=0.5" onclick="deleteAbsence(${a.id})">×</button>
+    </div>`;
+  }).join('')+'<div style="border-bottom:none"></div>';
+}
+
+// Populate member select for absences
+function renderAbsMemberSelect(){
+  const el=document.getElementById('new-abs-member'); if(!el)return;
+  const val=el.value;
+  el.innerHTML=state.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  if(state.members.some(m=>m.id===val))el.value=val;
+}
+
+window.addAbsence=function(){
+  const member=document.getElementById('new-abs-member').value;
+  const type=document.getElementById('new-abs-type').value;
+  const dateStart=document.getElementById('new-abs-start').value;
+  const dateEnd=document.getElementById('new-abs-end').value||dateStart;
+  const note=document.getElementById('new-abs-note').value.trim();
+  if(!dateStart){document.getElementById('new-abs-start').focus();return;}
+  if(dateEnd<dateStart){alert('La date de fin doit être après la date de début.');return;}
+  state.absences=state.absences||[];
+  state.absences.push({id:state.nextAbsId++,member,type,dateStart,dateEnd,note});
+  document.getElementById('new-abs-start').value='';
+  document.getElementById('new-abs-end').value='';
+  document.getElementById('new-abs-note').value='';
+  renderAbsences();saveState();
+}
+
+window.deleteAbsence=function(id){
+  state.absences=(state.absences||[]).filter(a=>a.id!==id);
+  renderAbsences();saveState();
 }
 
 // ════════════════════════════════════════════
@@ -1007,7 +1074,6 @@ document.getElementById('today-date').textContent=
   new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
 document.getElementById('new-task-title').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
-document.getElementById('new-announce').addEventListener('keydown',e=>{if(e.key==='Enter')postAnnounce();});
 document.getElementById('new-event-title').addEventListener('keydown',e=>{if(e.key==='Enter')addEvent();});
 document.getElementById('m-name').addEventListener('keydown',e=>{if(e.key==='Enter')addMember();});
 document.getElementById('tm-done-input').addEventListener('keydown',e=>{if(e.key==='Enter')addDoneItem();});
