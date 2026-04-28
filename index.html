@@ -6,259 +6,194 @@
   <title>CHAMORIN — Dashboard équipe</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      /* ── Marque CHAMORIN ── */
-      --orange:       #F4874B;
-      --orange-light: #FEF0E8;
-      --orange-dark:  #C9602A;
-      --green:        #2E8B57;
-      --green-light:  #E6F4ED;
-      --green-dark:   #1E6040;
-
-      /* ── Neutres ── */
-      --bg:       #F7F7F5;
-      --surface:  #FFFFFF;
-      --surface2: #F2F1EE;
-      --border:   rgba(0,0,0,0.10);
-      --border2:  rgba(0,0,0,0.20);
-      --text:     #1C1C1A;
-      --text2:    #5A5956;
-      --text3:    #9A9894;
-
-      --radius-md: 8px;
-      --radius-lg: 14px;
-      --radius-xl: 20px;
-
-      /* ── Statuts ── */
-      --todo-color: #8A8880; --todo-bg: #F2F1EE;
-      --prog-color: #F4874B; --prog-bg: #FEF0E8;
-      --done-color: #2E8B57; --done-bg: #E6F4ED;
-      --red:        #C0392B; --red-bg: #FCECEA;
+      --orange:#F4874B; --orange-light:#FEF0E8; --orange-dark:#C9602A;
+      --green:#2E8B57;  --green-light:#E6F4ED;  --green-dark:#1E6040;
+      --bg:#F7F7F5; --surface:#FFFFFF; --surface2:#F2F1EE;
+      --border:rgba(0,0,0,0.10); --border2:rgba(0,0,0,0.20);
+      --text:#1C1C1A; --text2:#5A5956; --text3:#9A9894;
+      --radius-md:8px; --radius-lg:14px; --radius-xl:20px;
+      --todo-color:#8A8880; --todo-bg:#F2F1EE;
+      --prog-color:#F4874B; --prog-bg:#FEF0E8;
+      --done-color:#2E8B57; --done-bg:#E6F4ED;
+      --red:#C0392B; --red-bg:#FCECEA;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #181816; --surface: #222220; --surface2: #2A2A27;
-        --border: rgba(255,255,255,0.09); --border2: rgba(255,255,255,0.18);
-        --text: #EDEAE2; --text2: #9A9890; --text3: #656360;
-        --orange-light: #3D2510; --orange-dark: #F4A274;
-        --green-light:  #0E2E1E; --green-dark:  #5DBE8A;
-        --todo-bg: #2A2A27; --todo-color: #9A9890;
-        --prog-bg: #3D2510; --prog-color: #F4A274;
-        --done-bg: #0E2E1E; --done-color: #5DBE8A;
-        --red-bg:  #2E1010; --red: #E57373;
+        --bg:#181816; --surface:#222220; --surface2:#2A2A27;
+        --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.18);
+        --text:#EDEAE2; --text2:#9A9890; --text3:#656360;
+        --orange-light:#3D2510; --orange-dark:#F4A274;
+        --green-light:#0E2E1E; --green-dark:#5DBE8A;
+        --todo-bg:#2A2A27; --todo-color:#9A9890;
+        --prog-bg:#3D2510; --prog-color:#F4A274;
+        --done-bg:#0E2E1E; --done-color:#5DBE8A;
+        --red-bg:#2E1010; --red:#E57373;
       }
     }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-size:14px; line-height:1.5; }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+    /* ── Topbar ── */
+    .topbar-wrap { background:var(--surface); border-bottom:0.5px solid var(--border); position:sticky; top:0; z-index:50; }
+    .topbar { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:0 1.5rem; height:60px; gap:12px; flex-wrap:wrap; }
+    .brand { display:flex; align-items:center; gap:10px; }
+    .brand-icon { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--orange),var(--green)); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; letter-spacing:-0.5px; }
+    .brand-name { font-size:16px; font-weight:600; color:var(--text); }
+    .brand-name span { color:var(--orange); }
+    .topbar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .date-label { font-size:12px; color:var(--text3); }
 
-    /* ══════════════ TOPBAR ══════════════ */
-    .topbar-wrap {
-      background: var(--surface);
-      border-bottom: 0.5px solid var(--border);
-      position: sticky; top: 0; z-index: 50;
-    }
-    .topbar {
-      max-width: 1200px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 1.5rem; height: 60px; gap: 12px; flex-wrap: wrap;
-    }
-    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .brand-icon {
-      width: 34px; height: 34px; border-radius: 9px;
-      background: linear-gradient(135deg, var(--orange) 0%, var(--green) 100%);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -0.5px;
-    }
-    .brand-name { font-size: 16px; font-weight: 600; color: var(--text); letter-spacing: .02em; }
-    .brand-name span { color: var(--orange); }
-    .topbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .date-label { font-size: 12px; color: var(--text3); }
+    /* ── Layout ── */
+    .app { max-width:1200px; margin:0 auto; padding:1.5rem; }
+    .grid3-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    @media(max-width:900px){ .grid3{grid-template-columns:1fr;} }
 
-    /* ══════════════ LAYOUT ══════════════ */
-    .app { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+    /* ── Cards ── */
+    .card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:1.1rem 1.25rem; }
+    .metric { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:1rem 1.25rem; display:flex; flex-direction:column; gap:4px; position:relative; overflow:hidden; }
+    .metric::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--orange),var(--green)); }
+    .metric .lbl { font-size:11px; font-weight:500; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; }
+    .metric .val { font-size:28px; font-weight:600; color:var(--text); line-height:1.1; }
+    .section-title { font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px; }
 
-    .grid3-metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
-    .grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
-    @media (max-width: 900px) { .grid3 { grid-template-columns: 1fr; } }
+    /* ── Buttons ── */
+    button { background:var(--surface); border:0.5px solid var(--border2); border-radius:var(--radius-md); color:var(--text); padding:7px 14px; font-size:13px; cursor:pointer; transition:background .15s,transform .1s; font-family:inherit; }
+    button:hover { background:var(--surface2); }
+    button:active { transform:scale(0.97); }
+    button.primary { background:var(--orange); border-color:transparent; color:#fff; font-weight:600; }
+    button.primary:hover { background:var(--orange-dark); }
+    button.green { background:var(--green); border-color:transparent; color:#fff; font-weight:600; }
+    button.green:hover { background:var(--green-dark); }
+    button.danger { background:var(--red-bg); border-color:transparent; color:var(--red); font-weight:500; }
+    button.ghost { background:transparent; border-color:var(--border2); color:var(--text2); }
+    button.report-btn { background:var(--orange-light); border-color:transparent; color:var(--orange-dark); font-weight:600; }
+    input, select, textarea { background:var(--surface2); border:0.5px solid var(--border); border-radius:var(--radius-md); color:var(--text); padding:7px 11px; font-size:13px; font-family:inherit; outline:none; transition:border-color .15s; }
+    input:focus, select:focus, textarea:focus { border-color:var(--orange); }
+    input[type="date"] { cursor:pointer; }
 
-    /* ══════════════ CARDS ══════════════ */
-    .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem 1.25rem; }
+    /* ── Avatar / Tag ── */
+    .avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
+    .tag { font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600; }
 
-    .metric {
-      background: var(--surface); border: 0.5px solid var(--border);
-      border-radius: var(--radius-lg); padding: 1rem 1.25rem;
-      display: flex; flex-direction: column; gap: 4px;
-      position: relative; overflow: hidden;
-    }
-    .metric::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, var(--orange), var(--green));
-    }
-    .metric .lbl { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; }
-    .metric .val { font-size: 28px; font-weight: 600; color: var(--text); line-height: 1.1; }
+    /* ── Kanban ── */
+    .kanban { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    @media(max-width:600px){ .kanban{grid-template-columns:1fr;} }
+    .kanban-col { background:var(--surface2); border-radius:var(--radius-md); padding:12px; min-height:100px; }
+    .col-header { display:flex; align-items:center; gap:7px; margin-bottom:10px; }
+    .col-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .col-title-txt { font-size:12px; font-weight:600; color:var(--text2); flex:1; }
+    .col-count { font-size:11px; color:var(--text3); background:var(--surface); border-radius:20px; padding:1px 7px; }
 
-    .section-title { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; }
+    .task-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-md); padding:10px 12px; margin-bottom:8px; transition:border-color .15s; position:relative; }
+    .task-card:hover { border-color:var(--orange); }
+    .task-card-top { display:flex; align-items:flex-start; gap:8px; }
+    .task-check { width:17px; height:17px; border-radius:5px; border:1.5px solid var(--border2); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; background:var(--surface); transition:all .15s; }
+    .task-check.checked { background:var(--green); border-color:var(--green); }
+    .task-check.checked::after { content:'✓'; font-size:10px; color:#fff; font-weight:700; }
+    .task-card-title { font-size:13px; font-weight:500; cursor:pointer; flex:1; color:var(--text); line-height:1.4; }
+    .task-card-title:hover { color:var(--orange); }
+    .task-meta { display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding-left:25px; flex-wrap:wrap; gap:6px; }
+    .task-dates { font-size:11px; color:var(--text3); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .task-dates .due { font-weight:600; }
+    .task-dates .overdue { color:var(--red); }
+    .task-dates .soon { color:var(--orange-dark); }
+    .task-del { background:none; border:none; color:var(--text3); font-size:16px; padding:0 3px; cursor:pointer; opacity:0; transition:opacity .15s; line-height:1; }
+    .task-card:hover .task-del { opacity:1; }
+    .task-del:hover { color:var(--red); background:none; transform:none; }
+    .cycle-btn { font-size:11px; padding:2px 8px; border-radius:20px; cursor:pointer; border:0.5px solid var(--border); background:var(--surface2); color:var(--text2); font-weight:500; }
+    .cycle-btn:hover { background:var(--orange-light); color:var(--orange-dark); border-color:var(--orange); }
 
-    /* ══════════════ BUTTONS ══════════════ */
-    button {
-      background: var(--surface); border: 0.5px solid var(--border2);
-      border-radius: var(--radius-md); color: var(--text);
-      padding: 7px 14px; font-size: 13px; cursor: pointer;
-      transition: background .15s, transform .1s; font-family: inherit;
-    }
-    button:hover { background: var(--surface2); }
-    button:active { transform: scale(0.97); }
-    button.primary {
-      background: var(--orange); border-color: transparent;
-      color: #fff; font-weight: 600;
-    }
-    button.primary:hover { background: var(--orange-dark); }
-    button.green {
-      background: var(--green); border-color: transparent;
-      color: #fff; font-weight: 600;
-    }
-    button.green:hover { background: var(--green-dark); }
-    button.danger { background: var(--red-bg); border-color: transparent; color: var(--red); font-weight: 500; }
-    button.ghost { background: transparent; border-color: var(--border2); color: var(--text2); }
+    .add-row { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; align-items:center; }
+    .add-row input { flex:2; min-width:120px; }
+    .add-row select { flex:1; min-width:80px; }
+    .bulk-bar { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text2); flex-wrap:wrap; }
 
-    input, select, textarea {
-      background: var(--surface2); border: 0.5px solid var(--border);
-      border-radius: var(--radius-md); color: var(--text);
-      padding: 7px 11px; font-size: 13px; font-family: inherit;
-      outline: none; transition: border-color .15s;
-    }
-    input:focus, select:focus, textarea:focus { border-color: var(--orange); }
+    /* ── Agenda ── */
+    .agenda-item { display:flex; gap:12px; padding:9px 0; border-bottom:0.5px solid var(--border); align-items:flex-start; }
+    .agenda-item:last-child { border-bottom:none; }
+    .agenda-time { font-size:12px; color:var(--text3); min-width:40px; padding-top:2px; font-weight:500; }
+    .agenda-body { flex:1; }
+    .agenda-title-txt { font-size:13px; font-weight:500; margin-bottom:3px; }
+    .agenda-del { background:none; border:none; color:var(--text3); font-size:16px; padding:0 3px; cursor:pointer; opacity:0; transition:opacity .15s; flex-shrink:0; }
+    .agenda-item:hover .agenda-del { opacity:1; }
+    .agenda-del:hover { color:var(--red); background:none; transform:none; }
+    .agenda-add { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+    .agenda-add input[type="time"] { width:90px; }
+    .agenda-add input[type="text"] { flex:1; min-width:100px; }
 
-    /* ══════════════ AVATAR ══════════════ */
-    .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+    /* ── KPI ── */
+    .kpi-row { display:flex; align-items:center; padding:8px 0; border-bottom:0.5px solid var(--border); }
+    .kpi-row:last-child { border-bottom:none; }
+    .kpi-label { font-size:13px; min-width:100px; color:var(--text2); }
+    .kpi-bar-bg { flex:1; height:6px; background:var(--surface2); border-radius:3px; margin:0 10px; overflow:hidden; }
+    .kpi-bar { height:6px; border-radius:3px; transition:width .5s; }
+    .kpi-val { font-size:13px; font-weight:600; min-width:36px; text-align:right; }
 
-    /* ══════════════ TAG ══════════════ */
-    .tag { font-size: 11px; padding: 2px 9px; border-radius: 20px; font-weight: 600; }
+    /* ── Annonces ── */
+    .msg { display:flex; gap:10px; padding:9px 0; border-bottom:0.5px solid var(--border); }
+    .msg:last-child { border-bottom:none; }
+    .msg-body { flex:1; min-width:0; }
+    .msg-author { font-size:12px; font-weight:600; }
+    .msg-text { font-size:13px; color:var(--text2); margin-top:2px; word-break:break-word; }
+    .msg-time { font-size:11px; color:var(--text3); margin-top:2px; }
+    .announce-add { display:flex; gap:8px; margin-top:12px; }
+    .announce-add input { flex:1; }
 
-    /* ══════════════ KANBAN ══════════════ */
-    .kanban { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
-    @media (max-width: 600px) { .kanban { grid-template-columns: 1fr; } }
-
-    .kanban-col { background: var(--surface2); border-radius: var(--radius-md); padding: 12px; min-height: 120px; }
-    .col-header { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
-    .col-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .col-title-txt { font-size: 12px; font-weight: 600; color: var(--text2); flex: 1; }
-    .col-count { font-size: 11px; color: var(--text3); background: var(--surface); border-radius: 20px; padding: 1px 7px; }
-
-    .task-card {
-      background: var(--surface); border: 0.5px solid var(--border);
-      border-radius: var(--radius-md); padding: 10px 12px; margin-bottom: 8px;
-      transition: border-color .15s, box-shadow .15s; position: relative;
-    }
-    .task-card:hover { border-color: var(--orange); }
-    .task-card-top { display: flex; align-items: flex-start; gap: 8px; }
-    .task-check {
-      width: 17px; height: 17px; border-radius: 5px;
-      border: 1.5px solid var(--border2); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; margin-top: 1px; background: var(--surface);
-      transition: all .15s;
-    }
-    .task-check.checked { background: var(--green); border-color: var(--green); }
-    .task-check.checked::after { content: '✓'; font-size: 10px; color: #fff; font-weight: 700; }
-    .task-card-title { font-size: 13px; font-weight: 500; cursor: pointer; flex: 1; color: var(--text); line-height: 1.4; }
-    .task-card-title:hover { color: var(--orange); }
-    .task-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 9px; padding-left: 25px; }
-    .task-del { background: none; border: none; color: var(--text3); font-size: 16px; padding: 0 3px; cursor: pointer; opacity: 0; transition: opacity .15s; line-height: 1; }
-    .task-card:hover .task-del { opacity: 1; }
-    .task-del:hover { color: var(--red); background: none; transform: none; }
-    .cycle-btn { font-size: 11px; padding: 2px 8px; border-radius: 20px; cursor: pointer; border: 0.5px solid var(--border); background: var(--surface2); color: var(--text2); font-weight: 500; }
-    .cycle-btn:hover { background: var(--orange-light); color: var(--orange-dark); border-color: var(--orange); }
-
-    .add-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
-    .add-row input { flex: 2; min-width: 120px; }
-    .add-row select { flex: 1; min-width: 80px; }
-
-    .bulk-bar { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text2); flex-wrap: wrap; }
-
-    /* ══════════════ AGENDA ══════════════ */
-    .agenda-item { display: flex; gap: 12px; padding: 9px 0; border-bottom: 0.5px solid var(--border); align-items: flex-start; }
-    .agenda-item:last-child { border-bottom: none; }
-    .agenda-time { font-size: 12px; color: var(--text3); min-width: 40px; padding-top: 2px; font-weight: 500; }
-    .agenda-body { flex: 1; }
-    .agenda-title-txt { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
-    .agenda-del { background: none; border: none; color: var(--text3); font-size: 16px; padding: 0 3px; cursor: pointer; opacity: 0; transition: opacity .15s; flex-shrink: 0; }
-    .agenda-item:hover .agenda-del { opacity: 1; }
-    .agenda-del:hover { color: var(--red); background: none; transform: none; }
-    .agenda-add { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-    .agenda-add input[type="time"] { width: 90px; }
-    .agenda-add input[type="text"] { flex: 1; min-width: 100px; }
-
-    /* ══════════════ KPI ══════════════ */
-    .kpi-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
-    .kpi-row:last-child { border-bottom: none; }
-    .kpi-label { font-size: 13px; min-width: 100px; color: var(--text2); }
-    .kpi-bar-bg { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; margin: 0 10px; overflow: hidden; }
-    .kpi-bar { height: 6px; border-radius: 3px; transition: width .5s cubic-bezier(.4,0,.2,1); }
-    .kpi-val { font-size: 13px; font-weight: 600; min-width: 36px; text-align: right; color: var(--text); }
-
-    /* ══════════════ ANNONCES ══════════════ */
-    .msg { display: flex; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
-    .msg:last-child { border-bottom: none; }
-    .msg-body { flex: 1; min-width: 0; }
-    .msg-author { font-size: 12px; font-weight: 600; color: var(--text); }
-    .msg-text { font-size: 13px; color: var(--text2); margin-top: 2px; word-break: break-word; }
-    .msg-time { font-size: 11px; color: var(--text3); margin-top: 2px; }
-    .announce-add { display: flex; gap: 8px; margin-top: 12px; }
-    .announce-add input { flex: 1; }
-
-    /* ══════════════ MODALS ══════════════ */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity .2s; padding: 1rem; }
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal { background: var(--surface); border-radius: var(--radius-xl); border: 0.5px solid var(--border); padding: 1.75rem; width: 500px; max-width: 100%; max-height: 90vh; overflow-y: auto; transform: translateY(14px); transition: transform .22s; }
-    .modal-overlay.open .modal { transform: translateY(0); }
-    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 1.25rem; }
-    .modal h2 { font-size: 17px; font-weight: 600; }
-    .modal-close { background: none; border: none; font-size: 20px; color: var(--text3); cursor: pointer; padding: 0; line-height: 1; }
-    .modal-close:hover { color: var(--text); background: none; transform: none; }
-    .field { margin-bottom: 12px; }
-    .field label { font-size: 12px; font-weight: 500; color: var(--text2); display: block; margin-bottom: 5px; }
-    .field input, .field select, .field textarea { width: 100%; }
-    .field textarea { resize: vertical; min-height: 80px; }
-    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.5rem; flex-wrap: wrap; }
+    /* ── Modals ── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:100; opacity:0; pointer-events:none; transition:opacity .2s; padding:1rem; }
+    .modal-overlay.open { opacity:1; pointer-events:all; }
+    .modal { background:var(--surface); border-radius:var(--radius-xl); border:0.5px solid var(--border); padding:1.75rem; width:520px; max-width:100%; max-height:90vh; overflow-y:auto; transform:translateY(14px); transition:transform .22s; }
+    .modal-overlay.open .modal { transform:translateY(0); }
+    .modal-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:1.25rem; }
+    .modal h2 { font-size:17px; font-weight:600; }
+    .modal-close { background:none; border:none; font-size:22px; color:var(--text3); cursor:pointer; padding:0; line-height:1; }
+    .modal-close:hover { color:var(--text); background:none; transform:none; }
+    .field { margin-bottom:12px; }
+    .field label { font-size:12px; font-weight:500; color:var(--text2); display:block; margin-bottom:5px; }
+    .field input, .field select, .field textarea { width:100%; }
+    .field textarea { resize:vertical; min-height:80px; }
+    .modal-footer { display:flex; gap:8px; justify-content:flex-end; margin-top:1.5rem; flex-wrap:wrap; }
+    .date-row { display:flex; gap:8px; }
+    .date-row .field { flex:1; }
 
     /* Modal tâche */
-    .status-badge { display: inline-flex; align-items: center; font-size: 12px; padding: 3px 11px; border-radius: 20px; font-weight: 600; }
-    .task-detail-section { margin-top: 16px; }
-    .task-detail-section h3 { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
-    .done-list { list-style: none; }
-    .done-list li { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; color: var(--text2); }
-    .done-list li:last-child { border-bottom: none; }
-    .done-check { color: var(--green); font-size: 12px; margin-top: 1px; flex-shrink: 0; font-weight: 700; }
-    .done-add { display: flex; gap: 8px; margin-top: 10px; }
-    .done-add input { flex: 1; }
-    .status-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-    .status-btn { font-size: 12px; padding: 5px 14px; border-radius: 20px; font-weight: 500; }
+    .status-badge { display:inline-flex; align-items:center; font-size:12px; padding:3px 11px; border-radius:20px; font-weight:600; }
+    .task-detail-section { margin-top:16px; }
+    .task-detail-section h3 { font-size:12px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; }
+    .done-list { list-style:none; }
+    .done-list li { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:0.5px solid var(--border); font-size:13px; color:var(--text2); }
+    .done-list li:last-child { border-bottom:none; }
+    .done-check { color:var(--green); font-size:12px; margin-top:1px; flex-shrink:0; font-weight:700; }
+    .done-add { display:flex; gap:8px; margin-top:10px; }
+    .done-add input { flex:1; }
+    .status-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+    .status-btn { font-size:12px; padding:5px 14px; border-radius:20px; font-weight:500; }
 
-    /* Membres modal */
-    .member-list-modal { margin-bottom: 1rem; }
-    .member-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
-    .member-row:last-child { border-bottom: none; }
-    .member-row .mname { flex: 1; font-size: 13px; font-weight: 500; }
-    .member-row .role { font-size: 12px; color: var(--text3); }
-    .del-btn { background: none; border: none; color: var(--text3); font-size: 17px; padding: 0 4px; cursor: pointer; line-height: 1; }
-    .del-btn:hover { color: var(--red); background: none; transform: none; }
+    /* Membres */
+    .member-list-modal { margin-bottom:1rem; }
+    .member-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:0.5px solid var(--border); }
+    .member-row:last-child { border-bottom:none; }
+    .member-row .mname { flex:1; font-size:13px; font-weight:500; }
+    .member-row .role { font-size:12px; color:var(--text3); }
+    .del-btn { background:none; border:none; color:var(--text3); font-size:17px; padding:0 4px; cursor:pointer; }
+    .del-btn:hover { color:var(--red); background:none; transform:none; }
+    .color-opts { display:flex; gap:8px; flex-wrap:wrap; }
+    .color-opt { width:30px; height:30px; border-radius:50%; cursor:pointer; border:2.5px solid transparent; transition:border-color .15s; }
+    .color-opt.selected { border-color:var(--text); }
+    .sep { border:none; border-top:0.5px solid var(--border); margin:1.1rem 0; }
 
-    .color-opts { display: flex; gap: 8px; flex-wrap: wrap; }
-    .color-opt { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2.5px solid transparent; transition: border-color .15s; }
-    .color-opt.selected { border-color: var(--text); }
-    .sep { border: none; border-top: 0.5px solid var(--border); margin: 1.1rem 0; }
+    /* Rapport — filtre date */
+    .week-quick { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+    .week-btn { font-size:12px; padding:4px 12px; border-radius:20px; background:var(--surface2); border:0.5px solid var(--border); color:var(--text2); cursor:pointer; }
+    .week-btn:hover { background:var(--orange-light); color:var(--orange-dark); border-color:var(--orange); }
 
-    /* ══════════════ FOOTER ══════════════ */
-    .app-footer { text-align: center; font-size: 11px; color: var(--text3); padding: 2rem 0 1rem; }
-    .app-footer strong { color: var(--orange); }
+    .app-footer { text-align:center; font-size:11px; color:var(--text3); padding:2rem 0 1rem; }
+    .app-footer strong { color:var(--orange); }
   </style>
 </head>
 <body>
 
-<!-- Topbar -->
 <div class="topbar-wrap">
   <div class="topbar">
     <div class="brand">
@@ -267,7 +202,7 @@
     </div>
     <div class="topbar-right">
       <span class="date-label" id="today-date"></span>
-      <button onclick="exportReport()" style="background:var(--orange-light);border-color:transparent;color:var(--orange-dark);font-weight:600">⬇ Rapport PDF</button>
+      <button class="report-btn" onclick="openReportModal()">⬇ Rapport PDF</button>
       <button class="green" onclick="openMembersModal()">+ Collaborateurs</button>
     </div>
   </div>
@@ -275,7 +210,6 @@
 
 <div class="app">
 
-  <!-- Métriques -->
   <div class="grid3-metrics" style="margin-bottom:16px">
     <div class="metric"><div class="lbl">Tâches terminées</div><div class="val" id="m-done">0</div></div>
     <div class="metric"><div class="lbl">En cours</div><div class="val" id="m-prog">0</div></div>
@@ -294,32 +228,20 @@
     </div>
     <div class="kanban">
       <div class="kanban-col">
-        <div class="col-header">
-          <span class="col-dot" style="background:var(--todo-color)"></span>
-          <span class="col-title-txt">À faire</span>
-          <span class="col-count" id="cnt-todo">0</span>
-        </div>
+        <div class="col-header"><span class="col-dot" style="background:var(--todo-color)"></span><span class="col-title-txt">À faire</span><span class="col-count" id="cnt-todo">0</span></div>
         <div id="col-todo"></div>
       </div>
       <div class="kanban-col">
-        <div class="col-header">
-          <span class="col-dot" style="background:var(--orange)"></span>
-          <span class="col-title-txt">En cours</span>
-          <span class="col-count" id="cnt-prog">0</span>
-        </div>
+        <div class="col-header"><span class="col-dot" style="background:var(--orange)"></span><span class="col-title-txt">En cours</span><span class="col-count" id="cnt-prog">0</span></div>
         <div id="col-prog"></div>
       </div>
       <div class="kanban-col">
-        <div class="col-header">
-          <span class="col-dot" style="background:var(--green)"></span>
-          <span class="col-title-txt">Terminé</span>
-          <span class="col-count" id="cnt-done">0</span>
-        </div>
+        <div class="col-header"><span class="col-dot" style="background:var(--green)"></span><span class="col-title-txt">Terminé</span><span class="col-count" id="cnt-done">0</span></div>
         <div id="col-done"></div>
       </div>
     </div>
     <div class="add-row">
-      <input id="new-task-title" placeholder="Titre de la nouvelle tâche..." />
+      <input id="new-task-title" placeholder="Titre de la tâche..." />
       <select id="new-task-member"></select>
       <select id="new-task-tag">
         <option>Dev</option><option>Design</option>
@@ -357,57 +279,6 @@
   <div class="app-footer">Dashboard collaboratif &mdash; <strong>CHAMORIN</strong></div>
 </div>
 
-<!-- ═══ Modal : Rapport ═══ -->
-<div class="modal-overlay" id="report-modal-overlay" onclick="closeReportModalOnBg(event)">
-  <div class="modal" style="width:600px">
-    <div class="modal-header">
-      <h2>Générer un rapport</h2>
-      <button class="modal-close" onclick="closeReportModal()">×</button>
-    </div>
-    <div class="field">
-      <label>Titre du rapport</label>
-      <input id="rp-title" placeholder="ex: Bilan de la semaine — Sprint 3" />
-    </div>
-    <div class="field">
-      <label>Destinataire (responsable)</label>
-      <input id="rp-to" placeholder="ex: M. Dupont, Directeur Commercial" />
-    </div>
-    <div class="field">
-      <label>Préparé par</label>
-      <input id="rp-from" placeholder="ex: Julien" />
-    </div>
-    <div class="field">
-      <label>Période couverte</label>
-      <input id="rp-period" placeholder="ex: Semaine du 22 au 28 avril 2026" />
-    </div>
-    <div class="field">
-      <label>Commentaire général (optionnel)</label>
-      <textarea id="rp-comment" placeholder="Points marquants, contexte, difficultés rencontrées..."></textarea>
-    </div>
-    <div class="field">
-      <label>Inclure dans le rapport</label>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);font-weight:400;cursor:pointer">
-          <input type="checkbox" id="rp-inc-done" checked style="width:auto;padding:0"/> Tâches terminées
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);font-weight:400;cursor:pointer">
-          <input type="checkbox" id="rp-inc-prog" checked style="width:auto;padding:0"/> Tâches en cours
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);font-weight:400;cursor:pointer">
-          <input type="checkbox" id="rp-inc-todo" style="width:auto;padding:0"/> Tâches à venir
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);font-weight:400;cursor:pointer">
-          <input type="checkbox" id="rp-inc-kpi" checked style="width:auto;padding:0"/> Indicateurs (KPIs)
-        </label>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="ghost" onclick="closeReportModal()">Annuler</button>
-      <button class="primary" onclick="generateReport()">⬇ Exporter le rapport</button>
-    </div>
-  </div>
-</div>
-
 <!-- ═══ Modal : Détail tâche ═══ -->
 <div class="modal-overlay" id="task-modal-overlay" onclick="closeTaskModalOnBg(event)">
   <div class="modal">
@@ -422,6 +293,18 @@
         </div>
       </div>
       <button class="modal-close" onclick="closeTaskModal()">×</button>
+    </div>
+
+    <!-- Dates -->
+    <div class="date-row">
+      <div class="field">
+        <label>Date de début</label>
+        <input type="date" id="tm-date-start" />
+      </div>
+      <div class="field">
+        <label>Date d'échéance</label>
+        <input type="date" id="tm-date-end" />
+      </div>
     </div>
 
     <div class="field">
@@ -455,6 +338,71 @@
   </div>
 </div>
 
+<!-- ═══ Modal : Rapport PDF ═══ -->
+<div class="modal-overlay" id="report-modal-overlay" onclick="closeReportModalOnBg(event)">
+  <div class="modal" style="width:580px">
+    <div class="modal-header">
+      <h2>Générer un rapport PDF</h2>
+      <button class="modal-close" onclick="closeReportModal()">×</button>
+    </div>
+
+    <div class="field">
+      <label>Titre du rapport</label>
+      <input id="rp-title" placeholder="ex: Bilan Semaine 17 — Sprint 3" />
+    </div>
+
+    <div class="date-row">
+      <div class="field">
+        <label>Du (date début)</label>
+        <input type="date" id="rp-date-start" />
+      </div>
+      <div class="field">
+        <label>Au (date fin)</label>
+        <input type="date" id="rp-date-end" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Raccourcis semaines</label>
+      <div class="week-quick" id="week-quick-btns"></div>
+    </div>
+
+    <div class="field">
+      <label>Destinataire (responsable)</label>
+      <input id="rp-to" placeholder="ex: M. Dupont, Directeur Commercial" />
+    </div>
+    <div class="date-row">
+      <div class="field">
+        <label>Préparé par</label>
+        <input id="rp-from" />
+      </div>
+      <div class="field">
+        <label>Statut des tâches à inclure</label>
+        <select id="rp-status-filter">
+          <option value="all">Tous les statuts</option>
+          <option value="done">Terminées uniquement</option>
+          <option value="done,prog">Terminées + En cours</option>
+          <option value="prog">En cours uniquement</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Commentaire général (optionnel)</label>
+      <textarea id="rp-comment" placeholder="Points marquants, contexte, difficultés rencontrées..."></textarea>
+    </div>
+
+    <div style="background:var(--surface2);border-radius:var(--radius-md);padding:10px 14px;font-size:12px;color:var(--text2)">
+      ℹ︎ Seules les tâches dont la date d'échéance (ou de début) est dans la période sélectionnée seront incluses. Les tâches sans date apparaissent si aucune période n'est définie.
+    </div>
+
+    <div class="modal-footer">
+      <button class="ghost" onclick="closeReportModal()">Annuler</button>
+      <button class="primary" onclick="generateReport()">⬇ Exporter le rapport</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ Modal : Collaborateurs ═══ -->
 <div class="modal-overlay" id="members-modal-overlay" onclick="closeMembersModalOnBg(event)">
   <div class="modal">
@@ -467,10 +415,7 @@
     <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text2)">Ajouter un collaborateur</div>
     <div class="field"><label>Prénom</label><input id="m-name" placeholder="ex: Sophie" /></div>
     <div class="field"><label>Rôle</label><input id="m-role" placeholder="ex: Designer" /></div>
-    <div class="field">
-      <label>Couleur</label>
-      <div class="color-opts" id="color-opts"></div>
-    </div>
+    <div class="field"><label>Couleur</label><div class="color-opts" id="color-opts"></div></div>
     <div class="modal-footer">
       <button class="ghost" onclick="closeMembersModal()">Fermer</button>
       <button class="primary" onclick="addMember()">Ajouter</button>
@@ -479,90 +424,115 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-//  PALETTES CHAMORIN
-// ═══════════════════════════════════════════
-const PALETTES = [
-  {color:'#C9602A', bg:'#FEF0E8'}, // orange foncé
-  {color:'#F4874B', bg:'#FDE8D8'}, // orange doux
-  {color:'#1E6040', bg:'#E6F4ED'}, // vert foncé
-  {color:'#2E8B57', bg:'#D6EFE2'}, // vert moyen
-  {color:'#7A5C3A', bg:'#F5EDE3'}, // brun chaud
-  {color:'#4A7C8A', bg:'#E3EFF2'}, // bleu ardoise
-  {color:'#8A6A2E', bg:'#F5EDDA'}, // or
-  {color:'#5A4E8A', bg:'#EDEAF5'}, // prune
+// ═══════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════
+const PALETTES=[
+  {color:'#C9602A',bg:'#FEF0E8'},{color:'#F4874B',bg:'#FDE8D8'},
+  {color:'#1E6040',bg:'#E6F4ED'},{color:'#2E8B57',bg:'#D6EFE2'},
+  {color:'#7A5C3A',bg:'#F5EDE3'},{color:'#4A7C8A',bg:'#E3EFF2'},
+  {color:'#8A6A2E',bg:'#F5EDDA'},{color:'#5A4E8A',bg:'#EDEAF5'},
 ];
-
-const TAG_STYLES = {
-  Dev:       {color:'#1E6040', bg:'#E6F4ED'},
-  Design:    {color:'#C9602A', bg:'#FEF0E8'},
-  Marketing: {color:'#F4874B', bg:'#FDE8D8'},
-  Admin:     {color:'#7A5C3A', bg:'#F5EDE3'},
-  Réunion:   {color:'#4A7C8A', bg:'#E3EFF2'},
-  Autre:     {color:'#8A8880', bg:'#F2F1EE'},
+const TAG_STYLES={
+  Dev:{color:'#1E6040',bg:'#E6F4ED'}, Design:{color:'#C9602A',bg:'#FEF0E8'},
+  Marketing:{color:'#F4874B',bg:'#FDE8D8'}, Admin:{color:'#7A5C3A',bg:'#F5EDE3'},
+  Réunion:{color:'#4A7C8A',bg:'#E3EFF2'}, Autre:{color:'#8A8880',bg:'#F2F1EE'},
+};
+const STATUS_LABELS={todo:'À faire',prog:'En cours',done:'Terminé'};
+const STATUS_STYLES={
+  todo:{color:'#8A8880',bg:'#F2F1EE'},
+  prog:{color:'#C9602A',bg:'#FEF0E8'},
+  done:{color:'#1E6040',bg:'#E6F4ED'},
 };
 
-const STATUS_LABELS = {todo:'À faire', prog:'En cours', done:'Terminé'};
-const STATUS_STYLES = {
-  todo:{color:'#8A8880', bg:'#F2F1EE'},
-  prog:{color:'#C9602A', bg:'#FEF0E8'},
-  done:{color:'#1E6040', bg:'#E6F4ED'},
-};
-
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 //  ÉTAT
-// ═══════════════════════════════════════════
-let state = loadState() || {
-  members: [{id:'JU', name:'Julien', role:'Admin', paletteIdx:2}],
-  tasks: [
-    {id:1, title:'Configurer le repository', member:'JU', status:'todo', tag:'Admin', desc:'', done:[]},
-    {id:2, title:'Rédiger le README', member:'JU', status:'prog', tag:'Dev', desc:'Expliquer comment installer et utiliser le dashboard.', done:['Structure du README définie']},
-    {id:3, title:'Déployer sur GitHub Pages', member:'JU', status:'done', tag:'Dev', desc:'', done:['Repository créé','GitHub Pages activé']},
+// ═══════════════════════════════════════
+let state=loadState()||{
+  members:[{id:'JU',name:'Julien',role:'Admin',paletteIdx:2}],
+  tasks:[
+    {id:1,title:'Configurer le repository',member:'JU',status:'todo',tag:'Admin',desc:'',done:[],dateStart:'',dateEnd:''},
+    {id:2,title:'Rédiger le README',member:'JU',status:'prog',tag:'Dev',desc:'Expliquer comment installer et utiliser le dashboard.',done:['Structure du README définie'],dateStart:'2026-04-21',dateEnd:'2026-04-25'},
+    {id:3,title:'Déployer sur GitHub Pages',member:'JU',status:'done',tag:'Dev',desc:'',done:['Repository créé','GitHub Pages activé'],dateStart:'2026-04-20',dateEnd:'2026-04-22'},
   ],
-  events: [
-    {id:1, time:'09:00', title:'Standup équipe', tag:'Réunion'},
-    {id:2, time:'14:00', title:'Revue de code', tag:'Dev'},
+  events:[
+    {id:1,time:'09:00',title:'Standup équipe',tag:'Réunion'},
+    {id:2,time:'14:00',title:'Revue de code',tag:'Dev'},
   ],
-  announces: [{author:'Julien', text:'Bienvenue sur le dashboard CHAMORIN ! Ajoutez vos collaborateurs via le bouton vert.', time:"À l'instant"}],
-  nextId:4, nextEventId:3,
+  announces:[{author:'Julien',text:'Bienvenue sur le dashboard CHAMORIN !',time:"À l'instant"}],
+  nextId:4,nextEventId:3,
 };
 
-let selectedTasks = new Set();
-let currentTaskId = null;
-let selectedPalette = 0;
+let selectedTasks=new Set();
+let currentTaskId=null;
+let selectedPalette=0;
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 //  PERSISTENCE
-// ═══════════════════════════════════════════
-function saveState(){ try{ localStorage.setItem('chamorin_v1', JSON.stringify(state)); }catch(e){} }
-function loadState(){ try{ const s=localStorage.getItem('chamorin_v1'); return s?JSON.parse(s):null; }catch(e){return null;} }
+// ═══════════════════════════════════════
+function saveState(){try{localStorage.setItem('chamorin_v2',JSON.stringify(state));}catch(e){}}
+function loadState(){try{const s=localStorage.getItem('chamorin_v2');return s?JSON.parse(s):null;}catch(e){return null;}}
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 //  HELPERS
-// ═══════════════════════════════════════════
-function initials(n){ return n.trim().slice(0,2).toUpperCase(); }
-function getPalette(m){ return PALETTES[m.paletteIdx % PALETTES.length]; }
-function memberById(id){ return state.members.find(m=>m.id===id); }
-function tagStyle(tag){ const s=TAG_STYLES[tag]||TAG_STYLES['Autre']; return `background:${s.bg};color:${s.color}`; }
+// ═══════════════════════════════════════
+function initials(n){return n.trim().slice(0,2).toUpperCase();}
+function getPalette(m){return PALETTES[m.paletteIdx%PALETTES.length];}
+function memberById(id){return state.members.find(m=>m.id===id);}
+function tagStyle(tag){const s=TAG_STYLES[tag]||TAG_STYLES['Autre'];return `background:${s.bg};color:${s.color}`;}
 function genId(name){
-  let base=(name.trim().slice(0,2).toUpperCase().replace(/[^A-Z]/g,'')||'XX'), id=base, i=2;
-  while(state.members.some(m=>m.id===id)) id=base+(i++);
+  let base=(name.trim().slice(0,2).toUpperCase().replace(/[^A-Z]/g,'')||'XX'),id=base,i=2;
+  while(state.members.some(m=>m.id===id))id=base+(i++);
   return id;
 }
 
-// ═══════════════════════════════════════════
-//  SELECTS
-// ═══════════════════════════════════════════
-function renderMemberSelects(){
-  const el=document.getElementById('new-task-member'); if(!el)return;
-  const val=el.value;
-  el.innerHTML=state.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-  if(state.members.some(m=>m.id===val)) el.value=val;
+// Format date affichage : 2026-04-21 → 21/04/26
+function fmtDate(iso){
+  if(!iso)return '';
+  const [y,m,d]=iso.split('-');
+  return `${d}/${m}/${y.slice(2)}`;
+}
+// Numéro de semaine ISO
+function isoWeek(date){
+  const d=new Date(date);
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+3-(d.getDay()+6)%7);
+  const week1=new Date(d.getFullYear(),0,4);
+  return 1+Math.round(((d-week1)/86400000-3+(week1.getDay()+6)%7)/7);
+}
+function mondayOfWeek(year,week){
+  const jan4=new Date(year,0,4);
+  const dayOfWeek=(jan4.getDay()+6)%7;
+  const monday=new Date(jan4);
+  monday.setDate(jan4.getDate()-dayOfWeek+(week-1)*7);
+  return monday;
+}
+function toISO(d){return d.toISOString().slice(0,10);}
+
+// Statut date d'une tâche
+function dateStatus(t){
+  if(!t.dateEnd)return null;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const due=new Date(t.dateEnd);
+  const diff=Math.round((due-today)/86400000);
+  if(diff<0)return 'overdue';
+  if(diff<=3)return 'soon';
+  return 'ok';
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
+//  SELECTS
+// ═══════════════════════════════════════
+function renderMemberSelects(){
+  const el=document.getElementById('new-task-member');if(!el)return;
+  const val=el.value;
+  el.innerHTML=state.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  if(state.members.some(m=>m.id===val))el.value=val;
+}
+
+// ═══════════════════════════════════════
 //  KANBAN
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 function renderKanban(){
   ['todo','prog','done'].forEach(s=>{
     const col=document.getElementById('col-'+s);
@@ -572,21 +542,27 @@ function renderKanban(){
     col.innerHTML=filtered.map(t=>{
       const m=memberById(t.member);
       const p=m?getPalette(m):PALETTES[0];
-      const name=m?m.name:t.member;
       const checked=selectedTasks.has(t.id);
+      const ds=dateStatus(t);
+      const dateHtml=(t.dateStart||t.dateEnd)?`
+        <div class="task-dates">
+          ${t.dateStart?`<span>📅 ${fmtDate(t.dateStart)}</span>`:''}
+          ${t.dateEnd?`<span class="due ${ds==='overdue'?'overdue':ds==='soon'?'soon':''}">${ds==='overdue'?'⚠ ':ds==='soon'?'⏰ ':'→ '}${fmtDate(t.dateEnd)}</span>`:''}
+        </div>`:'';
       return `<div class="task-card" id="tc-${t.id}">
         <div class="task-card-top">
           <div class="task-check${checked?' checked':''}" onclick="toggleSelect(${t.id})"></div>
           <span class="task-card-title" onclick="openTaskModal(${t.id})">${t.title}</span>
-          <button class="task-del" onclick="deleteSingleTask(${t.id})" title="Supprimer">×</button>
+          <button class="task-del" onclick="deleteSingleTask(${t.id})">×</button>
         </div>
         <div class="task-meta">
-          <span class="avatar" style="background:${p.bg};color:${p.color}">${initials(name)}</span>
+          <span class="avatar" style="background:${p.bg};color:${p.color}">${initials(m?m.name:t.member)}</span>
           <div style="display:flex;gap:6px;align-items:center">
             <span class="tag" style="${tagStyle(t.tag)}">${t.tag}</span>
-            <button class="cycle-btn" onclick="cycleTask(${t.id})" title="Avancer">→</button>
+            <button class="cycle-btn" onclick="cycleTask(${t.id})">→</button>
           </div>
         </div>
+        ${dateHtml}
       </div>`;
     }).join('');
   });
@@ -595,18 +571,18 @@ function renderKanban(){
   saveState();
 }
 
-function toggleSelect(id){ selectedTasks.has(id)?selectedTasks.delete(id):selectedTasks.add(id); renderKanban(); }
-function clearSelection(){ selectedTasks.clear(); renderKanban(); }
+function toggleSelect(id){selectedTasks.has(id)?selectedTasks.delete(id):selectedTasks.add(id);renderKanban();}
+function clearSelection(){selectedTasks.clear();renderKanban();}
 function deleteSelected(){
   if(!selectedTasks.size)return;
   if(!confirm(`Supprimer ${selectedTasks.size} tâche(s) ?`))return;
   state.tasks=state.tasks.filter(t=>!selectedTasks.has(t.id));
-  selectedTasks.clear(); renderKanban();
+  selectedTasks.clear();renderKanban();
 }
 function deleteSingleTask(id){
   if(!confirm('Supprimer cette tâche ?'))return;
   state.tasks=state.tasks.filter(t=>t.id!==id);
-  selectedTasks.delete(id); renderKanban();
+  selectedTasks.delete(id);renderKanban();
 }
 function updateBulkBar(){
   const bar=document.getElementById('bulk-bar');
@@ -615,7 +591,7 @@ function updateBulkBar(){
   cnt.textContent=selectedTasks.size+' sélectionnée(s)';
 }
 function cycleTask(id){
-  const t=state.tasks.find(x=>x.id===id); if(!t)return;
+  const t=state.tasks.find(x=>x.id===id);if(!t)return;
   t.status={todo:'prog',prog:'done',done:'todo'}[t.status];
   renderKanban();
 }
@@ -624,14 +600,14 @@ function addTask(){
   const member=document.getElementById('new-task-member').value;
   const tag=document.getElementById('new-task-tag').value;
   if(!title){document.getElementById('new-task-title').focus();return;}
-  state.tasks.push({id:state.nextId++,title,member,status:'todo',tag,desc:'',done:[]});
+  state.tasks.push({id:state.nextId++,title,member,status:'todo',tag,desc:'',done:[],dateStart:'',dateEnd:''});
   document.getElementById('new-task-title').value='';
   renderKanban();
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 //  MÉTRIQUES & KPIs
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 function updateMetrics(){
   const done=state.tasks.filter(t=>t.status==='done').length;
   const prog=state.tasks.filter(t=>t.status==='prog').length;
@@ -641,10 +617,10 @@ function updateMetrics(){
   document.getElementById('m-pct').textContent=pct+'%';
   const n=state.tasks.length||1;
   document.getElementById('kpi-list').innerHTML=[
-    {label:'Terminées', val:done, max:n, color:'var(--green)'},
-    {label:'En cours',  val:prog, max:n, color:'var(--orange)'},
-    {label:'À faire',   val:state.tasks.filter(t=>t.status==='todo').length, max:n, color:'var(--text3)'},
-    {label:'Avancement',val:pct,  max:100, color:'var(--green)', suffix:'%'},
+    {label:'Terminées',val:done,max:n,color:'var(--green)'},
+    {label:'En cours', val:prog,max:n,color:'var(--orange)'},
+    {label:'À faire',  val:state.tasks.filter(t=>t.status==='todo').length,max:n,color:'var(--text3)'},
+    {label:'Avancement',val:pct,max:100,color:'var(--green)',suffix:'%'},
   ].map(k=>`<div class="kpi-row">
     <span class="kpi-label">${k.label}</span>
     <div class="kpi-bar-bg"><div class="kpi-bar" style="width:${Math.round(k.val/k.max*100)}%;background:${k.color}"></div></div>
@@ -652,12 +628,12 @@ function updateMetrics(){
   </div>`).join('');
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 //  MODAL TÂCHE
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 function openTaskModal(id){
   currentTaskId=id;
-  const t=state.tasks.find(x=>x.id===id); if(!t)return;
+  const t=state.tasks.find(x=>x.id===id);if(!t)return;
   const m=memberById(t.member);
   const p=m?getPalette(m):PALETTES[0];
   const ss=STATUS_STYLES[t.status];
@@ -670,6 +646,8 @@ function openTaskModal(id){
   document.getElementById('tm-tag').textContent=t.tag;
   document.getElementById('tm-tag').style.cssText=tagStyle(t.tag);
   document.getElementById('tm-desc').value=t.desc||'';
+  document.getElementById('tm-date-start').value=t.dateStart||'';
+  document.getElementById('tm-date-end').value=t.dateEnd||'';
   renderDoneList(t);
   document.getElementById('task-modal-overlay').classList.add('open');
 }
@@ -680,39 +658,41 @@ function renderDoneList(t){
 }
 function addDoneItem(){
   const inp=document.getElementById('tm-done-input');
-  const val=inp.value.trim(); if(!val)return;
-  const t=state.tasks.find(x=>x.id===currentTaskId); if(!t)return;
+  const val=inp.value.trim();if(!val)return;
+  const t=state.tasks.find(x=>x.id===currentTaskId);if(!t)return;
   if(!t.done)t.done=[];
-  t.done.push(val); inp.value=''; renderDoneList(t);
+  t.done.push(val);inp.value='';renderDoneList(t);
 }
 function removeDoneItem(idx){
-  const t=state.tasks.find(x=>x.id===currentTaskId); if(!t)return;
-  t.done.splice(idx,1); renderDoneList(t);
+  const t=state.tasks.find(x=>x.id===currentTaskId);if(!t)return;
+  t.done.splice(idx,1);renderDoneList(t);
 }
 function setTaskStatus(status){
-  const t=state.tasks.find(x=>x.id===currentTaskId); if(!t)return;
+  const t=state.tasks.find(x=>x.id===currentTaskId);if(!t)return;
   t.status=status;
   const ss=STATUS_STYLES[status];
   document.getElementById('tm-status-badge').textContent=STATUS_LABELS[status];
   document.getElementById('tm-status-badge').style.cssText=`background:${ss.bg};color:${ss.color}`;
 }
 function saveTaskModal(){
-  const t=state.tasks.find(x=>x.id===currentTaskId); if(!t)return;
+  const t=state.tasks.find(x=>x.id===currentTaskId);if(!t)return;
   t.desc=document.getElementById('tm-desc').value;
-  renderKanban(); closeTaskModal();
+  t.dateStart=document.getElementById('tm-date-start').value;
+  t.dateEnd=document.getElementById('tm-date-end').value;
+  renderKanban();closeTaskModal();
 }
 function deleteTaskFromModal(){
   if(!confirm('Supprimer cette tâche ?'))return;
   state.tasks=state.tasks.filter(t=>t.id!==currentTaskId);
   selectedTasks.delete(currentTaskId);
-  renderKanban(); closeTaskModal();
+  renderKanban();closeTaskModal();
 }
-function closeTaskModal(){ document.getElementById('task-modal-overlay').classList.remove('open'); }
-function closeTaskModalOnBg(e){ if(e.target===document.getElementById('task-modal-overlay'))closeTaskModal(); }
+function closeTaskModal(){document.getElementById('task-modal-overlay').classList.remove('open');}
+function closeTaskModalOnBg(e){if(e.target===document.getElementById('task-modal-overlay'))closeTaskModal();}
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 //  AGENDA
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 function renderAgenda(){
   document.getElementById('agenda-list').innerHTML=[...state.events]
     .sort((a,b)=>a.time.localeCompare(b.time))
@@ -722,7 +702,7 @@ function renderAgenda(){
         <div class="agenda-title-txt">${e.title}</div>
         <div style="margin-top:3px"><span class="tag" style="${tagStyle(e.tag)}">${e.tag}</span></div>
       </div>
-      <button class="agenda-del" onclick="deleteEvent(${e.id})" title="Supprimer">×</button>
+      <button class="agenda-del" onclick="deleteEvent(${e.id})">×</button>
     </div>`).join('');
 }
 function addEvent(){
@@ -731,16 +711,16 @@ function addEvent(){
   if(!title){document.getElementById('new-event-title').focus();return;}
   state.events.push({id:state.nextEventId++,time,title,tag:'Autre'});
   document.getElementById('new-event-title').value='';
-  renderAgenda(); saveState();
+  renderAgenda();saveState();
 }
 function deleteEvent(id){
   state.events=state.events.filter(e=>e.id!==id);
-  renderAgenda(); saveState();
+  renderAgenda();saveState();
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 //  ANNONCES
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 function renderAnnounces(){
   document.getElementById('announce-list').innerHTML=state.announces.map(a=>{
     const m=state.members.find(x=>x.name===a.author);
@@ -756,22 +736,276 @@ function renderAnnounces(){
   }).join('');
 }
 function postAnnounce(){
-  const txt=document.getElementById('new-announce').value.trim(); if(!txt)return;
+  const txt=document.getElementById('new-announce').value.trim();if(!txt)return;
   const me=state.members[0];
   state.announces.unshift({author:me?me.name:'Moi',text:txt,time:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});
   document.getElementById('new-announce').value='';
-  renderAnnounces(); saveState();
+  renderAnnounces();saveState();
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
+//  MODAL RAPPORT
+// ═══════════════════════════════════════
+function buildWeekButtons(){
+  const wrap=document.getElementById('week-quick-btns');
+  const today=new Date();
+  const currentWeek=isoWeek(today);
+  const year=today.getFullYear();
+  const weeks=[];
+  for(let w=currentWeek-3;w<=currentWeek+1;w++){
+    if(w<1||w>53)continue;
+    const mon=mondayOfWeek(year,w);
+    const fri=new Date(mon);fri.setDate(mon.getDate()+4);
+    weeks.push({w,mon:toISO(mon),fri:toISO(fri),
+      label:`S${w} — ${mon.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} au ${fri.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}`
+    });
+  }
+  wrap.innerHTML=weeks.map(wk=>
+    `<button class="week-btn" onclick="applyWeek('${wk.mon}','${wk.fri}','${wk.w}')">${wk.label}</button>`
+  ).join('');
+}
+function applyWeek(start,end,w){
+  document.getElementById('rp-date-start').value=start;
+  document.getElementById('rp-date-end').value=end;
+  document.getElementById('rp-title').value=`Rapport Semaine ${w} — CHAMORIN`;
+}
+function openReportModal(){
+  const me=state.members[0];
+  document.getElementById('rp-from').value=me?me.name:'';
+  buildWeekButtons();
+  document.getElementById('report-modal-overlay').classList.add('open');
+}
+function closeReportModal(){document.getElementById('report-modal-overlay').classList.remove('open');}
+function closeReportModalOnBg(e){if(e.target===document.getElementById('report-modal-overlay'))closeReportModal();}
+
+// ═══════════════════════════════════════
+//  GÉNÉRATION RAPPORT
+// ═══════════════════════════════════════
+function generateReport(){
+  const title   = document.getElementById('rp-title').value.trim()||'Rapport d\'activité';
+  const dateS   = document.getElementById('rp-date-start').value;
+  const dateE   = document.getElementById('rp-date-end').value;
+  const to      = document.getElementById('rp-to').value.trim()||'—';
+  const from    = document.getElementById('rp-from').value.trim()||'—';
+  const comment = document.getElementById('rp-comment').value.trim();
+  const statusFilter = document.getElementById('rp-status-filter').value;
+
+  // Filtrage tâches par date ET statut
+  const statusList = statusFilter==='all'?['todo','prog','done']:statusFilter.split(',');
+  const tasksFiltered = state.tasks.filter(t=>{
+    if(!statusList.includes(t.status))return false;
+    if(!dateS&&!dateE)return true;
+    // on prend la date pertinente : dateEnd si dispo, sinon dateStart
+    const ref=t.dateEnd||t.dateStart;
+    if(!ref)return false;
+    if(dateS&&ref<dateS)return false;
+    if(dateE&&ref>dateE)return false;
+    return true;
+  });
+
+  const done=tasksFiltered.filter(t=>t.status==='done');
+  const prog=tasksFiltered.filter(t=>t.status==='prog');
+  const todo=tasksFiltered.filter(t=>t.status==='todo');
+  const totalAll=state.tasks.length;
+  const totalDone=state.tasks.filter(t=>t.status==='done').length;
+  const pctGlobal=totalAll?Math.round(totalDone/totalAll*100):0;
+
+  const today=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const periodLabel=dateS&&dateE
+    ? `Du ${new Date(dateS).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})} au ${new Date(dateE).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}`
+    : dateS ? `À partir du ${new Date(dateS).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}`
+    : dateE ? `Jusqu\'au ${new Date(dateE).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}`
+    : 'Toutes les dates';
+
+  const weekNum=dateS?isoWeek(new Date(dateS)):'';
+  const memberName=id=>{const m=memberById(id);return m?m.name:id;};
+
+  // ── Lignes de tableau tâches ──
+  const taskRows=tasks=>tasks.map(t=>{
+    const ss=STATUS_STYLES[t.status];
+    const ts=TAG_STYLES[t.tag]||TAG_STYLES['Autre'];
+    const dateStr=(t.dateStart||t.dateEnd)?`${fmtDate(t.dateStart)}${t.dateStart&&t.dateEnd?' → ':''}${fmtDate(t.dateEnd)}`:'—';
+    return `<tr>
+      <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top">
+        <div style="font-size:13px;font-weight:600;color:#1C1C1A;margin-bottom:4px">${t.title}</div>
+        ${t.desc?`<div style="font-size:12px;color:#6B6966;margin-bottom:6px;line-height:1.5">${t.desc}</div>`:''}
+        ${t.done&&t.done.length?`<div style="margin-top:4px">${t.done.map(d=>`<div style="font-size:12px;color:#1E6040;display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#2E8B57;font-weight:700;flex-shrink:0">✓</span>${d}</div>`).join('')}</div>`:''}
+      </td>
+      <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;white-space:nowrap">
+        <div style="font-size:12px;font-weight:600;color:#1C1C1A">${memberName(t.member)}</div>
+        <div style="font-size:11px;color:#9A9894;margin-top:2px">${dateStr}</div>
+      </td>
+      <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center">
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${ts.bg};color:${ts.color};white-space:nowrap">${t.tag}</span>
+      </td>
+      <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center">
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${ss.bg};color:${ss.color};white-space:nowrap">${STATUS_LABELS[t.status]}</span>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const section=(label,color,bg,tasks,icon)=>tasks.length===0?'':` 
+    <div style="margin-top:32px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid ${color}20">
+        <div style="width:12px;height:12px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${color};margin:0">${label}</h3>
+        <span style="font-size:12px;color:#9A9894;font-weight:400">${tasks.length} tâche${tasks.length>1?'s':''}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #F0EDE8">
+        <thead>
+          <tr style="background:${color}12">
+            <th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:48%">Tâche &amp; détails</th>
+            <th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Responsable</th>
+            <th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:17%">Catégorie</th>
+            <th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:17%">Statut</th>
+          </tr>
+        </thead>
+        <tbody>${taskRows(tasks)}</tbody>
+      </table>
+    </div>`;
+
+  const html=`<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${title} — CHAMORIN</title>
+<style>
+  @media print {
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .no-print{display:none!important;}
+    @page{margin:15mm 12mm;size:A4;}
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F7F7F5;color:#1C1C1A;font-size:14px;}
+  .page{max-width:860px;margin:0 auto;background:#fff;min-height:100vh;}
+  .page-inner{padding:48px 52px 60px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Bandeau couleur haut -->
+  <div style="height:6px;background:linear-gradient(90deg,#F4874B 0%,#2E8B57 100%)"></div>
+
+  <div class="page-inner">
+
+    <!-- En-tête -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;padding-bottom:24px;border-bottom:1.5px solid #F0EDE8;gap:20px;flex-wrap:wrap">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.5px;flex-shrink:0">CH</div>
+          <div>
+            <div style="font-size:20px;font-weight:700;letter-spacing:.02em;color:#1C1C1A;line-height:1">CHAMO<span style="color:#F4874B">RIN</span></div>
+            <div style="font-size:11px;color:#9A9894;margin-top:2px;text-transform:uppercase;letter-spacing:.06em">Dashboard équipe</div>
+          </div>
+        </div>
+        <div style="font-size:24px;font-weight:700;color:#1C1C1A;margin-bottom:6px;line-height:1.2">${title}</div>
+        ${weekNum?`<div style="display:inline-block;background:#FEF0E8;color:#C9602A;font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px">Semaine ${weekNum}</div>`:''}
+        <div style="font-size:13px;color:#6B6966;margin-top:6px">${periodLabel}</div>
+      </div>
+      <div style="text-align:right;font-size:13px;color:#6B6966;line-height:2;flex-shrink:0">
+        <div><span style="color:#9A9894;font-size:11px;text-transform:uppercase;letter-spacing:.05em">Destinataire</span><br/><strong style="color:#1C1C1A;font-size:14px">${to}</strong></div>
+        <div style="margin-top:8px"><span style="color:#9A9894;font-size:11px;text-transform:uppercase;letter-spacing:.05em">Préparé par</span><br/><strong style="color:#1C1C1A;font-size:14px">${from}</strong></div>
+        <div style="margin-top:8px"><span style="color:#9A9894;font-size:11px;text-transform:uppercase;letter-spacing:.05em">Date d'édition</span><br/><strong style="color:#1C1C1A;font-size:13px">${today}</strong></div>
+      </div>
+    </div>
+
+    <!-- Résumé visuel -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
+      <div style="background:#E6F4ED;border-radius:12px;padding:18px 20px;border-left:4px solid #2E8B57">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1E6040;margin-bottom:6px">Réalisées</div>
+        <div style="font-size:32px;font-weight:700;color:#1E6040;line-height:1">${done.length}</div>
+        <div style="font-size:12px;color:#2E8B57;margin-top:4px">sur cette période</div>
+      </div>
+      <div style="background:#FEF0E8;border-radius:12px;padding:18px 20px;border-left:4px solid #F4874B">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:6px">En cours</div>
+        <div style="font-size:32px;font-weight:700;color:#C9602A;line-height:1">${prog.length}</div>
+        <div style="font-size:12px;color:#F4874B;margin-top:4px">à finaliser</div>
+      </div>
+      <div style="background:#F7F7F5;border-radius:12px;padding:18px 20px;border-left:4px solid #9A9894">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5A5956;margin-bottom:6px">Avancement global</div>
+        <div style="font-size:32px;font-weight:700;color:#1C1C1A;line-height:1">${pctGlobal}%</div>
+        <div style="font-size:12px;color:#9A9894;margin-top:4px">${totalDone}/${totalAll} tâches</div>
+      </div>
+    </div>
+
+    <!-- Barre de progression -->
+    <div style="margin-bottom:32px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#9A9894;margin-bottom:6px">
+        <span>Progression globale du projet</span><span style="font-weight:700;color:#1C1C1A">${pctGlobal}%</span>
+      </div>
+      <div style="background:#F0EDE8;border-radius:20px;height:10px;overflow:hidden">
+        <div style="height:10px;border-radius:20px;background:linear-gradient(90deg,#F4874B,#2E8B57);width:${pctGlobal}%"></div>
+      </div>
+    </div>
+
+    <!-- Commentaire -->
+    ${comment?`<div style="background:#FFFCF8;border:1px solid #F4874B30;border-left:4px solid #F4874B;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:28px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:8px">Note du responsable</div>
+      <div style="font-size:13px;color:#3A3936;line-height:1.7">${comment}</div>
+    </div>`:''}
+
+    <!-- Sections tâches -->
+    ${section('Réalisations',  '#2E8B57','#E6F4ED',done,'✓')}
+    ${section('En cours',      '#C9602A','#FEF0E8',prog,'⏳')}
+    ${section('À venir',       '#8A8880','#F2F1EE',todo,'📋')}
+
+    <!-- Membres impliqués -->
+    ${state.members.length?`
+    <div style="margin-top:32px;padding-top:24px;border-top:1.5px solid #F0EDE8">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9A9894;margin-bottom:14px">Équipe</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        ${state.members.map(m=>{
+          const p=getPalette(m);
+          const mTasks=tasksFiltered.filter(t=>t.member===m.id);
+          return `<div style="display:flex;align-items:center;gap:10px;background:#F7F7F5;border-radius:10px;padding:10px 14px">
+            <div style="width:36px;height:36px;border-radius:50%;background:${p.bg};color:${p.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${initials(m.name)}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#1C1C1A">${m.name}</div>
+              <div style="font-size:11px;color:#9A9894">${m.role||'Collaborateur'} &bull; ${mTasks.length} tâche${mTasks.length>1?'s':''}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`:''}
+
+    <!-- Pied de page -->
+    <div style="margin-top:48px;padding-top:16px;border-top:1px solid #F0EDE8;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff">CH</div>
+        <span style="font-size:11px;color:#C0BDB8">CHAMORIN &mdash; Document confidentiel</span>
+      </div>
+      <span style="font-size:11px;color:#C0BDB8">Généré le ${today}</span>
+    </div>
+
+    <!-- Bouton impression -->
+    <div class="no-print" style="text-align:center;margin-top:36px">
+      <button onclick="window.print()" style="background:linear-gradient(135deg,#F4874B,#C9602A);color:#fff;border:none;border-radius:12px;padding:14px 40px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.01em">🖨 Imprimer / Enregistrer en PDF</button>
+      <div style="font-size:12px;color:#9A9894;margin-top:10px">Dans la boîte d'impression, choisissez "Enregistrer en PDF" comme imprimante</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>`;
+
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const win=window.open(url,'_blank');
+  if(win)win.focus();
+  closeReportModal();
+}
+
+// ═══════════════════════════════════════
 //  MODAL COLLABORATEURS
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 function renderColorOpts(){
   document.getElementById('color-opts').innerHTML=PALETTES.map((p,i)=>
     `<div class="color-opt${i===selectedPalette?' selected':''}" style="background:${p.color}" onclick="selectPalette(${i})"></div>`
   ).join('');
 }
-function selectPalette(i){ selectedPalette=i; renderColorOpts(); }
+function selectPalette(i){selectedPalette=i;renderColorOpts();}
 function renderMemberList(){
   document.getElementById('member-list').innerHTML=state.members.map(m=>{
     const p=getPalette(m);
@@ -779,13 +1013,13 @@ function renderMemberList(){
       <span class="avatar" style="background:${p.bg};color:${p.color}">${initials(m.name)}</span>
       <span class="mname">${m.name}</span>
       <span class="role">${m.role||''}</span>
-      <button class="del-btn" onclick="deleteMember('${m.id}')" title="Supprimer">×</button>
+      <button class="del-btn" onclick="deleteMember('${m.id}')">×</button>
     </div>`;
   }).join('');
 }
-function openMembersModal(){ renderMemberList(); renderColorOpts(); document.getElementById('members-modal-overlay').classList.add('open'); }
-function closeMembersModal(){ document.getElementById('members-modal-overlay').classList.remove('open'); }
-function closeMembersModalOnBg(e){ if(e.target===document.getElementById('members-modal-overlay'))closeMembersModal(); }
+function openMembersModal(){renderMemberList();renderColorOpts();document.getElementById('members-modal-overlay').classList.add('open');}
+function closeMembersModal(){document.getElementById('members-modal-overlay').classList.remove('open');}
+function closeMembersModalOnBg(e){if(e.target===document.getElementById('members-modal-overlay'))closeMembersModal();}
 function addMember(){
   const name=document.getElementById('m-name').value.trim();
   const role=document.getElementById('m-role').value.trim();
@@ -794,183 +1028,19 @@ function addMember(){
   state.members.push({id,name,role,paletteIdx:selectedPalette});
   document.getElementById('m-name').value='';
   document.getElementById('m-role').value='';
-  renderMemberList(); renderMemberSelects(); saveState();
+  renderMemberList();renderMemberSelects();saveState();
 }
 function deleteMember(id){
   if(state.members.length<=1){alert('Il faut au moins un membre.');return;}
   if(!confirm('Supprimer ce collaborateur ?'))return;
   state.members=state.members.filter(m=>m.id!==id);
-  renderMemberList(); renderMemberSelects(); renderKanban(); saveState();
+  renderMemberList();renderMemberSelects();renderKanban();saveState();
 }
 
-// ═══════════════════════════════════════════
-//  RAPPORT PDF
-// ═══════════════════════════════════════════
-function exportReport(){
-  // Pré-remplir depuis le 1er membre
-  const me = state.members[0];
-  document.getElementById('rp-from').value = me ? me.name : '';
-  document.getElementById('rp-period').value = 'Semaine du ' + new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('report-modal-overlay').classList.add('open');
-}
-function closeReportModal(){ document.getElementById('report-modal-overlay').classList.remove('open'); }
-function closeReportModalOnBg(e){ if(e.target===document.getElementById('report-modal-overlay')) closeReportModal(); }
-
-function generateReport(){
-  const title   = document.getElementById('rp-title').value.trim()  || 'Rapport d\'activité';
-  const to      = document.getElementById('rp-to').value.trim()     || '—';
-  const from    = document.getElementById('rp-from').value.trim()   || '—';
-  const period  = document.getElementById('rp-period').value.trim() || '—';
-  const comment = document.getElementById('rp-comment').value.trim();
-  const incDone = document.getElementById('rp-inc-done').checked;
-  const incProg = document.getElementById('rp-inc-prog').checked;
-  const incTodo = document.getElementById('rp-inc-todo').checked;
-  const incKpi  = document.getElementById('rp-inc-kpi').checked;
-
-  const today = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const done  = state.tasks.filter(t=>t.status==='done');
-  const prog  = state.tasks.filter(t=>t.status==='prog');
-  const todo  = state.tasks.filter(t=>t.status==='todo');
-  const pct   = state.tasks.length ? Math.round(done.length/state.tasks.length*100) : 0;
-
-  const memberName = id => { const m=memberById(id); return m?m.name:id; };
-
-  const taskRows = (tasks) => tasks.map(t=>`
-    <tr>
-      <td style="padding:10px 14px;border-bottom:1px solid #F0EDE8;font-size:13px;color:#1C1C1A;line-height:1.5">
-        <strong>${t.title}</strong>
-        ${t.desc ? `<div style="color:#6B6966;font-size:12px;margin-top:3px">${t.desc}</div>` : ''}
-        ${t.done&&t.done.length ? `<ul style="margin:6px 0 0 16px;padding:0;color:#2E8B57;font-size:12px">${t.done.map(d=>`<li style="margin-bottom:2px">✓ ${d}</li>`).join('')}</ul>` : ''}
-      </td>
-      <td style="padding:10px 14px;border-bottom:1px solid #F0EDE8;font-size:12px;color:#6B6966;white-space:nowrap;vertical-align:top">${memberName(t.member)}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top">
-        <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:${t.tag==='Dev'?'#E6F4ED':t.tag==='Design'?'#FEF0E8':t.tag==='Marketing'?'#FDE8D8':'#F5EDE3'};color:${t.tag==='Dev'?'#1E6040':t.tag==='Design'?'#C9602A':t.tag==='Marketing'?'#C9602A':'#7A5C3A'}">${t.tag}</span>
-      </td>
-    </tr>`).join('');
-
-  const section = (label, color, bg, tasks) => `
-    <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${color};margin:28px 0 10px;display:flex;align-items:center;gap:8px">
-      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color}"></span>${label}
-      <span style="font-weight:400;color:#9A9894;font-size:12px;text-transform:none;letter-spacing:0">(${tasks.length} tâche${tasks.length>1?'s':''})</span>
-    </h3>
-    <table style="width:100%;border-collapse:collapse;background:${bg};border-radius:10px;overflow:hidden">
-      <thead>
-        <tr style="background:${color}15">
-          <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:${color};text-transform:uppercase;letter-spacing:.05em;width:55%">Tâche</th>
-          <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:${color};text-transform:uppercase;letter-spacing:.05em">Responsable</th>
-          <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:${color};text-transform:uppercase;letter-spacing:.05em">Catégorie</th>
-        </tr>
-      </thead>
-      <tbody>${taskRows(tasks)}</tbody>
-    </table>`;
-
-  const kpiBlock = `
-    <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1C1C1A;margin:28px 0 10px">
-      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#F4874B;margin-right:8px"></span>Indicateurs clés
-    </h3>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px">
-      ${[
-        {lbl:'Tâches terminées', val:done.length, color:'#2E8B57', bg:'#E6F4ED'},
-        {lbl:'En cours',         val:prog.length, color:'#C9602A', bg:'#FEF0E8'},
-        {lbl:'Avancement global',val:pct+'%',     color:'#1C1C1A', bg:'#F7F7F5'},
-      ].map(k=>`<div style="background:${k.bg};border-radius:10px;padding:14px 16px">
-        <div style="font-size:11px;font-weight:600;color:${k.color};text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${k.lbl}</div>
-        <div style="font-size:26px;font-weight:700;color:${k.color}">${k.val}</div>
-      </div>`).join('')}
-    </div>`;
-
-  const html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8"/>
-<title>${title} — CHAMORIN</title>
-<style>
-  @media print {
-    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .no-print { display: none !important; }
-    @page { margin: 18mm 15mm; }
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; color: #1C1C1A; }
-  .page { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px 52px 60px; min-height: 100vh; }
-</style>
-</head>
-<body>
-<div class="page">
-
-  <!-- En-tête -->
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;padding-bottom:24px;border-bottom:2px solid #F0EDE8">
-    <div>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-        <div style="width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.5px">CH</div>
-        <div style="font-size:22px;font-weight:700;letter-spacing:.02em;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div>
-      </div>
-      <div style="font-size:22px;font-weight:600;color:#1C1C1A;margin-bottom:4px">${title}</div>
-      <div style="font-size:13px;color:#9A9894">${period}</div>
-    </div>
-    <div style="text-align:right;font-size:13px;color:#6B6966;line-height:1.8">
-      <div><span style="color:#9A9894">Destinataire :</span> <strong style="color:#1C1C1A">${to}</strong></div>
-      <div><span style="color:#9A9894">Préparé par :</span> <strong style="color:#1C1C1A">${from}</strong></div>
-      <div><span style="color:#9A9894">Date :</span> ${today}</div>
-    </div>
-  </div>
-
-  <!-- Bandeau résumé -->
-  <div style="background:linear-gradient(135deg,#FEF0E8,#E6F4ED);border-radius:12px;padding:18px 22px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-    <div style="font-size:14px;color:#5A5956"><strong style="color:#1C1C1A">${state.tasks.length} tâche${state.tasks.length>1?'s':''}</strong> au total — <strong style="color:#2E8B57">${done.length} terminée${done.length>1?'s':''}</strong>, <strong style="color:#C9602A">${prog.length} en cours</strong>, <strong style="color:#8A8880">${todo.length} à venir</strong></div>
-    <div style="font-size:20px;font-weight:700;color:${pct>=75?'#2E8B57':pct>=40?'#C9602A':'#8A8880'}">${pct}% accompli</div>
-  </div>
-
-  <!-- Commentaire général -->
-  ${comment ? `<div style="background:#F7F7F5;border-left:3px solid #F4874B;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#3A3936;line-height:1.7"><strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#9A9894;margin-bottom:6px">Note du responsable</strong>${comment}</div>` : ''}
-
-  <!-- Sections tâches -->
-  ${incDone && done.length  ? section('Réalisations', '#2E8B57', '#FAFFFE', done) : ''}
-  ${incProg && prog.length  ? section('En cours',     '#C9602A', '#FFFCFA', prog) : ''}
-  ${incTodo && todo.length  ? section('À venir',      '#8A8880', '#FAFAF8', todo) : ''}
-
-  <!-- KPIs -->
-  ${incKpi ? kpiBlock : ''}
-
-  <!-- Agenda -->
-  ${state.events.length ? `
-  <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1C1C1A;margin:28px 0 10px">
-    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4A7C8A;margin-right:8px"></span>Agenda
-  </h3>
-  <table style="width:100%;border-collapse:collapse">
-    ${[...state.events].sort((a,b)=>a.time.localeCompare(b.time)).map(e=>`
-    <tr>
-      <td style="padding:8px 14px;border-bottom:1px solid #F0EDE8;font-size:12px;color:#9A9894;width:60px;white-space:nowrap">${e.time}</td>
-      <td style="padding:8px 14px;border-bottom:1px solid #F0EDE8;font-size:13px;color:#1C1C1A">${e.title}</td>
-    </tr>`).join('')}
-  </table>` : ''}
-
-  <!-- Pied de page -->
-  <div style="margin-top:48px;padding-top:18px;border-top:1px solid #F0EDE8;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#C0BDB8">
-    <span>CHAMORIN &mdash; Document confidentiel</span>
-    <span>Généré le ${today}</span>
-  </div>
-
-  <!-- Bouton impression -->
-  <div class="no-print" style="text-align:center;margin-top:28px">
-    <button onclick="window.print()" style="background:#F4874B;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit">🖨 Imprimer / Enregistrer en PDF</button>
-  </div>
-
-</div>
-</body>
-</html>`;
-
-  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
-  const url  = URL.createObjectURL(blob);
-  const win  = window.open(url, '_blank');
-  if(win) win.focus();
-  closeReportModal();
-}
-
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════
 //  INIT
-// ═══════════════════════════════════════════
-document.getElementById('today-date').textContent =
+// ═══════════════════════════════════════
+document.getElementById('today-date').textContent=
   new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
 document.getElementById('new-task-title').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
