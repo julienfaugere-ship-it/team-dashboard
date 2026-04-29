@@ -179,20 +179,23 @@
         border-top:none; 
         border-radius:0 0 var(--radius-md) var(--radius-md);
         display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px;
-        min-height:60px; /* pour le drop quand vide */
+        min-height:60px;
         transition:background 0.2s;
     }
     .family-grid.drag-over { background:var(--surface2); border:2px dashed var(--orange); }
 
     .projects-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
     .project-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:0; overflow:hidden; transition:border-color .2s, box-shadow .2s; cursor:pointer; position:relative; }
-    .project-card:hover { border-color:var(--purple); box-shadow:0 4px 20px rgba(83,74,183,.1); }
+    .project-card:hover { border-color:var(--purple); box-shadow:0 4px 20px rgba(83,74,183,.1); transform:translateY(-2px); }
     .project-card.dragging { opacity:0.5; border:2px dashed var(--text3); background:var(--surface2); }
     .project-card-header { padding:14px 16px 10px; position:relative; }
     .project-color-bar { position:absolute; top:0; left:0; right:0; height:3px; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
-    .project-name { font-size:15px; font-weight:600; color:var(--text); margin-bottom:4px; cursor:pointer; }
-    .project-name:hover { color:var(--purple); }
-    .project-client { font-size:12px; color:var(--text3); margin-bottom:8px; }
+    .project-name { font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; cursor:pointer; line-height:1.3; }
+    .project-meta-row { display:flex; flex-direction:column; gap:4px; margin-bottom:8px; }
+    .project-prog-line { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text2); background:var(--surface2); padding:4px 8px; border-radius:4px; width:fit-content; }
+    .project-prog-line svg { width:14px; height:14px; flex-shrink:0; color:var(--text3); }
+    .project-prog-code { font-family:'Courier New',monospace; font-weight:700; color:var(--purple); }
+    
     .project-badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
     .project-status-badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }
     .project-progress-wrap { padding:0 16px 12px; }
@@ -546,11 +549,20 @@
       <button class="modal-close" onclick="closeProjectModal()">×</button>
     </div>
     
-    <!-- Formulaire réorganisé -->
-    <div class="field"><label>Famille de projet</label><input id="pm-family" placeholder="ex: SORTIE CAISSE"/></div>
-    <div class="field"><label>Nom du projet</label><input id="pm-name" placeholder="ex: Refonte site CHAMORIN"/></div>
-    <div class="field"><label>Programme</label><input id="pm-programme" placeholder="ex: PROG-2024-01"/></div>
+    <!-- Champ Famille avec Autocomplete -->
     <div class="field">
+        <label>Famille de projet</label>
+        <input list="famille-list" id="pm-family" placeholder="ex: SORTIE CAISSE" autocomplete="off"/>
+        <datalist id="famille-list">
+            <!-- Rempli dynamiquement -->
+        </datalist>
+    </div>
+    
+    <div class="field"><label>Nom du projet</label><input id="pm-name" placeholder="ex: Refonte site CHAMORIN"/></div>
+    
+    <div class="date-row">
+      <div class="field" style="flex:1"><label>Programme</label><input id="pm-programme" placeholder="ex: PROG-2024-01"/></div>
+      <div class="field" style="flex:1">
         <label>Service</label>
         <select id="pm-service">
             <option value="">-- Choisir un service --</option>
@@ -562,6 +574,7 @@
             <option value="MARKETING">MARKETING</option>
             <option value="LOGISTIQUE">LOGISTIQUE</option>
         </select>
+      </div>
     </div>
     
     <div class="field"><label>Description</label><textarea id="pm-desc" placeholder="Contexte et objectifs du projet..."></textarea></div>
@@ -821,9 +834,9 @@ function renderAbsMemberSelect(){
   if(state.members.some(m=>m.id===val))el.value=val;
 }
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  KANBAN
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 function renderKanban(){
   ['todo','prog','done'].forEach(s=>{
     const col=document.getElementById('col-'+s);
@@ -939,9 +952,9 @@ function updateMetrics(){
   </div>`;
 }
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  MODAL TÂCHE
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 window.openTaskModal=function(id){
   currentTaskId=id;const t=state.tasks.find(x=>x.id===id);if(!t)return;
   const m=memberById(t.member);const p=m?getPalette(m):PALETTES[0];const ss=STATUS_STYLES[t.status];
@@ -969,9 +982,9 @@ window.deleteTaskFromModal=function(){if(!confirm('Supprimer ?'))return;state.ta
 window.closeTaskModal=function(){document.getElementById('task-modal-overlay').classList.remove('open');}
 window.closeTaskModalOnBg=function(e){if(e.target===document.getElementById('task-modal-overlay'))closeTaskModal();}
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  AGENDA (SHARED LOGIC)
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 
 // Helper pour récupérer les événements d'une date spécifique
 function getEventsForDate(isoDate) {
@@ -1010,9 +1023,9 @@ window.addEvent=function(){
 
 window.deleteEvent=function(id){state.events=state.events.filter(e=>e.id!==id);renderAgenda();renderPlanning();saveState();}
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  PLANNING TAB
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 window.renderPlanning=function(){
     renderCalendarGrid();
     renderDailySchedule();
@@ -1126,9 +1139,9 @@ window.addPlanningEvent=function(){
     saveState();
 }
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  ABSENCES
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 function renderAbsences(){
   const list=document.getElementById('absence-list');
   const abs=[...(state.absences||[])].sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
@@ -1167,9 +1180,9 @@ window.addAbsence=function(){
 }
 window.deleteAbsence=function(id){state.absences=(state.absences||[]).filter(a=>a.id!==id);renderAbsences();saveState();}
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  PROJETS
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 function renderProjects(){
   const container = document.getElementById('projects-container');
   const filter=document.getElementById('proj-filter-status')?.value||'all'; // Note: filtrage statut désactivé visuellement pour l'instant car on groupe par famille, mais on garde la logique interne
@@ -1245,8 +1258,24 @@ function renderProjectCard(p){
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:8px">
           <div style="flex:1">
             <div class="project-name">${p.name}</div>
-            ${p.programme?`<div class="project-client" style="font-weight:600;color:${color}">${p.programme}</div>`:''}
-            ${p.service?`<div class="project-client">${p.service}</div>`:''}
+            
+            <div class="project-meta-row">
+                <!-- Ligne Programme : Icône + Code style -->
+                ${p.programme?`
+                    <div class="project-prog-line">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                        <span class="project-prog-code">${p.programme}</span>
+                    </div>
+                `:''}
+                
+                <!-- Ligne Service : Icône + Nom -->
+                ${p.service?`
+                    <div class="project-prog-line">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        <span>${p.service}</span>
+                    </div>
+                `:''}
+            </div>
           </div>
           <button class="proj-del-btn" onclick="event.stopPropagation(); confirmDeleteProject(${p.id})">×</button>
         </div>
@@ -1303,7 +1332,6 @@ window.handleProjectDrop=function(e, targetFamily){
         const oldFamily = state.projects[projectIndex].family;
         
         // Si on change vraiment de famille (ou qu'on la normalise)
-        // On normalise targetFamily (uppercase) pour la cohérence
         const newFamily = targetFamily === 'SANS FAMILLE' ? '' : targetFamily;
         
         if(oldFamily !== newFamily){
@@ -1320,7 +1348,12 @@ window.openProjectModal=function(id){
   const p=id?state.projects.find(x=>x.id===id):null;
   document.getElementById('pm-title-label').textContent=p?'Modifier le projet':'Nouveau projet';
   document.getElementById('pm-delete-btn').style.display=p?'block':'none';
-  // Nouvel ordre
+  
+  // Récupérer et afficher les familles uniques
+  const uniqueFamilies = [...new Set(state.projects.map(p => p.family).filter(Boolean))];
+  document.getElementById('famille-list').innerHTML = uniqueFamilies.map(f => `<option value="${f}">`).join('');
+
+  // Formulaire
   document.getElementById('pm-family').value=p?p.family||'':'';
   document.getElementById('pm-name').value=p?p.name:'';
   document.getElementById('pm-programme').value=p?p.programme||'':'';
@@ -1398,9 +1431,9 @@ window.confirmDeleteProject=function(id){if(!confirm('Supprimer ce projet ?'))re
 window.deleteProject=function(){if(currentProjId)confirmDeleteProject(currentProjId);closeProjectModal();}
 
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  RAPPORT PDF
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 function buildWeekButtons(){
   const wrap=document.getElementById('week-quick-btns');const today=new Date();const cw=isoWeek(today);const year=today.getFullYear();
   const weeks=[];for(let w=cw-3;w<=cw+1;w++){if(w<1||w>53)continue;const mon=mondayOfWeek(year,w);const fri=new Date(mon);fri.setDate(mon.getDate()+4);weeks.push({w,mon:toISO(mon),fri:toISO(fri),label:`S${w} — ${mon.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} au ${fri.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}`});}
@@ -1622,9 +1655,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   closeReportModal();
 }
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  COLLABORATEURS
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 function renderColorOpts(){document.getElementById('color-opts').innerHTML=PALETTES.map((p,i)=>`<div class="color-opt${i===selectedPalette?' selected':''}" style="background:${p.color}" onclick="selectPalette(${i})"></div>`).join('');}
 window.selectPalette=function(i){selectedPalette=i;renderColorOpts();}
 function renderMemberList(){
@@ -1646,9 +1679,9 @@ window.deleteMember=function(id){
   state.members=state.members.filter(m=>m.id!==id);renderMemberList();renderMemberSelects();renderKanban();saveState();
 }
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  INIT
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 document.getElementById('today-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 document.getElementById('new-task-title').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
 document.getElementById('new-event-title').addEventListener('keydown',e=>{if(e.key==='Enter')addEvent();});
