@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CHAMORIN — Dashboard équipe</title>
+  <title>Gestionnaire de tâches</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -151,10 +151,22 @@
     .kpi-bar-bg { flex:1; height:6px; background:var(--surface2); border-radius:3px; margin:0 10px; overflow:hidden; }
     .kpi-bar { height:6px; border-radius:3px; transition:width .5s; }
     .kpi-val { font-size:13px; font-weight:600; min-width:36px; text-align:right; }
+    
+    /* Baromètre */
+    .barometer-section { margin-top:16px; padding-top:12px; border-top:0.5px solid var(--border); }
+    .barometer-title { font-size:12px; font-weight:700; color:var(--text3); margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em; }
+    .barometer-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .barometer-label { font-size:13px; font-weight:600; width:40px; color:var(--text); }
+    .barometer-track { flex:1; height:10px; background:var(--surface2); border-radius:5px; overflow:hidden; position:relative; }
+    .barometer-fill { height:100%; border-radius:5px; transition:width 0.5s ease; }
+    .barometer-text { font-size:12px; font-weight:600; color:var(--text2); width:60px; text-align:right; }
+    .counter-days { text-align:center; margin-top:10px; padding:8px; background:var(--surface2); border-radius:var(--radius-md); }
+    .counter-val { font-size:18px; font-weight:700; color:var(--text); }
+    .counter-lbl { font-size:11px; color:var(--text3); }
 
     /* ── PROJETS ── */
     .projects-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
-    .project-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:0; overflow:hidden; transition:border-color .2s, box-shadow .2s; }
+    .project-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:0; overflow:hidden; transition:border-color .2s, box-shadow .2s; cursor:pointer; }
     .project-card:hover { border-color:var(--purple); box-shadow:0 4px 20px rgba(83,74,183,.1); }
     .project-card-header { padding:14px 16px 10px; position:relative; }
     .project-color-bar { position:absolute; top:0; left:0; right:0; height:3px; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
@@ -293,7 +305,7 @@
   <div class="topbar">
     <div class="brand">
       <div class="brand-icon">CH</div>
-      <span class="brand-name">CHAMO<span>RIN</span></span>
+      <span class="brand-name">Gestionnaire de tâches</span>
     </div>
     <div class="topbar-right">
       <div class="sync-badge"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Connecté</span></div>
@@ -367,6 +379,7 @@
       <div class="card">
         <div class="section-title">KPIs</div>
         <div id="kpi-list"></div>
+        <!-- Baromètre inséré ici par JS -->
       </div>
       <div class="card">
         <div class="section-title">Planning — Absences</div>
@@ -468,7 +481,7 @@
 
   </div>
 
-  <div class="app-footer">Dashboard collaboratif &mdash; <strong>CHAMORIN</strong></div>
+  <div class="app-footer">Copyright Julien FAUGERE – Société CHAMORIN</div>
 </div>
 
 <!-- ═══ Modal : Tâche ═══ -->
@@ -523,6 +536,10 @@
       <div class="field" style="flex:2"><label>Nom du projet</label><input id="pm-name" placeholder="ex: Refonte site CHAMORIN"/></div>
       <div class="field"><label>Code</label><input id="pm-code" placeholder="ex: CH-01" style="text-transform:uppercase"/></div>
     </div>
+    <div class="field">
+        <label>Famille de projet</label>
+        <input id="pm-family" placeholder="ex: SORTIE CAISSE, INTERNE..."/>
+    </div>
     <div class="field"><label>Client / Périmètre</label><input id="pm-client" placeholder="ex: Client interne, Dupont SA..."/></div>
     <div class="field"><label>Description</label><textarea id="pm-desc" placeholder="Contexte et objectifs du projet..."></textarea></div>
     <div class="date-row">
@@ -556,10 +573,7 @@
       <label>Membres assignés</label>
       <div id="pm-members-list" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div>
     </div>
-    <div class="field">
-      <label>Budget (€)</label>
-      <input type="number" id="pm-budget" placeholder="ex: 15000"/>
-    </div>
+    <!-- Budget supprimé -->
     <div class="field">
       <label>Couleur du projet</label>
       <div class="proj-colors" id="pm-colors"></div>
@@ -854,6 +868,19 @@ function updateMetrics(){
   document.getElementById('m-prog').textContent=prog;
   document.getElementById('m-pct').textContent=pct+'%';
   const n=state.tasks.length||1;
+  
+  // --- Calcul Jours posés ---
+  const totalDaysTaken = (state.absences||[]).reduce((acc, abs) => acc + countWorkDays(abs.dateStart, abs.dateEnd), 0);
+
+  // --- Calcul Baromètre ---
+  const rttTaken = (state.absences||[]).filter(a=>a.type==='RTT').reduce((acc, cur) => acc + countWorkDays(cur.dateStart, cur.dateEnd), 0);
+  const cpTaken = (state.absences||[]).filter(a=>a.type==='CP').reduce((acc, cur) => acc + countWorkDays(cur.dateStart, cur.dateEnd), 0);
+  const rttTotal = 12;
+  const cpTotal = 25;
+  
+  const rttPct = Math.min(100, Math.round((rttTaken / rttTotal) * 100));
+  const cpPct = Math.min(100, Math.round((cpTaken / cpTotal) * 100));
+
   document.getElementById('kpi-list').innerHTML=[
     {label:'Terminées',val:done,max:n,color:'var(--green)'},
     {label:'En cours',val:prog,max:n,color:'var(--orange)'},
@@ -863,7 +890,31 @@ function updateMetrics(){
     <span class="kpi-label">${k.label}</span>
     <div class="kpi-bar-bg"><div class="kpi-bar" style="width:${Math.round(k.val/k.max*100)}%;background:${k.color}"></div></div>
     <span class="kpi-val">${k.val}${k.suffix||''}</span>
-  </div>`).join('');
+  </div>`).join('') + `
+  
+  <div class="barometer-section">
+    <div class="counter-days">
+        <div class="counter-val">${totalDaysTaken}</div>
+        <div class="counter-lbl">Jours posés au total</div>
+    </div>
+    <div class="barometer-title" style="margin-top:12px">Baromètre Congés</div>
+    
+    <div class="barometer-row">
+        <div class="barometer-label">RTT</div>
+        <div class="barometer-track" style="background:#EEEDFE">
+            <div class="barometer-fill" style="width:${rttPct}%;background:#534AB7"></div>
+        </div>
+        <div class="barometer-text">${rttTaken}/${rttTotal}</div>
+    </div>
+    
+    <div class="barometer-row">
+        <div class="barometer-label">CP</div>
+        <div class="barometer-track" style="background:#E6F1FB">
+            <div class="barometer-fill" style="width:${cpPct}%;background:#185fa5"></div>
+        </div>
+        <div class="barometer-text">${cpTaken}/${cpTotal}</div>
+    </div>
+  </div>`;
 }
 
 // ════════════════════════════════════════════
@@ -1222,6 +1273,7 @@ window.generateReport=function(){
                   <span style="font-size:13px;font-weight:600;color:#1C1C1A">${p.name}</span>
                   ${p.code?`<span style="font-size:10px;font-weight:700;color:${color};background:${color}18;padding:1px 6px;border-radius:10px">${p.code}</span>`:''}
                 </div>
+                ${p.family?`<div style="font-size:11px;color:#534AB7;margin-left:18px; margin-bottom:2px;">📂 ${p.family}</div>`:''}
                 ${p.desc?`<div style="font-size:11px;color:#6B6966;line-height:1.4;margin-left:18px">${p.desc.slice(0,80)}${p.desc.length>80?'…':''}</div>`:''}
                 ${stepsTotal?`<div style="font-size:11px;color:#9A9894;margin-top:4px;margin-left:18px">Étapes : ${stepsDone}/${stepsTotal}</div>`:''}
               </td>
@@ -1233,7 +1285,6 @@ window.generateReport=function(){
                   <div style="flex:1;background:#F0EDE8;border-radius:20px;height:7px;overflow:hidden"><div style="height:7px;border-radius:20px;background:${color};width:${p.progress||0}%"></div></div>
                   <span style="font-size:12px;font-weight:700;color:#1C1C1A;min-width:30px;text-align:right">${p.progress||0}%</span>
                 </div>
-                ${p.budget?`<div style="font-size:11px;color:#9A9894;margin-top:4px">${Number(p.budget).toLocaleString('fr-FR')} €</div>`:''}
               </td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center;font-size:12px;color:#6B6966">${p.dateEnd?fmtDate(p.dateEnd):'—'}</td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966">${members||'—'}</td>
@@ -1271,7 +1322,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
       <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">CH</div>
-      <div><div style="font-size:20px;font-weight:700;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div><div style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Dashboard équipe</div></div>
+      <div><div style="font-size:20px;font-weight:700;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div><div style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Gestionnaire de tâches</div></div>
     </div>
     <div style="font-size:24px;font-weight:700;color:#1C1C1A;margin-bottom:6px">${title}</div>
     ${weekNum?`<div style="display:inline-block;background:#FEF0E8;color:#C9602A;font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px">Semaine ${weekNum}</div>`:''}
@@ -1355,16 +1406,21 @@ function renderProjects(){
     const stepsTotal=(p.steps||[]).length;
     const stepsDone=(p.steps||[]).filter(s=>s.done).length;
     const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
-    return `<div class="project-card">
+    
+    // Famille badge style
+    const famStyle = p.family ? `background:#EEEDFE;color:#534AB7` : '';
+
+    return `<div class="project-card" onclick="openProjectModal(${p.id})">
       <div class="project-card-header">
         <div class="project-color-bar" style="background:${color}"></div>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:8px">
           <div style="flex:1">
-            <div class="project-name" onclick="openProjectModal(${p.id})">${p.name}</div>
+            <div class="project-name">${p.name}</div>
             ${p.code?`<div class="project-client" style="font-weight:600;color:${color}">${p.code}</div>`:''}
             ${p.client?`<div class="project-client">${p.client}</div>`:''}
+            ${p.family?`<div class="project-client" style="margin-top:2px">📂 ${p.family}</div>`:''}
           </div>
-          <button class="proj-del-btn" onclick="confirmDeleteProject(${p.id})">×</button>
+          <button class="proj-del-btn" onclick="event.stopPropagation(); confirmDeleteProject(${p.id})">×</button>
         </div>
         <div class="project-badges">
           <span class="project-status-badge" style="background:${ss.bg};color:${ss.color}">${p.status}</span>
@@ -1381,7 +1437,6 @@ function renderProjects(){
       <div class="project-footer">
         <div class="project-members">${members.map(m=>{const pl=getPalette(m);return `<span class="avatar" style="background:${pl.bg};color:${pl.color}">${initials(m.name)}</span>`;}).join('')}</div>
         <div style="display:flex;align-items:center;gap:8px">
-          ${p.budget?`<span style="font-size:11px;color:var(--text3)">${Number(p.budget).toLocaleString('fr-FR')} €</span>`:''}
           ${p.dateStart&&p.dateEnd?`<span style="font-size:11px;color:var(--text3)">${fmtDate(p.dateStart)} → ${fmtDate(p.dateEnd)}</span>`:''}
         </div>
       </div>
@@ -1397,6 +1452,8 @@ window.openProjectModal=function(id){
   document.getElementById('pm-delete-btn').style.display=p?'block':'none';
   document.getElementById('pm-name').value=p?p.name:'';
   document.getElementById('pm-code').value=p?p.code||'':'';
+  // Famille
+  document.getElementById('pm-family').value=p?p.family||'':'';
   document.getElementById('pm-client').value=p?p.client||'':'';
   document.getElementById('pm-desc').value=p?p.desc||'':'';
   document.getElementById('pm-date-start').value=p?p.dateStart||'':'';
@@ -1404,7 +1461,7 @@ window.openProjectModal=function(id){
   document.getElementById('pm-status').value=p?p.status:'En cours';
   document.getElementById('pm-priority').value=p?p.priority:'Moyenne';
   document.getElementById('pm-progress').value=p?p.progress||0:0;
-  document.getElementById('pm-budget').value=p?p.budget||'':'';
+  // Budget supprimé de l'assignation
   projMembersSelected=new Set(p&&p.members?p.members:[]);
   projSteps=p&&p.steps?JSON.parse(JSON.stringify(p.steps)):[];
   selectedProjColor=p?PROJ_COLORS.indexOf(p.color)||0:0;
@@ -1448,6 +1505,7 @@ window.saveProject=function(){
   const proj={
     id:currentProjId||(state.nextProjId++),
     name,code:document.getElementById('pm-code').value.trim().toUpperCase(),
+    family:document.getElementById('pm-family').value.trim(), // Nouveau champ famille
     client:document.getElementById('pm-client').value.trim(),
     desc:document.getElementById('pm-desc').value.trim(),
     dateStart:document.getElementById('pm-date-start').value,
@@ -1455,7 +1513,7 @@ window.saveProject=function(){
     status:document.getElementById('pm-status').value,
     priority:document.getElementById('pm-priority').value,
     progress:parseInt(document.getElementById('pm-progress').value)||0,
-    budget:document.getElementById('pm-budget').value,
+    // budget supprimé ici
     color:PROJ_COLORS[selectedProjColor],
     members:[...projMembersSelected],
     steps:JSON.parse(JSON.stringify(projSteps)),
