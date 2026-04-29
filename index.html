@@ -1185,7 +1185,7 @@ window.deleteAbsence=function(id){state.absences=(state.absences||[]).filter(a=>
 // ══════════════════════════════════════════
 function renderProjects(){
   const container = document.getElementById('projects-container');
-  const filter=document.getElementById('proj-filter-status')?.value||'all'; // Note: filtrage statut désactivé visuellement pour l'instant car on groupe par famille, mais on garde la logique interne
+  const filter=document.getElementById('proj-filter-status')?.value||'all'; 
   
   const projects=(state.projects||[]).filter(p=>filter==='all'||p.status===filter);
 
@@ -1252,7 +1252,8 @@ function renderProjectCard(p){
     const stepsDone=(p.steps||[]).filter(s=>s.done).length;
     const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
 
-    return `<div class="project-card" draggable="true" ondragstart="handleProjectDragStart(event, ${p.id})">
+    // NOTE: Ajout de onclick="openProjectModal(${p.id})" sur la div principale pour l'édition
+    return `<div class="project-card" draggable="true" ondragstart="handleProjectDragStart(event, ${p.id})" onclick="openProjectModal(${p.id})">
       <div class="project-card-header">
         <div class="project-color-bar" style="background:${color}"></div>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:8px">
@@ -1353,7 +1354,7 @@ window.openProjectModal=function(id){
   const uniqueFamilies = [...new Set(state.projects.map(p => p.family).filter(Boolean))];
   document.getElementById('famille-list').innerHTML = uniqueFamilies.map(f => `<option value="${f}">`).join('');
 
-  // Formulaire
+  // Formulaire - PRE-REMPLISSAGE DES CHAMPS
   document.getElementById('pm-family').value=p?p.family||'':'';
   document.getElementById('pm-name').value=p?p.name:'';
   document.getElementById('pm-programme').value=p?p.programme||'':'';
@@ -1365,9 +1366,11 @@ window.openProjectModal=function(id){
   document.getElementById('pm-status').value=p?p.status:'En cours';
   document.getElementById('pm-priority').value=p?p.priority:'Moyenne';
   document.getElementById('pm-progress').value=p?p.progress||0:0;
+  
   projMembersSelected=new Set(p&&p.members?p.members:[]);
   projSteps=p&&p.steps?JSON.parse(JSON.stringify(p.steps)):[];
   selectedProjColor=p?PROJ_COLORS.indexOf(p.color)||0:0;
+  
   renderProjColorOpts();renderProjMembers();renderProjSteps();
   document.getElementById('project-modal-overlay').classList.add('open');
 }
