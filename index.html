@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gestionnaire de tâches</title>
+  <title>CHAMORIN — Dashboard équipe</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -154,50 +154,28 @@
 
     /* ── PROJETS ── */
     .projects-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
-    .project-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:0; overflow:hidden; transition:border-color .2s, box-shadow .2s, transform .1s; cursor:pointer; position:relative; }
-    .project-card:hover { border-color:var(--purple); box-shadow:0 4px 20px rgba(83,74,183,.1); transform:translateY(-2px); }
-    .project-card:active { transform:translateY(0); }
+    .project-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:0; overflow:hidden; transition:border-color .2s, box-shadow .2s; }
+    .project-card:hover { border-color:var(--purple); box-shadow:0 4px 20px rgba(83,74,183,.1); }
     .project-card-header { padding:14px 16px 10px; position:relative; }
     .project-color-bar { position:absolute; top:0; left:0; right:0; height:3px; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
-    .project-name { font-size:15px; font-weight:600; color:var(--text); margin-bottom:4px; pointer-events:none; /* Click handled by card parent */ }
-    .project-client { font-size:12px; color:var(--text3); margin-bottom:8px; pointer-events:none; }
+    .project-name { font-size:15px; font-weight:600; color:var(--text); margin-bottom:4px; cursor:pointer; }
+    .project-name:hover { color:var(--purple); }
+    .project-client { font-size:12px; color:var(--text3); margin-bottom:8px; }
     .project-badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
     .project-status-badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }
-    .project-progress-wrap { padding:0 16px 12px; pointer-events:none; }
+    .project-progress-wrap { padding:0 16px 12px; }
     .project-progress-label { display:flex; justify-content:space-between; font-size:11px; color:var(--text3); margin-bottom:5px; }
     .project-progress-bg { background:var(--surface2); border-radius:20px; height:6px; overflow:hidden; }
     .project-progress-fill { height:6px; border-radius:20px; transition:width .5s; }
-    .project-footer { padding:10px 16px; border-top:0.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; pointer-events:none; }
+    .project-footer { padding:10px 16px; border-top:0.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
     .project-members { display:flex; }
     .project-members .avatar { width:24px; height:24px; font-size:9px; border:2px solid var(--surface); margin-left:-6px; }
     .project-members .avatar:first-child { margin-left:0; }
     .project-actions { display:flex; gap:6px; }
     .project-actions button { padding:4px 10px; font-size:12px; }
-    .proj-del-btn { background:none; border:none; color:var(--text3); font-size:15px; cursor:pointer; padding:0 4px; opacity:0; transition:opacity .15s; position:absolute; top:10px; right:10px; z-index:2; }
+    .proj-del-btn { background:none; border:none; color:var(--text3); font-size:15px; cursor:pointer; padding:0 4px; opacity:0; transition:opacity .15s; }
     .project-card:hover .proj-del-btn { opacity:1; }
     .proj-del-btn:hover { color:var(--red); background:none; transform:none; }
-
-    /* Header famille */
-    .family-header {
-      grid-column: 1 / -1;
-      padding: 20px 0 10px 0;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--purple);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .family-header::before {
-      content: '';
-      display: block;
-      width: 8px;
-      height: 8px;
-      background: var(--purple);
-      border-radius: 50%;
-    }
 
     /* ── Synthèse projets ── */
     .project-synth { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
@@ -315,8 +293,7 @@
   <div class="topbar">
     <div class="brand">
       <div class="brand-icon">CH</div>
-      <!-- RENOMMAGE ICI -->
-      <span class="brand-name">Gestionnaire de <span>tâches</span></span>
+      <span class="brand-name">CHAMO<span>RIN</span></span>
     </div>
     <div class="topbar-right">
       <div class="sync-badge"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Connecté</span></div>
@@ -491,8 +468,7 @@
 
   </div>
 
-  <!-- COPYRIGHT RENOMMAGE ICI -->
-  <div class="app-footer">Copyright <strong>Julien FAUGERE</strong> – Société CHAMORIN</div>
+  <div class="app-footer">Dashboard collaboratif &mdash; <strong>CHAMORIN</strong></div>
 </div>
 
 <!-- ═══ Modal : Tâche ═══ -->
@@ -548,14 +524,6 @@
       <div class="field"><label>Code</label><input id="pm-code" placeholder="ex: CH-01" style="text-transform:uppercase"/></div>
     </div>
     <div class="field"><label>Client / Périmètre</label><input id="pm-client" placeholder="ex: Client interne, Dupont SA..."/></div>
-    
-    <!-- AJOUT CHAMP FAMILLE -->
-    <div class="field">
-        <label>Famille de projet</label>
-        <input id="pm-family" list="pm-family-list" placeholder="ex: SORTIE CAISSE (facultatif)"/>
-        <datalist id="pm-family-list"></datalist>
-    </div>
-
     <div class="field"><label>Description</label><textarea id="pm-desc" placeholder="Contexte et objectifs du projet..."></textarea></div>
     <div class="date-row">
       <div class="field"><label>Date de début</label><input type="date" id="pm-date-start"/></div>
@@ -588,7 +556,10 @@
       <label>Membres assignés</label>
       <div id="pm-members-list" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div>
     </div>
-    <!-- SUPPRESSION CHAMP BUDGET -->
+    <div class="field">
+      <label>Budget (€)</label>
+      <input type="number" id="pm-budget" placeholder="ex: 15000"/>
+    </div>
     <div class="field">
       <label>Couleur du projet</label>
       <div class="proj-colors" id="pm-colors"></div>
@@ -724,7 +695,7 @@ let saveTimeout=null;
 let isRemoteUpdate=false;
 
 // ── PLANNING STATE ──────────────────────────
-let planningDate = new Date();
+let planningDate = new Date(); // Date selectionnée dans l'onglet planning
 
 // ── Sync ────────────────────────────────────
 function setSyncStatus(s){
@@ -929,6 +900,7 @@ window.closeTaskModalOnBg=function(e){if(e.target===document.getElementById('tas
 //  AGENDA (SHARED LOGIC)
 // ════════════════════════════════════════════
 
+// Helper pour récupérer les événements d'une date spécifique
 function getEventsForDate(isoDate) {
     const todayStr = toISO(new Date());
     return [...state.events]
@@ -937,6 +909,7 @@ function getEventsForDate(isoDate) {
 }
 
 function renderAgenda(){
+    // Dashboard Agenda: Only shows TODAY
     const todayStr = toISO(new Date());
     const events = getEventsForDate(todayStr);
     document.getElementById('agenda-list').innerHTML=events.map(e=>`
@@ -947,6 +920,7 @@ function renderAgenda(){
     </div>`).join('');
 }
 
+// Ajout depuis le Dashboard (Date = Aujourd'hui par défaut)
 window.addEvent=function(){
   const time=document.getElementById('new-event-time').value;
   const title=document.getElementById('new-event-title').value.trim();
@@ -956,7 +930,7 @@ window.addEvent=function(){
     time,
     title,
     tag:'Autre',
-    date: toISO(new Date())
+    date: toISO(new Date()) // Force date to today
   });
   document.getElementById('new-event-title').value='';renderAgenda();saveState();
 }
@@ -983,7 +957,7 @@ window.goToToday=function(){
 
 window.selectPlanningDate=function(d){
     planningDate = new Date(d);
-    renderCalendarGrid();
+    renderCalendarGrid(); // Re-render pour mettre à jour la sélection
     renderDailySchedule();
 }
 
@@ -996,22 +970,27 @@ function renderCalendarGrid(){
     const monthNames = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
     document.getElementById('cal-month-year').textContent = `${monthNames[month]} ${year}`;
 
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0=Dim, 1=Lun...
     const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // Ajuster pour commencer Lundi (0 -> 6, 1 -> 0, etc.)
     const startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
 
     const grid = document.querySelector('.calendar-grid');
+    // Garder les headers
     grid.innerHTML = `
         <div class="cal-day-label">Lun</div><div class="cal-day-label">Mar</div><div class="cal-day-label">Mer</div>
         <div class="cal-day-label">Jeu</div><div class="cal-day-label">Ven</div><div class="cal-day-label">Sam</div><div class="cal-day-label">Dim</div>
     `;
 
+    // Jours vides
     for(let i=0; i<startOffset; i++){
         const cell = document.createElement('div');
         cell.className = 'day-cell empty';
         grid.appendChild(cell);
     }
 
+    // Jours du mois
     for(let d=1; d<=daysInMonth; d++){
         const dateIso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const hasEvent = state.events.some(e => (e.date || todayStr) === dateIso);
@@ -1070,7 +1049,7 @@ window.addPlanningEvent=function(){
 
     document.getElementById('plan-event-title').value='';
     renderDailySchedule();
-    renderCalendarGrid();
+    renderCalendarGrid(); // Update dots
     saveState();
 }
 
@@ -1116,228 +1095,6 @@ window.addAbsence=function(){
 window.deleteAbsence=function(id){state.absences=(state.absences||[]).filter(a=>a.id!==id);renderAbsences();saveState();}
 
 // ════════════════════════════════════════════
-//  PROJETS
-// ════════════════════════════════════════════
-function renderProjects(){
-  const filter=document.getElementById('proj-filter-status')?.value||'all';
-  const projects=(state.projects||[]).filter(p=>filter==='all'||p.status===filter);
-
-  // Synthèse
-  const all=state.projects||[];
-  const synth=[
-    {label:'Total projets',val:all.length,color:'var(--purple)',icon:'🗂'},
-    {label:'En cours',val:all.filter(p=>p.status==='En cours').length,color:'var(--orange)',icon:'⚡'},
-    {label:'Terminés',val:all.filter(p=>p.status==='Terminé').length,color:'var(--green)',icon:'✅'},
-    {label:'Avancement moy.',val:all.length?Math.round(all.reduce((s,p)=>s+(p.progress||0),0)/all.length)+'%':'—',color:'var(--text)',icon:'📈'},
-  ];
-  document.getElementById('project-synth').innerHTML=synth.map(s=>`
-    <div class="synth-card">
-      <div style="font-size:22px;margin-bottom:4px">${s.icon}</div>
-      <div class="s-val" style="color:${s.color}">${s.val}</div>
-      <div class="s-lbl">${s.label}</div>
-    </div>`).join('');
-
-  const grid=document.getElementById('projects-grid');
-  if(!projects.length){
-    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:48px 0;color:var(--text3);font-size:14px">Aucun projet — cliquez sur <strong>+ Nouveau projet</strong> pour commencer</div>`;
-    return;
-  }
-
-  // Groupement par famille
-  const groups = {};
-  projects.forEach(p => {
-    const fam = p.family || ''; // Vide = Pas de famille
-    if (!groups[fam]) groups[fam] = [];
-    groups[fam].push(p);
-  });
-
-  // Tri des clés de familles (alphabétique, en mettant les sans famille à la fin ou au début selon préférence. Ici: sans famille en premier)
-  const sortedKeys = Object.keys(groups).sort((a,b) => {
-    if (a === '' && b !== '') return -1;
-    if (a !== '' && b === '') return 1;
-    return a.localeCompare(b);
-  });
-
-  let html = '';
-
-  sortedKeys.forEach(famKey => {
-    const groupProjects = groups[famKey];
-    
-    // Affichage de l'en-tête de groupe
-    if (famKey !== '') {
-      html += `<div class="family-header">${famKey}</div>`;
-    } else if (sortedKeys.length > 1) {
-      // Afficher un header générique seulement si on a des familles nommées aussi
-      html += `<div class="family-header" style="font-weight:400;color:var(--text3)">Projets divers</div>`;
-    }
-
-    // Affichage des cartes du groupe
-    html += groupProjects.map(p=>{
-      const ss=PROJ_STATUS_STYLES[p.status]||PROJ_STATUS_STYLES['Planifié'];
-      const ps=PRIORITY_STYLES[p.priority]||PRIORITY_STYLES['Moyenne'];
-      const color=p.color||PROJ_COLORS[0];
-      const progress=p.progress||0;
-      const members=(p.members||[]).map(id=>memberById(id)).filter(Boolean);
-      const stepsTotal=(p.steps||[]).length;
-      const stepsDone=(p.steps||[]).filter(s=>s.done).length;
-      const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
-
-      // IMPORTANT: onclick sur la carte parent
-      return `<div class="project-card" onclick="openProjectModal(${p.id})">
-        <div class="project-card-header">
-          <div class="project-color-bar" style="background:${color}"></div>
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:8px">
-            <div style="flex:1">
-              <div class="project-name">${p.name}</div>
-              ${p.code?`<div class="project-client" style="font-weight:600;color:${color}">${p.code}</div>`:''}
-              ${p.client?`<div class="project-client">${p.client}</div>`:''}
-            </div>
-            <!-- IMPORTANT: stopPropagation pour ne pas ouvrir le modal quand on clique sur supprimer -->
-            <button class="proj-del-btn" onclick="event.stopPropagation(); confirmDeleteProject(${p.id})">×</button>
-          </div>
-          <div class="project-badges">
-            <span class="project-status-badge" style="background:${ss.bg};color:${ss.color}">${p.status}</span>
-            <span class="tag" style="background:${ps.bg};color:${ps.color}">${p.priority}</span>
-            ${daysLeft!==null?`<span style="font-size:11px;color:${daysLeft<0?'var(--red)':daysLeft<=7?'var(--orange-dark)':'var(--text3)'}">${daysLeft<0?'⚠ '+Math.abs(daysLeft)+'j dépassé':daysLeft===0?'Aujourd\'hui':daysLeft+'j restants'}</span>`:''}
-          </div>
-          ${p.desc?`<div style="font-size:12px;color:var(--text2);margin-top:8px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.desc}</div>`:''}
-          ${stepsTotal?`<div style="font-size:11px;color:var(--text3);margin-top:8px">Étapes : <strong style="color:var(--text)">${stepsDone}/${stepsTotal}</strong></div>`:''}
-        </div>
-        <div class="project-progress-wrap">
-          <div class="project-progress-label"><span>Avancement</span><span style="font-weight:700;color:var(--text)">${progress}%</span></div>
-          <div class="project-progress-bg"><div class="project-progress-fill" style="width:${progress}%;background:${color}"></div></div>
-        </div>
-        <div class="project-footer">
-          <div class="project-members">${members.map(m=>{const pl=getPalette(m);return `<span class="avatar" style="background:${pl.bg};color:${pl.color}">${initials(m.name)}</span>`;}).join('')}</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <!-- SUPPRESSION AFFICHAGE BUDGET -->
-            ${p.dateStart&&p.dateEnd?`<span style="font-size:11px;color:var(--text3)">${fmtDate(p.dateStart)} → ${fmtDate(p.dateEnd)}</span>`:''}
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  });
-
-  grid.innerHTML = html;
-}
-
-// ── Modal Projet ────────────────────────────
-window.openProjectModal=function(id){
-  currentProjId=id||null;
-  const p=id?state.projects.find(x=>x.id===id):null;
-  document.getElementById('pm-title-label').textContent=p?'Modifier le projet':'Nouveau projet';
-  document.getElementById('pm-delete-btn').style.display=p?'block':'none';
-  document.getElementById('pm-name').value=p?p.name:'';
-  document.getElementById('pm-code').value=p?p.code||'':'';
-  document.getElementById('pm-client').value=p?p.client||'':'';
-  // CHAMP FAMILLE
-  document.getElementById('pm-family').value=p?p.family||'';
-  updateFamilyDatalist(); // Met à jour les suggestions
-  document.getElementById('pm-desc').value=p?p.desc||'';
-  document.getElementById('pm-date-start').value=p?p.dateStart||'';
-  document.getElementById('pm-date-end').value=p?p.dateEnd||'';
-  document.getElementById('pm-status').value=p?p.status:'En cours';
-  document.getElementById('pm-priority').value=p?p.priority:'Moyenne';
-  document.getElementById('pm-progress').value=p?p.progress||0:0;
-  // PLUS DE BUDGET
-  projMembersSelected=new Set(p&&p.members?p.members:[]);
-  projSteps=p&&p.steps?JSON.parse(JSON.stringify(p.steps)):[];
-  selectedProjColor=p?PROJ_COLORS.indexOf(p.color)||0:0;
-  renderProjColorOpts();renderProjMembers();renderProjSteps();
-  document.getElementById('project-modal-overlay').classList.add('open');
-}
-window.closeProjectModal=function(){document.getElementById('project-modal-overlay').classList.remove('open');}
-window.closeProjectModalOnBg=function(e){if(e.target===document.getElementById('project-modal-overlay'))closeProjectModal();}
-
-function updateFamilyDatalist() {
-  // Génère la liste des familles existantes pour l'autocomplétion
-  const families = [...new Set((state.projects||[]).map(p => p.family).filter(Boolean))];
-  document.getElementById('pm-family-list').innerHTML = families.map(f => `<option value="${f}">`).join('');
-}
-
-function renderProjColorOpts(){
-  document.getElementById('pm-colors').innerHTML=PROJ_COLORS.map((c,i)=>
-    `<div class="proj-color-opt${i===selectedProjColor?' selected':''}" style="background:${c}" onclick="selectProjColor(${i})"></div>`
-  ).join('');
-}
-window.selectProjColor=function(i){selectedProjColor=i;renderProjColorOpts();}
-function renderProjMembers(){
-  document.getElementById('pm-members-list').innerHTML=state.members.map(m=>{
-    const p=getPalette(m);const sel=projMembersSelected.has(m.id);
-    return `<div onclick="toggleProjMember('${m.id}')" style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;cursor:pointer;background:${sel?p.bg:'var(--surface2)'};border:1.5px solid ${sel?p.color:'var(--border)'};transition:all .15s">
-      <span class="avatar" style="width:22px;height:22px;font-size:9px;background:${p.bg};color:${p.color}">${initials(m.name)}</span>
-      <span style="font-size:12px;font-weight:${sel?'600':'400'};color:${sel?p.color:'var(--text2)'}">${m.name}</span>
-    </div>`;
-  }).join('');
-}
-window.toggleProjMember=function(id){projMembersSelected.has(id)?projMembersSelected.delete(id):projMembersSelected.add(id);renderProjMembers();}
-function renderProjSteps(){
-  document.getElementById('pm-steps-list').innerHTML=projSteps.length?`<ul class="step-list">${projSteps.map((s,i)=>`
-    <li class="step-item">
-      <div class="step-check${s.done?' done':''}" onclick="toggleStep(${i})"></div>
-      <span class="step-label${s.done?' done':''}">${s.label}</span>
-      <button class="del-btn" onclick="removeStep(${i})">×</button>
-    </li>`).join('')}</ul>`:'';
-}
-window.toggleStep=function(i){projSteps[i].done=!projSteps[i].done;renderProjSteps();}
-window.removeStep=function(i){projSteps.splice(i,1);renderProjSteps();}
-window.addStep=function(){
-  const inp=document.getElementById('pm-step-input');const val=inp.value.trim();if(!val)return;
-  projSteps.push({label:val,done:false});inp.value='';renderProjSteps();
-}
-window.saveProject=function(){
-  const name=document.getElementById('pm-name').value.trim();if(!name){document.getElementById('pm-name').focus();return;}
-  const proj={
-    id:currentProjId||(state.nextProjId++),
-    name,code:document.getElementById('pm-code').value.trim().toUpperCase(),
-    client:document.getElementById('pm-client').value.trim(),
-    desc:document.getElementById('pm-desc').value.trim(),
-    dateStart:document.getElementById('pm-date-start').value,
-    dateEnd:document.getElementById('pm-date-end').value,
-    status:document.getElementById('pm-status').value,
-    priority:document.getElementById('pm-priority').value,
-    progress:parseInt(document.getElementById('pm-progress').value)||0,
-    // PLUS DE BUDGET DANS LA SAUVEGARDE
-    family: document.getElementById('pm-family').value.trim(), // AJOUT FAMILLE
-    color:PROJ_COLORS[selectedProjColor],
-    members:[...projMembersSelected],
-    steps:JSON.parse(JSON.stringify(projSteps)),
-  };
-  if(currentProjId){
-    const idx=state.projects.findIndex(p=>p.id===currentProjId);
-    if(idx>=0)state.projects[idx]=proj; else state.projects.push(proj);
-  } else { state.projects.push(proj); }
-  renderProjects();saveState();closeProjectModal();
-}
-window.confirmDeleteProject=function(id){if(!confirm('Supprimer ce projet ?'))return;state.projects=state.projects.filter(p=>p.id!==id);renderProjects();saveState();}
-window.deleteProject=function(){if(currentProjId)confirmDeleteProject(currentProjId);closeProjectModal();}
-
-
-// ════════════════════════════════════════════
-//  COLLABORATEURS
-// ════════════════════════════════════════════
-function renderColorOpts(){document.getElementById('color-opts').innerHTML=PALETTES.map((p,i)=>`<div class="color-opt${i===selectedPalette?' selected':''}" style="background:${p.color}" onclick="selectPalette(${i})"></div>`).join('');}
-window.selectPalette=function(i){selectedPalette=i;renderColorOpts();}
-function renderMemberList(){
-  document.getElementById('member-list').innerHTML=state.members.map(m=>{const p=getPalette(m);return `<div class="member-row"><span class="avatar" style="background:${p.bg};color:${p.color}">${initials(m.name)}</span><span class="mname">${m.name}</span><span class="role">${m.role||''}</span><button class="del-btn" onclick="deleteMember('${m.id}')">×</button></div>`;}).join('');
-}
-window.openMembersModal=function(){renderMemberList();renderColorOpts();document.getElementById('members-modal-overlay').classList.add('open');}
-window.closeMembersModal=function(){document.getElementById('members-modal-overlay').classList.remove('open');}
-window.closeMembersModalOnBg=function(e){if(e.target===document.getElementById('members-modal-overlay'))closeMembersModal();}
-window.addMember=function(){
-  const name=document.getElementById('m-name').value.trim();const role=document.getElementById('m-role').value.trim();
-  if(!name){document.getElementById('m-name').focus();return;}
-  const id=genId(name);state.members.push({id,name,role,paletteIdx:selectedPalette});
-  document.getElementById('m-name').value='';document.getElementById('m-role').value='';
-  renderMemberList();renderMemberSelects();renderAbsMemberSelect();saveState();
-}
-window.deleteMember=function(id){
-  if(state.members.length<=1){alert('Il faut au moins un membre.');return;}
-  if(!confirm('Supprimer ?'))return;
-  state.members=state.members.filter(m=>m.id!==id);renderMemberList();renderMemberSelects();renderKanban();saveState();
-}
-
-// ════════════════════════════════════════════
 //  RAPPORT PDF
 // ════════════════════════════════════════════
 function buildWeekButtons(){
@@ -1345,7 +1102,7 @@ function buildWeekButtons(){
   const weeks=[];for(let w=cw-3;w<=cw+1;w++){if(w<1||w>53)continue;const mon=mondayOfWeek(year,w);const fri=new Date(mon);fri.setDate(mon.getDate()+4);weeks.push({w,mon:toISO(mon),fri:toISO(fri),label:`S${w} — ${mon.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} au ${fri.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}`});}
   wrap.innerHTML=weeks.map(wk=>`<button class="week-btn" onclick="applyWeek('${wk.mon}','${wk.fri}','${wk.w}')">${wk.label}</button>`).join('');
 }
-window.applyWeek=function(start,end,w){document.getElementById('rp-date-start').value=start;document.getElementById('rp-date-end').value=end;document.getElementById('rp-title').value=`Rapport Semaine ${w} — GESTIONNAIRE TÂCHES`;}
+window.applyWeek=function(start,end,w){document.getElementById('rp-date-start').value=start;document.getElementById('rp-date-end').value=end;document.getElementById('rp-title').value=`Rapport Semaine ${w} — CHAMORIN`;}
 window.openReportModal=function(){const me=state.members[0];document.getElementById('rp-from').value=me?me.name:'';buildWeekButtons();document.getElementById('report-modal-overlay').classList.add('open');}
 window.closeReportModal=function(){document.getElementById('report-modal-overlay').classList.remove('open');}
 window.closeReportModalOnBg=function(e){if(e.target===document.getElementById('report-modal-overlay'))closeReportModal();}
@@ -1445,8 +1202,8 @@ window.generateReport=function(){
       <table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden">
         <thead><tr style="background:#534AB712">
           <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:22%">Projet</th>
-          <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:16%">Famille</th>
-          <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:12%">Statut</th>
+          <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:16%">Client</th>
+          <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:12%">Statut</th>
           <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Priorité</th>
           <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:20%">Avancement</th>
           <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Échéance</th>
@@ -1468,7 +1225,7 @@ window.generateReport=function(){
                 ${p.desc?`<div style="font-size:11px;color:#6B6966;line-height:1.4;margin-left:18px">${p.desc.slice(0,80)}${p.desc.length>80?'…':''}</div>`:''}
                 ${stepsTotal?`<div style="font-size:11px;color:#9A9894;margin-top:4px;margin-left:18px">Étapes : ${stepsDone}/${stepsTotal}</div>`:''}
               </td>
-              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966">${p.family||'—'}</td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966">${p.client||'—'}</td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${ps.bg};color:${ps.color}">${p.status}</span></td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${pr.bg};color:${pr.color}">${p.priority}</span></td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:middle">
@@ -1476,6 +1233,7 @@ window.generateReport=function(){
                   <div style="flex:1;background:#F0EDE8;border-radius:20px;height:7px;overflow:hidden"><div style="height:7px;border-radius:20px;background:${color};width:${p.progress||0}%"></div></div>
                   <span style="font-size:12px;font-weight:700;color:#1C1C1A;min-width:30px;text-align:right">${p.progress||0}%</span>
                 </div>
+                ${p.budget?`<div style="font-size:11px;color:#9A9894;margin-top:4px">${Number(p.budget).toLocaleString('fr-FR')} €</div>`:''}
               </td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center;font-size:12px;color:#6B6966">${p.dateEnd?fmtDate(p.dateEnd):'—'}</td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966">${members||'—'}</td>
@@ -1499,7 +1257,7 @@ window.generateReport=function(){
     return `<div style="margin-top:32px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #534AB720"><div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div><h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#534AB7;margin:0">Planning — Absences</h3><span style="font-size:12px;color:#9A9894">${absAll.length} absence${absAll.length>1?'s':''}</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">${recap}</div><table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden"><thead><tr style="background:#534AB712"><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:22%">Collaborateur</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:18%">Type</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:25%">Période</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:15%">Durée</th><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:20%">Note</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   };
 
-  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>${title} — Gestionnaire de tâches</title>
+  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>${title} — CHAMORIN</title>
 <style>
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.no-print{display:none!important;}@page{margin:15mm 12mm;size:A4;}}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1513,7 +1271,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
       <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">CH</div>
-      <div><div style="font-size:20px;font-weight:700;color:#1C1C1A">Gestionnaire <span style="color:#F4874B">Tâches</span></div><div style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Julien FAUGERE — CHAMORIN</div></div>
+      <div><div style="font-size:20px;font-weight:700;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div><div style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Dashboard équipe</div></div>
     </div>
     <div style="font-size:24px;font-weight:700;color:#1C1C1A;margin-bottom:6px">${title}</div>
     ${weekNum?`<div style="display:inline-block;background:#FEF0E8;color:#C9602A;font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px">Semaine ${weekNum}</div>`:''}
@@ -1547,7 +1305,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 <div style="margin-top:48px;padding-top:16px;border-top:1px solid #F0EDE8;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-  <div style="display:flex;align-items:center;gap:8px"><div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff">CH</div><span style="font-size:11px;color:#C0BDB8">Julien FAUGERE — CHAMORIN</span></div>
+  <div style="display:flex;align-items:center;gap:8px"><div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff">CH</div><span style="font-size:11px;color:#C0BDB8">CHAMORIN &mdash; Document confidentiel</span></div>
   <span style="font-size:11px;color:#C0BDB8">Généré le ${today}</span>
 </div>
 <div class="no-print" style="text-align:center;margin-top:36px">
@@ -1558,6 +1316,182 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
   window.open(URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),'_blank');
   closeReportModal();
+}
+
+// ════════════════════════════════════════════
+//  PROJETS
+// ════════════════════════════════════════════
+function renderProjects(){
+  const filter=document.getElementById('proj-filter-status')?.value||'all';
+  const projects=(state.projects||[]).filter(p=>filter==='all'||p.status===filter);
+
+  // Synthèse
+  const all=state.projects||[];
+  const synth=[
+    {label:'Total projets',val:all.length,color:'var(--purple)',icon:'🗂'},
+    {label:'En cours',val:all.filter(p=>p.status==='En cours').length,color:'var(--orange)',icon:'⚡'},
+    {label:'Terminés',val:all.filter(p=>p.status==='Terminé').length,color:'var(--green)',icon:'✅'},
+    {label:'Avancement moy.',val:all.length?Math.round(all.reduce((s,p)=>s+(p.progress||0),0)/all.length)+'%':'—',color:'var(--text)',icon:'📈'},
+  ];
+  document.getElementById('project-synth').innerHTML=synth.map(s=>`
+    <div class="synth-card">
+      <div style="font-size:22px;margin-bottom:4px">${s.icon}</div>
+      <div class="s-val" style="color:${s.color}">${s.val}</div>
+      <div class="s-lbl">${s.label}</div>
+    </div>`).join('');
+
+  const grid=document.getElementById('projects-grid');
+  if(!projects.length){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:48px 0;color:var(--text3);font-size:14px">Aucun projet — cliquez sur <strong>+ Nouveau projet</strong> pour commencer</div>`;
+    return;
+  }
+
+  grid.innerHTML=projects.map(p=>{
+    const ss=PROJ_STATUS_STYLES[p.status]||PROJ_STATUS_STYLES['Planifié'];
+    const ps=PRIORITY_STYLES[p.priority]||PRIORITY_STYLES['Moyenne'];
+    const color=p.color||PROJ_COLORS[0];
+    const progress=p.progress||0;
+    const members=(p.members||[]).map(id=>memberById(id)).filter(Boolean);
+    const stepsTotal=(p.steps||[]).length;
+    const stepsDone=(p.steps||[]).filter(s=>s.done).length;
+    const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
+    return `<div class="project-card">
+      <div class="project-card-header">
+        <div class="project-color-bar" style="background:${color}"></div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:8px">
+          <div style="flex:1">
+            <div class="project-name" onclick="openProjectModal(${p.id})">${p.name}</div>
+            ${p.code?`<div class="project-client" style="font-weight:600;color:${color}">${p.code}</div>`:''}
+            ${p.client?`<div class="project-client">${p.client}</div>`:''}
+          </div>
+          <button class="proj-del-btn" onclick="confirmDeleteProject(${p.id})">×</button>
+        </div>
+        <div class="project-badges">
+          <span class="project-status-badge" style="background:${ss.bg};color:${ss.color}">${p.status}</span>
+          <span class="tag" style="background:${ps.bg};color:${ps.color}">${p.priority}</span>
+          ${daysLeft!==null?`<span style="font-size:11px;color:${daysLeft<0?'var(--red)':daysLeft<=7?'var(--orange-dark)':'var(--text3)'}">${daysLeft<0?'⚠ '+Math.abs(daysLeft)+'j dépassé':daysLeft===0?'Aujourd\'hui':daysLeft+'j restants'}</span>`:''}
+        </div>
+        ${p.desc?`<div style="font-size:12px;color:var(--text2);margin-top:8px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.desc}</div>`:''}
+        ${stepsTotal?`<div style="font-size:11px;color:var(--text3);margin-top:8px">Étapes : <strong style="color:var(--text)">${stepsDone}/${stepsTotal}</strong></div>`:''}
+      </div>
+      <div class="project-progress-wrap">
+        <div class="project-progress-label"><span>Avancement</span><span style="font-weight:700;color:var(--text)">${progress}%</span></div>
+        <div class="project-progress-bg"><div class="project-progress-fill" style="width:${progress}%;background:${color}"></div></div>
+      </div>
+      <div class="project-footer">
+        <div class="project-members">${members.map(m=>{const pl=getPalette(m);return `<span class="avatar" style="background:${pl.bg};color:${pl.color}">${initials(m.name)}</span>`;}).join('')}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${p.budget?`<span style="font-size:11px;color:var(--text3)">${Number(p.budget).toLocaleString('fr-FR')} €</span>`:''}
+          ${p.dateStart&&p.dateEnd?`<span style="font-size:11px;color:var(--text3)">${fmtDate(p.dateStart)} → ${fmtDate(p.dateEnd)}</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Modal Projet ────────────────────────────
+window.openProjectModal=function(id){
+  currentProjId=id||null;
+  const p=id?state.projects.find(x=>x.id===id):null;
+  document.getElementById('pm-title-label').textContent=p?'Modifier le projet':'Nouveau projet';
+  document.getElementById('pm-delete-btn').style.display=p?'block':'none';
+  document.getElementById('pm-name').value=p?p.name:'';
+  document.getElementById('pm-code').value=p?p.code||'':'';
+  document.getElementById('pm-client').value=p?p.client||'':'';
+  document.getElementById('pm-desc').value=p?p.desc||'':'';
+  document.getElementById('pm-date-start').value=p?p.dateStart||'':'';
+  document.getElementById('pm-date-end').value=p?p.dateEnd||'':'';
+  document.getElementById('pm-status').value=p?p.status:'En cours';
+  document.getElementById('pm-priority').value=p?p.priority:'Moyenne';
+  document.getElementById('pm-progress').value=p?p.progress||0:0;
+  document.getElementById('pm-budget').value=p?p.budget||'':'';
+  projMembersSelected=new Set(p&&p.members?p.members:[]);
+  projSteps=p&&p.steps?JSON.parse(JSON.stringify(p.steps)):[];
+  selectedProjColor=p?PROJ_COLORS.indexOf(p.color)||0:0;
+  renderProjColorOpts();renderProjMembers();renderProjSteps();
+  document.getElementById('project-modal-overlay').classList.add('open');
+}
+window.closeProjectModal=function(){document.getElementById('project-modal-overlay').classList.remove('open');}
+window.closeProjectModalOnBg=function(e){if(e.target===document.getElementById('project-modal-overlay'))closeProjectModal();}
+function renderProjColorOpts(){
+  document.getElementById('pm-colors').innerHTML=PROJ_COLORS.map((c,i)=>
+    `<div class="proj-color-opt${i===selectedProjColor?' selected':''}" style="background:${c}" onclick="selectProjColor(${i})"></div>`
+  ).join('');
+}
+window.selectProjColor=function(i){selectedProjColor=i;renderProjColorOpts();}
+function renderProjMembers(){
+  document.getElementById('pm-members-list').innerHTML=state.members.map(m=>{
+    const p=getPalette(m);const sel=projMembersSelected.has(m.id);
+    return `<div onclick="toggleProjMember('${m.id}')" style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;cursor:pointer;background:${sel?p.bg:'var(--surface2)'};border:1.5px solid ${sel?p.color:'var(--border)'};transition:all .15s">
+      <span class="avatar" style="width:22px;height:22px;font-size:9px;background:${p.bg};color:${p.color}">${initials(m.name)}</span>
+      <span style="font-size:12px;font-weight:${sel?'600':'400'};color:${sel?p.color:'var(--text2)'}">${m.name}</span>
+    </div>`;
+  }).join('');
+}
+window.toggleProjMember=function(id){projMembersSelected.has(id)?projMembersSelected.delete(id):projMembersSelected.add(id);renderProjMembers();}
+function renderProjSteps(){
+  document.getElementById('pm-steps-list').innerHTML=projSteps.length?`<ul class="step-list">${projSteps.map((s,i)=>`
+    <li class="step-item">
+      <div class="step-check${s.done?' done':''}" onclick="toggleStep(${i})"></div>
+      <span class="step-label${s.done?' done':''}">${s.label}</span>
+      <button class="del-btn" onclick="removeStep(${i})">×</button>
+    </li>`).join('')}</ul>`:'';
+}
+window.toggleStep=function(i){projSteps[i].done=!projSteps[i].done;renderProjSteps();}
+window.removeStep=function(i){projSteps.splice(i,1);renderProjSteps();}
+window.addStep=function(){
+  const inp=document.getElementById('pm-step-input');const val=inp.value.trim();if(!val)return;
+  projSteps.push({label:val,done:false});inp.value='';renderProjSteps();
+}
+window.saveProject=function(){
+  const name=document.getElementById('pm-name').value.trim();if(!name){document.getElementById('pm-name').focus();return;}
+  const proj={
+    id:currentProjId||(state.nextProjId++),
+    name,code:document.getElementById('pm-code').value.trim().toUpperCase(),
+    client:document.getElementById('pm-client').value.trim(),
+    desc:document.getElementById('pm-desc').value.trim(),
+    dateStart:document.getElementById('pm-date-start').value,
+    dateEnd:document.getElementById('pm-date-end').value,
+    status:document.getElementById('pm-status').value,
+    priority:document.getElementById('pm-priority').value,
+    progress:parseInt(document.getElementById('pm-progress').value)||0,
+    budget:document.getElementById('pm-budget').value,
+    color:PROJ_COLORS[selectedProjColor],
+    members:[...projMembersSelected],
+    steps:JSON.parse(JSON.stringify(projSteps)),
+  };
+  if(currentProjId){
+    const idx=state.projects.findIndex(p=>p.id===currentProjId);
+    if(idx>=0)state.projects[idx]=proj; else state.projects.push(proj);
+  } else { state.projects.push(proj); }
+  renderProjects();saveState();closeProjectModal();
+}
+window.confirmDeleteProject=function(id){if(!confirm('Supprimer ce projet ?'))return;state.projects=state.projects.filter(p=>p.id!==id);renderProjects();saveState();}
+window.deleteProject=function(){if(currentProjId)confirmDeleteProject(currentProjId);closeProjectModal();}
+
+
+// ════════════════════════════════════════════
+//  COLLABORATEURS
+// ════════════════════════════════════════════
+function renderColorOpts(){document.getElementById('color-opts').innerHTML=PALETTES.map((p,i)=>`<div class="color-opt${i===selectedPalette?' selected':''}" style="background:${p.color}" onclick="selectPalette(${i})"></div>`).join('');}
+window.selectPalette=function(i){selectedPalette=i;renderColorOpts();}
+function renderMemberList(){
+  document.getElementById('member-list').innerHTML=state.members.map(m=>{const p=getPalette(m);return `<div class="member-row"><span class="avatar" style="background:${p.bg};color:${p.color}">${initials(m.name)}</span><span class="mname">${m.name}</span><span class="role">${m.role||''}</span><button class="del-btn" onclick="deleteMember('${m.id}')">×</button></div>`;}).join('');
+}
+window.openMembersModal=function(){renderMemberList();renderColorOpts();document.getElementById('members-modal-overlay').classList.add('open');}
+window.closeMembersModal=function(){document.getElementById('members-modal-overlay').classList.remove('open');}
+window.closeMembersModalOnBg=function(e){if(e.target===document.getElementById('members-modal-overlay'))closeMembersModal();}
+window.addMember=function(){
+  const name=document.getElementById('m-name').value.trim();const role=document.getElementById('m-role').value.trim();
+  if(!name){document.getElementById('m-name').focus();return;}
+  const id=genId(name);state.members.push({id,name,role,paletteIdx:selectedPalette});
+  document.getElementById('m-name').value='';document.getElementById('m-role').value='';
+  renderMemberList();renderMemberSelects();renderAbsMemberSelect();saveState();
+}
+window.deleteMember=function(id){
+  if(state.members.length<=1){alert('Il faut au moins un membre.');return;}
+  if(!confirm('Supprimer ?'))return;
+  state.members=state.members.filter(m=>m.id!==id);renderMemberList();renderMemberSelects();renderKanban();saveState();
 }
 
 // ════════════════════════════════════════════
