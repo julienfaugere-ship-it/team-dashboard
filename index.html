@@ -786,14 +786,22 @@ function saveState(){
     catch(e){ console.error(e); setSyncStatus('error'); }
   },600);
 }
+// Convertit un Array ou Object Firebase en vrai Array JS
+function toArray(v){ if(!v) return []; if(Array.isArray(v)) return v; return Object.values(v); }
+
 function startListening(){
   onValue(ref(db,ROOT),(snap)=>{
     const data=snap.val(); if(!data)return;
     isRemoteUpdate=true;
     state=data;
-    state.tasks=state.tasks||[]; state.members=state.members||[];
-    state.events=state.events||[]; state.absences=state.absences||[];
-    state.projects=state.projects||[];
+    // Firebase sérialise les arrays en objects {0:{...},1:{...}} — on force le retour en Array
+    state.tasks    = toArray(state.tasks);
+    state.members  = toArray(state.members);
+    state.events   = toArray(state.events);
+    state.absences = toArray(state.absences);
+    state.projects = toArray(state.projects);
+    // S'assurer que les IDs de projets sont bien des numbers
+    state.projects = state.projects.map(p => ({...p, id: parseInt(p.id)}));
     renderAll(); setSyncStatus('ok');
     isRemoteUpdate=false;
   },(err)=>{ console.error(err); setSyncStatus('error'); });
@@ -1254,7 +1262,7 @@ window.handleProjectDrop=function(e, targetFamily){
     grid.classList.remove('drag-over');
     document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
     const projectId = parseInt(e.dataTransfer.getData("text/plain"));
-    const projectIndex = state.projects.findIndex(p => p.id === projectId);
+    const projectIndex = state.projects.findIndex(p => parseInt(p.id) === projectId);
     if(projectIndex >= 0){
         const newFamily = targetFamily === 'SANS FAMILLE' ? '' : targetFamily;
         if(state.projects[projectIndex].family !== newFamily){
@@ -1270,8 +1278,8 @@ window.handleProjectDrop=function(e, targetFamily){
 // ══════════════════════════════════════════
 window.openProjectModal=function(id){
   // id peut être undefined (nouveau projet) ou un entier (édition)
-  currentProjId = id !== undefined ? parseInt(id) : null;
-  const p = currentProjId !== null ? (state.projects||[]).find(x => x.id === currentProjId) : null;
+  currentProjId = (id !== undefined && id !== null && id !== '') ? parseInt(id) : null;
+  const p = currentProjId !== null ? (state.projects||[]).find(x => parseInt(x.id) === currentProjId) : null;
 
   // En-tête modal
   document.getElementById('pm-title-label').textContent = p ? 'Modifier le projet' : 'Nouveau projet';
@@ -1366,7 +1374,7 @@ window.saveProject=function(){
 
   if(currentProjId !== null){
     // ✅ Mise à jour du projet existant par son ID unique
-    const idx = (state.projects||[]).findIndex(p => p.id === currentProjId);
+    const idx = (state.projects||[]).findIndex(p => parseInt(p.id) === currentProjId);
     if(idx >= 0){
       state.projects[idx] = proj;
     } else {
@@ -1391,7 +1399,7 @@ window.confirmDeleteProject=function(id){
   // Message clair : on supprime CE projet, pas sa famille
   if(!confirm(`Supprimer le projet "${proj.name}" ?\n\nLes autres projets du groupe "${proj.family || 'Sans famille'}" ne seront pas affectés.`)) return;
   // Filtre strict : on ne retire QUE le projet avec cet ID précis
-  state.projects = state.projects.filter(p => p.id !== numId);
+  state.projects = state.projects.filter(p => parseInt(p.id) !== numId);
   renderProjects();
   saveState();
 }
