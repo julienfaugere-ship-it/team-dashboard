@@ -185,19 +185,57 @@
     .family-grid.drag-over { background:var(--surface2); border:2px dashed var(--orange); }
 
     .projects-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
-    .project-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:0; overflow:hidden; transition:border-color .2s, box-shadow .2s; cursor:pointer; position:relative; }
-    .project-card:hover { border-color:var(--purple); box-shadow:0 4px 20px rgba(83,74,183,.1); transform:translateY(-2px); }
-    .project-card:active { transform:scale(0.99); }
-    .project-card.dragging { opacity:0.5; border:2px dashed var(--text3); background:var(--surface2); }
+    .project-card { 
+        background:var(--surface); 
+        border:0.5px solid var(--border); 
+        border-radius:var(--radius-lg); 
+        padding:0; 
+        overflow:hidden; 
+        transition:border-color .2s, box-shadow .2s, transform .2s; 
+        cursor:pointer; 
+        position:relative;
+        /* Ajout d'une légère ombre portée pour indiquer la zone de cliquable */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03); 
+    }
+    .project-card:hover { 
+        border-color:var(--purple); 
+        box-shadow:0 6px 24px rgba(83,74,183,.1); 
+        transform:translateY(-3px);
+        z-index: 2; /* S'élève au-dessus des autres */
+    }
+    .project-card.dragging { 
+        opacity:0.4; 
+        border:2px dashed var(--text3); 
+        background:var(--surface2); 
+        transform:scale(0.98); 
+        box-shadow: none !important; 
+    }
     .project-card-header { padding:14px 16px 10px; position:relative; }
     .project-color-bar { position:absolute; top:0; left:0; right:0; height:3px; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
-    .project-name { font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; cursor:pointer; line-height:1.3; }
-    .project-meta-row { display:flex; flex-direction:column; gap:4px; margin-bottom:8px; }
-    .project-prog-line { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text2); background:var(--surface2); padding:4px 8px; border-radius:4px; width:fit-content; }
-    .project-prog-line svg { width:14px; height:14px; flex-shrink:0; color:var(--text3); }
-    .project-prog-code { font-family:'Courier New',monospace; font-weight:700; color:var(--purple); }
+    .project-name { 
+        font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; 
+        line-height:1.3;
+    }
     
-    .project-badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    /* Meta-données stylisées (Badge) */
+    .project-meta-row { display:flex; flex-direction:column; gap:4px; margin-bottom:8px; }
+    .project-meta-tag { 
+        display:flex; align-items:center; 
+        gap:6px; 
+        font-size:12px; color:var(--text2); 
+        background:var(--surface2); 
+        padding:3px 8px; 
+        border-radius:4px; 
+        width: fit-content; 
+        transition:background .2s;
+    }
+    .project-meta-tag:hover { background: var(--surface2); }
+    
+    .project-meta-tag svg { width:14px; height:14px; flex-shrink:0; color:var(--text3); }
+    .project-meta-code { font-family: 'Courier New', monospace; font-weight: 700; color:var(--purple); }
+    .project-service-text { font-weight:500; color:var(--text2); }
+
+    .project-badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom: 8px;}
     .project-status-badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }
     .project-progress-wrap { padding:0 16px 12px; }
     .project-progress-label { display:flex; justify-content:space-between; font-size:11px; color:var(--text3); margin-bottom:5px; }
@@ -209,7 +247,17 @@
     .project-members .avatar:first-child { margin-left:0; }
     .project-actions { display:flex; gap:6px; }
     .project-actions button { padding:4px 10px; font-size:12px; }
-    .proj-del-btn { background:none; border:none; color:var(--text3); font-size:15px; cursor:pointer; padding:0 4px; opacity:0; transition:opacity .15s; }
+    .proj-del-btn { 
+        background:none; border:none; 
+        color:var(--text3); 
+        font-size:15px; cursor:pointer; 
+        padding:0 4px; 
+        opacity:0; 
+        transition:opacity .15s; 
+        position: absolute; 
+        top: 10px; right: 10px; 
+        z-index: 10; /* Position absolue pour ne pas gêner la mise en page */
+    }
     .project-card:hover .proj-del-btn { opacity:1; }
     .proj-del-btn:hover { color:var(--red); background:none; transform:none; }
 
@@ -230,7 +278,7 @@
     .cal-nav-btn { background:none; border:none; color:var(--text2); font-size:16px; cursor:pointer; padding:4px 8px; border-radius:4px; }
     .cal-nav-btn:hover { background:var(--surface2); color:var(--orange); }
     
-    .calendar-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:4px; text-align:center; }
+    .calendar-grid { display:grid; grid-template-columns:  repeat(7, 1fr); gap:4px; text-align:center; }
     .cal-day-label { font-size:10px; font-weight:600; color:var(--text3); padding:4px 0; }
     .day-cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; border-radius:50%; transition:all .15s; position:relative; color:var(--text2); }
     .day-cell:hover { background:var(--surface2); color:var(--orange); }
@@ -837,7 +885,7 @@ function renderAbsMemberSelect(){
 
 // ══════════════════════════════════════════
 //  KANBAN
-// ══════════════════════════════════════════
+// ════════════════════════════════════════
 function renderKanban(){
   ['todo','prog','done'].forEach(s=>{
     const col=document.getElementById('col-'+s);
@@ -953,9 +1001,9 @@ function updateMetrics(){
   </div>`;
 }
 
-// ══════════════════════════════════════════
+// ════════════════════════════════════════════
 //  MODAL TÂCHE
-// ══════════════════════════════════════════
+// ════════════════════════════════════════════
 window.openTaskModal=function(id){
   currentTaskId=id;const t=state.tasks.find(x=>x.id===id);if(!t)return;
   const m=memberById(t.member);const p=m?getPalette(m):PALETTES[0];const ss=STATUS_STYLES[t.status];
@@ -983,10 +1031,9 @@ window.deleteTaskFromModal=function(){if(!confirm('Supprimer ?'))return;state.ta
 window.closeTaskModal=function(){document.getElementById('task-modal-overlay').classList.remove('open');}
 window.closeTaskModalOnBg=function(e){if(e.target===document.getElementById('task-modal-overlay'))closeTaskModal();}
 
-// ══════════════════════════════════════════
+// ════════════════════════════════════════════
 //  AGENDA (SHARED LOGIC)
 // ══════════════════════════════════════════
-
 // Helper pour récupérer les événements d'une date spécifique
 function getEventsForDate(isoDate) {
     const todayStr = toISO(new Date());
@@ -1024,9 +1071,9 @@ window.addEvent=function(){
 
 window.deleteEvent=function(id){state.events=state.events.filter(e=>e.id!==id);renderAgenda();renderPlanning();saveState();}
 
-// ══════════════════════════════════════════
+// ════════════════════════════════════════════
 //  PLANNING TAB
-// ══════════════════════════════════════════
+// ══════════════════════════════════════════════
 window.renderPlanning=function(){
     renderCalendarGrid();
     renderDailySchedule();
@@ -1068,6 +1115,7 @@ function renderCalendarGrid(){
     grid.innerHTML = `
         <div class="cal-day-label">Lun</div><div class="cal-day-label">Mar</div><div class="cal-day-label">Mer</div>
         <div class="cal-day-label">Jeu</div><div class="cal-day-label">Ven</div><div class="cal-day-label">Sam</div><div class="cal-day-label">Dim</div>
+        <!-- Jours générés en JS -->
     `;
 
     // Jours vides
@@ -1140,9 +1188,9 @@ window.addPlanningEvent=function(){
     saveState();
 }
 
-// ══════════════════════════════════════════
+// ══════════════════════════════════════════════
 //  ABSENCES
-// ══════════════════════════════════════════
+// ══════════════════════════════════════════════
 function renderAbsences(){
   const list=document.getElementById('absence-list');
   const abs=[...(state.absences||[])].sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
@@ -1162,7 +1210,7 @@ function renderAbsences(){
         <div style="font-size:12px;color:var(--text2)">${fmtDate(a.dateStart)}${a.dateStart!==a.dateEnd?' → '+fmtDate(a.dateEnd):''} &bull; <strong>${days}</strong> jour${days>1?'s':''} ouvré${days>1?'s':''}</div>
         ${a.note?`<div style="font-size:12px;color:var(--text3);margin-top:2px;font-style:italic">${a.note}</div>`:''}
       </div>
-      <button style="background:none;border:none;color:var(--text3);font-size:16px;padding:0 3px;cursor:pointer;flex-shrink:0;line-height:1" onmouseover="this.style.color='#C0392B'" onmouseout="this.style.color=''" onclick="deleteAbsence(${a.id})">×</button>
+      <button style="background:none;border:none;color:var(--text3);font-size:16px;padding:0 3px;cursor:pointer;flex-shrink:0;line-height:1;" onmouseover="this.style.color='#C0392B'" onmouseout="this.style.color=''" onclick="deleteAbsence(${a.id})">×</button>
     </div>`;
   }).join('');
 }
@@ -1181,9 +1229,9 @@ window.addAbsence=function(){
 }
 window.deleteAbsence=function(id){state.absences=(state.absences||[]).filter(a=>a.id!==id);renderAbsences();saveState();}
 
-// ══════════════════════════════════════════
+// ══════════════════════════════════════════════
 //  PROJETS
-// ══════════════════════════════════════════
+// ══════════════════════════════════════════════
 function renderProjects(){
   const container = document.getElementById('projects-container');
   const filter=document.getElementById('proj-filter-status')?.value||'all'; 
@@ -1262,33 +1310,34 @@ function renderProjectCard(p){
     const stepsDone=(p.steps||[]).filter(s=>s.done).length;
     const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
 
-    // Ajout du onclick sur la carte entière pour l'édition
+    // IMPORTANT : on ajoute un onclick sur la carte (wrapper) pour l'édition
+    // Pour être sûr que le clic fonctionne et que ça est bien visuel
     return `<div class="project-card" onclick="openProjectModal(${p.id})" draggable="true" ondragstart="handleProjectDragStart(event, ${p.id})">
       <div class="project-card-header">
         <div class="project-color-bar" style="background:${color}"></div>
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:8px">
-          <div style="flex:1">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:8px; padding-right:30px">
+          <div style="flex:1;">
             <div class="project-name">${p.name}</div>
             
             <div class="project-meta-row">
                 <!-- Ligne Programme : Icône + Code style -->
                 ${p.programme?`
-                    <div class="project-prog-line">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                    <div class="project-meta-tag">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4 4M6 16l-4-4 4 4-4 4 4M6 16l-4-4 4 4 4 4 4 4 4 0; }
                         <span class="project-prog-code">${p.programme}</span>
                     </div>
                 `:''}
                 
                 <!-- Ligne Service : Icône + Nom -->
                 ${p.service?`
-                    <div class="project-prog-line">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                        <span>${p.service}</span>
+                    <div class="project-meta-tag">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h-4 4l4 4-4 4 4 4 4-4 4z" /></svg>
+                        <span class="project-service-text">${p.service}</span>
                     </div>
                 `:''}
             </div>
-          </div>
-          <button class="proj-del-btn" onclick="event.stopPropagation(); confirmDeleteProject(${p.id})">×</button>
+            <!-- Le bouton supprimer est maintenant en position absolue et utilise stopPropagation -->
+            <button class="proj-del-btn" onclick="event.stopPropagation(); confirmDeleteProject(${p.id})">×</button>
         </div>
         <div class="project-badges">
           <span class="project-status-badge" style="background:${ss.bg};color:${ss.color}">${p.status}</span>
@@ -1316,24 +1365,22 @@ window.handleProjectDragStart=function(e, projectId){
     e.dataTransfer.setData("text/plain", projectId);
     e.dataTransfer.effectAllowed = "move";
     e.target.classList.add('dragging');
+    e.target.classList.add('card-active'); // Ajout d'une classe pour le retour visuel de survol (optionnel)
 }
-
 window.allowDrop=function(e){
     e.preventDefault();
     e.currentTarget.classList.add('drag-over');
 }
-
 window.leaveDrop=function(e){
     e.currentTarget.classList.remove('drag-over');
 }
-
 window.handleProjectDrop=function(e, targetFamily){
     e.preventDefault();
     const grid = e.currentTarget;
     grid.classList.remove('drag-over');
     
     // Nettoyage visuel
-    document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+    document.querySelectorAll('.dragging').forEach(el => { el.classList.remove('dragging'); el.classList.remove('card-active'); });
 
     const projectIdStr = e.dataTransfer.getData("text/plain");
     const projectId = parseInt(projectIdStr);
@@ -1442,9 +1489,9 @@ window.confirmDeleteProject=function(id){if(!confirm('Supprimer ce projet ?'))re
 window.deleteProject=function(){if(currentProjId)confirmDeleteProject(currentProjId);closeProjectModal();}
 
 
-// ══════════════════════════════════════════
+// ════════════════════════════════════════════════
 //  RAPPORT PDF
-// ══════════════════════════════════════════
+// ════════════════════════════════════════════════════
 function buildWeekButtons(){
   const wrap=document.getElementById('week-quick-btns');const today=new Date();const cw=isoWeek(today);const year=today.getFullYear();
   const weeks=[];for(let w=cw-3;w<=cw+1;w++){if(w<1||w>53)continue;const mon=mondayOfWeek(year,w);const fri=new Date(mon);fri.setDate(mon.getDate()+4);weeks.push({w,mon:toISO(mon),fri:toISO(fri),label:`S${w} — ${mon.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} au ${fri.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}`});}
@@ -1493,10 +1540,10 @@ window.generateReport=function(){
         ${t.done&&t.done.length?`<div>${t.done.map(d=>`<div style="font-size:12px;color:#1E6040;display:flex;gap:6px;margin-bottom:3px"><span style="font-weight:700;flex-shrink:0">✓</span>${d}</div>`).join('')}</div>`:''}
       </td>
       <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;white-space:nowrap">
-        <div style="font-size:12px;font-weight:600;color:#1C1C1A">${mName(t.member)}</div>
-        <div style="font-size:11px;color:#9A9894;margin-top:2px">${dateStr}</div>
+        <div style="font-size:12px;font-weight:600;color:#1C1C1A;">${mName(t.member)}</div>
+        <div style="font-size:11px;color:#9A9894;margin-top:2px;">${dateStr}</div>
       </td>
-      <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center">
+      <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;white-space:nowrap">
         <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${ts.bg};color:${ts.color}">${t.tag}</span>
       </td>
       <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center">
@@ -1517,7 +1564,7 @@ window.generateReport=function(){
           <th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:46%">Tâche</th>
           <th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Responsable</th>
           <th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Catégorie</th>
-          <th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Statut</th>
+          <th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Statut</th>
         </tr></thead>
         <tbody>${taskRows(tasks)}</tbody>
       </table>
@@ -1527,7 +1574,7 @@ window.generateReport=function(){
   const projSection=()=>{
     const projs=state.projects||[];if(!projs.length)return '';
     const PSS={'En cours':{color:'#C9602A',bg:'#FEF0E8'},'Planifié':{color:'#185fa5',bg:'#E6F1FB'},'Terminé':{color:'#1E6040',bg:'#E6F4ED'},'En pause':{color:'#8A8880',bg:'#F2F1EE'}};
-    const PRIO={Haute:{color:'#C0392B',bg:'#FCECEA'},Moyenne:{color:'#854f0b',bg:'#FAEEDA'},Basse:{color:'#5f5e5a',bg:'#F1EFE8'}};
+    const PRIO={Haute:{color:'#C0392B',bg:'#FCECEA'},Moyenne:{color:'#854f0b',bg:'#FAEEDA'},Basse:{color:'#5f5e5a',bg:'#F1EFE8'};
     return `<div style="margin-top:40px;page-break-before:auto">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #534AB730">
         <div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div>
@@ -1552,35 +1599,35 @@ window.generateReport=function(){
           <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:22%">Projet</th>
           <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:16%">Service</th>
           <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:12%">Statut</th>
-          <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Priorité</th>
+          <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Priorité</th>
           <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:20%">Avancement</th>
           <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Échéance</th>
           <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Équipe</th>
         </tr></thead>
         <tbody>
           ${projs.map(p=>{
-            const ps=PSS[p.status]||PSS['Planifié'];const pr=PRIO[p.priority]||PRIO['Moyenne'];
+            const ps=PSS[p.status]||PSS['Planifié'];const pr=PRIO[PRIORITY_STYLES[p.priority]||PRIORITY_STYLES['Moyenne'];
             const stepsTotal=(p.steps||[]).length;const stepsDone=(p.steps||[]).filter(s=>s.done).length;
             const members=(p.members||[]).map(id=>mName(id)).filter(Boolean).join(', ');
             const color=p.color||'#534AB7';
             return `<tr>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-                  <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;"></div>
                   <span style="font-size:13px;font-weight:600;color:#1C1C1A">${p.name}</span>
                   ${p.programme?`<span style="font-size:10px;font-weight:700;color:${color};background:${color}18;padding:1px 6px;border-radius:10px">${p.programme}</span>`:''}
                 </div>
                 ${p.family?`<div style="font-size:11px;color:#534AB7;margin-left:18px; margin-bottom:2px;">📂 ${p.family}</div>`:''}
                 ${p.desc?`<div style="font-size:11px;color:#6B6966;line-height:1.4;margin-left:18px">${p.desc.slice(0,80)}${p.desc.length>80?'…':''}</div>`:''}
-                ${stepsTotal?`<div style="font-size:11px;color:#9A9894;margin-top:4px;margin-left:18px">Étapes : ${stepsDone}/${stepsTotal}</div>`:''}
+                ${stepsTotal?`<div style="font-size:11px;color:#9A9894;margin-top:4px;margin-left:18px">Étapes : <strong style="color:var(--text)">${stepsDone}/${stepsTotal}</strong></div>`:''}
               </td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966">${p.service||'—'}</td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${ps.bg};color:${ps.color}">${p.status}</span></td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${pr.bg};color:${pr.color}">${p.priority}</span></td>
-              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:middle">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <div style="flex:1;background:#F0EDE8;border-radius:20px;height:7px;overflow:hidden"><div style="height:7px;border-radius:20px;background:${color};width:${p.progress||0}%"></div></div>
-                  <span style="font-size:12px;font-weight:700;color:#1C1C1A;min-width:30px;text-align:right">${p.progress||0}%</span>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:middle;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;background:#F0EDE8;border-radius:20px;height:7px;overflow:hidden;"><div style="height:7px;border-radius:20px;background:${color};width:${p.progress||0}%"></div></div>
+                  <span style="font-size:12px;font-weight:700;color:#1C1C1A;min-width:30px;text-align:right;">${p.progress||0}%</span>
                 </div>
               </td>
               <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center;font-size:12px;color:#6B6966">${p.dateEnd?fmtDate(p.dateEnd):'—'}</td>
@@ -1600,9 +1647,9 @@ window.generateReport=function(){
     }).sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
     if(!absAll.length)return '';
     const ABS=ABS_TYPES;
-    const recap=Object.entries(ABS).map(([key,t])=>{const items=absAll.filter(a=>a.type===key);if(!items.length)return '';const total=items.reduce((s,a)=>s+wdCount(a.dateStart,a.dateEnd),0);return `<div style="background:${t.bg};border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">${t.icon}</span><div><div style="font-size:11px;font-weight:700;color:${t.color};text-transform:uppercase;letter-spacing:.05em">${t.label}</div><div style="font-size:20px;font-weight:700;color:${t.color}">${total} <span style="font-size:12px;font-weight:400">jour${total>1?'s':''}</span></div></div></div>`;}).join('');
-    const rows=absAll.map(a=>{const m=memberById(a.member);const t=ABS[a.type]||ABS['Autre'];const days=wdCount(a.dateStart,a.dateEnd);const period=a.dateStart===a.dateEnd?fmtDate(a.dateStart):`${fmtDate(a.dateStart)} → ${fmtDate(a.dateEnd)}`;return `<tr><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle"><div style="font-size:13px;font-weight:600;color:#1C1C1A">${m?m.name:a.member}</div>${m&&m.role?`<div style="font-size:11px;color:#9A9894">${m.role}</div>`:''}</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;text-align:center"><span style="font-size:18px">${t.icon}</span><div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${t.bg};color:${t.color};display:inline-block;margin-top:4px">${t.label}</div></td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;text-align:center;font-size:13px;font-weight:500;color:#1C1C1A">${period}</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;text-align:center"><div style="font-size:22px;font-weight:700;color:#1C1C1A">${days}</div><div style="font-size:11px;color:#9A9894">j. ouvré${days>1?'s':''}</div></td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;font-size:12px;color:#6B6966;font-style:italic">${a.note||'—'}</td></tr>`;}).join('');
-    return `<div style="margin-top:32px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #534AB720"><div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div><h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#534AB7;margin:0">Planning — Absences</h3><span style="font-size:12px;color:#9A9894">${absAll.length} absence${absAll.length>1?'s':''}</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">${recap}</div><table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden"><thead><tr style="background:#534AB712"><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:22%">Collaborateur</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:18%">Type</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:25%">Période</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:15%">Durée</th><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:20%">Note</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    const recap=Object.entries(ABS).map(([key,t])=>{const items=absAll.filter(a=>a.type===key);if(!items.length)return '';const total=items.reduce((s,a)=>s+wdCount(a.dateStart,a.dateEnd),0);return `<div style="background:${t.bg};border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">${t.icon}</span><div><div><div style="font-size:11px;font-weight:700;color:${t.color};text-transform:uppercase;letter-spacing:.05em">${t.label}</div><div><div style="font-size:20px;font-weight:700;color:${t.color}">${total} <span style="font-size:12px;font-weight:400">jour${total>1?'s':''}</span></div></div></div>`;}).join('');
+    const rows=absAll.map(a=>{const m=memberById(a.member);const t=ABS_TYPES[a.type]||ABS['Autre'];const days=wdCount(a.dateStart,a.dateEnd);const period=a.dateStart===a.dateEnd?fmtDate(a.dateStart):`${fmtDate(a.dateStart)} → ${fmtDate(a.dateEnd)}`:`;return `<tr><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle"><div style="font-size:13px;font-weight:600;color:#1C1C1A">${m?m.name:a.member}</div>${m&&m.role?`<div style="font-size:11px;color:#9A9894">${m.role}</div></div></td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;text-align:center"><span style="font-size:18px">${t.icon}</span><div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${t.bg};color:${t.color};display:inline-block;margin-top:4px">${t.label}</div></td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;text-align:center;font-size:13px;font-weight:500;color:#1C1C1A">${period}</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;text-align:center;"><div style="font-size:22px;font-weight:700;color:#1C1C1A">${days}</div><div><div style="font-size:11px;color:#9A9894">j. ouvré${days>1?'s':''}</div></td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;font-size:12px;color:#6B6966;font-style:italic">${a.note||'—'}</td></tr>`;}).join('');
+    return `<div style="margin-top:32px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #534AB720"><div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div><h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#534AB7;margin:0">Planning — Absences</h3><span style="font-size:12px;color:#9A9894">${absAll.length} absence${absAll.length>1?'s':''}</span></div><div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">${recap}</div><table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden"><thead><tr style="background:#534AB712"><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:22%">Collaborateur</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:18%">Type</th><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:25%">Période</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:15%">Durée</th><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:20%">Note</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   };
 
   const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>${title} — CHAMORIN</title>
@@ -1619,25 +1666,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
       <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">CH</div>
-      <div><div style="font-size:20px;font-weight:700;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div><div style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Gestionnaire de tâches</div></div>
-    </div>
+      <div><div style="font-size:20px;font-weight:700;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div><div><div style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Gestionnaire de tâches</div></div>
     <div style="font-size:24px;font-weight:700;color:#1C1C1A;margin-bottom:6px">${title}</div>
     ${weekNum?`<div style="display:inline-block;background:#FEF0E8;color:#C9602A;font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px">Semaine ${weekNum}</div>`:''}
     <div style="font-size:13px;color:#6B6966;margin-top:6px">${periodLabel}</div>
   </div>
-  <div style="text-align:right;font-size:13px;color:#6B6966;line-height:2">
-    <div><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Destinataire</span><br/><strong style="color:#1C1C1A;font-size:14px">${to}</strong></div>
-    <div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Préparé par</span><br/><strong style="color:#1C1C1A;font-size:14px">${from}</strong></div>
-    <div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Date</span><br/><strong style="color:#1C1C1A">${today}</strong></div>
-  </div>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;padding-bottom:24px;border-bottom:1.5px solid #F0EDE8;gap:20px;flex-wrap:wrap;gap:20px;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;gap:8px">
+      <div><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Destinataire</span><br/><strong style="color:#1C1C1A;font-size:14px">${to}</strong></div>
+      <div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Préparé par</span><br/><strong style="color:#1C1C1A;font-size:14px">${from}</strong></div>
+      <div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Date</span><br/><strong style="color:#1C1C1A">${today}</strong></div>
+    </div>
 </div>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
   <div style="background:#E6F4ED;border-radius:12px;padding:18px 20px;border-left:4px solid #2E8B57"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1E6040;margin-bottom:6px">Réalisées</div><div style="font-size:32px;font-weight:700;color:#1E6040">${done.length}</div><div style="font-size:12px;color:#2E8B57;margin-top:4px">sur cette période</div></div>
   <div style="background:#FEF0E8;border-radius:12px;padding:18px 20px;border-left:4px solid #F4874B"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:6px">En cours</div><div style="font-size:32px;font-weight:700;color:#C9602A">${prog.length}</div><div style="font-size:12px;color:#F4874B;margin-top:4px">à finaliser</div></div>
-  <div style="background:#F7F7F5;border-radius:12px;padding:18px 20px;border-left:4px solid #9A9894"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5A5956;margin-bottom:6px">Avancement</div><div style="font-size:32px;font-weight:700;color:#1C1C1A">${pctGlobal}%</div><div style="font-size:12px;color:#9A9894;margin-top:4px">${totalDone}/${totalAll} tâches</div></div>
-</div>
+  <div style="background:#F7F7F5;border-radius:12px;padding:18px 20px;border-left:4px solid #9A9894;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;"><div style="width:12px;height:12px;border-radius:50%;background:#9A9894;border-radius:50%;background:#F7F7F5;border:2px solid var(--border2);color:#9A9894">🏠</div><div><div style="font-size:11px;font-weight:700;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Avancement</div><div style="font-size:32px;font-weight:700;color:#1C1C1A">${pctGlobal}%</div><div><div style="font-size:12px;color:#9A9894">${totalDone}/${totalAll} tâches</div></div></div>
 <div style="margin-bottom:32px">
-  <div style="display:flex;justify-content:space-between;font-size:11px;color:#9A9894;margin-bottom:6px"><span>Progression globale</span><span style="font-weight:700;color:#1C1C1A">${pctGlobal}%</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #F0EDE8;gap:10px;gap:10px;flex-wrap:wrap;gap:8px">
+    <span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Progression globale</span><span style="font-weight:700;color:#1C1C1A">${pctGlobal}%</span></div>
   <div style="background:#F0EDE8;border-radius:20px;height:10px;overflow:hidden"><div style="height:10px;border-radius:20px;background:linear-gradient(90deg,#F4874B,#2E8B57);width:${pctGlobal}%"></div></div>
 </div>
  ${comment?`<div style="background:#FFFCF8;border:1px solid #F4874B30;border-left:4px solid #F4874B;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:28px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:8px">Note</div><div style="font-size:13px;color:#3A3936;line-height:1.7">${comment}</div></div>`:''}
@@ -1646,43 +1693,192 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
  ${section('À venir','#8A8880',todo)}
  ${absSection()}
  ${incProjects?projSection():''}
-<div style="margin-top:32px;padding-top:24px;border-top:1.5px solid #F0EDE8">
-  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9A9894;margin-bottom:14px">Équipe</div>
-  <div style="display:flex;gap:12px;flex-wrap:wrap">
-    ${state.members.map(m=>{const p=getPalette(m);const mT=tasksFiltered.filter(t=>t.member===m.id);return `<div style="display:flex;align-items:center;gap:10px;background:#F7F7F5;border-radius:10px;padding:10px 14px"><div style="width:36px;height:36px;border-radius:50%;background:${p.bg};color:${p.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${initials(m.name)}</div><div><div style="font-size:13px;font-weight:600;color:#1C1C1A">${m.name}</div><div style="font-size:11px;color:#9A9894">${m.role||'Collaborateur'} &bull; ${mT.length} tâche${mT.length>1?'s':''}</div></div></div>`;}).join('')}
+<div style="margin-top:32px;padding-top:24px;padding-top:16px;border-top:1.5px solid #F0EDE8">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #534AB730">
+    <div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div>
+    <h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#534AB7;margin:0">Suivi des projets</h3>
+    <span style="font-size:12px;color:#9A9894">${projs.length} projet${projs.length>1?'s':''}</span>
   </div>
+  <!-- Synthèse projets -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+    ${[
+      {l:'Total',v:projs.length,c:'#534AB7',bg:'#EEEDFE'},
+      {l:'En cours',v:projs.filter(p=>p.status==='En cours').length,c:'#C9602A',bg:'#FEF0E8'},
+      {l:'Terminés',v:projs.filter(p=>p.status==='Terminé').length,c:'#1E6040',bg:'#E6F4ED'},
+      {l:'Avancement moy.',v:projs.length?Math.round(projs.reduce((s,p)=>s+(p.progress||0),0)/projs.length)+'%':'—',c:'#1C1C1A',bg:'#F7F7F5'},
+    ].map(k=>`<div style="background:${k.bg};border-radius:10px;padding:14px 16px">
+      <div style="font-size:11px;font-weight:700;color:${k.c};text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${k.l}</div>
+      <div style="font-size:26px;font-weight:700;color:${k.c}">${k.v}</div>
+    </div>`).join('')}
+    <!-- Tableau projets -->
+    <table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden;">
+      <thead><tr style="background:#534AB712">
+        <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:22%">Projet</th>
+        <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:16%">Service</th>
+        <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:12%">Statut</th>
+        <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Priorité</th>
+        <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:20%">Avancement</th>
+        <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Échéance</th>
+        <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Équipe</th>
+        </tr></thead>
+        <tbody>
+          ${projs.map(p=>{
+            const ps=PSS[p.status]||PSS['Planifié'];const pr=PRIO[PRIORITY_STYLES[p.priority]||PRIORITY_STYLES['Moyenne'];
+            const stepsTotal=(p.steps||[]).length;const stepsDone=(p.steps||[]).filter(s=>s.done).length;
+            const members=(p.members||[]).map(id=>mName(id)).filter(Boolean).join(', ');
+            const color=p.color||'#534AB7';
+            return `<tr>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;"></div>
+                  <span style="font-size:13px;font-weight:600;color:#1C1C1A">${p.name}</span>
+                  ${p.programme?`<span style="font-size:10px;font-weight:700;color:${color};background:${color}18;padding:1px 6px;border-radius:10px;border-radius:10px">${p.programme}</span>`:''}
+                </div>
+                ${p.family?`<div style="font-size:11px;color:#534AB7;margin-left:18px; margin-bottom:2px;">📂 ${p.family}</div>`:''}
+                ${p.desc?`<div style="font-size:11px;color:#6B6966;line-height:1.4;margin-left:18px">${p.desc.slice(0,80)}${p.desc.length>80?'…':''}</div>`:''}
+                ${stepsTotal?`<div style="font-size:11px;color:#9A9894;margin-top:4px;margin-left:18px">Étapes : <strong style="color:var(--text)">${stepsDone}/${stepsTotal}</strong></div>`:''}
+              </td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966">${p.service||'—'}</td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${ps.bg};color:${ps.color}">${p.status}</span></td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${pr.bg};color:${pr.color}">${p.priority}</span></td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:middle;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;background:#F0EDE8;border-radius:20px;height:7px;overflow:hidden;"><div style="height:7px;border-radius:20px;background:${color};width:${p.progress||0}%"></div></div>
+                  <span style="font-size:12px;font-weight:700;color:#1C1C1A;min-width:30px;text-align:right;">${p.progress||0}%</span>
+                </div>
+              </td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center;font-size:12px;color:#6B6966">${p.dateEnd?fmtDate(p.dateEnd):'—'}</td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966">${members||'—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  };
+
+  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>${title} — CHAMORIN</title>
+<style>
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.no-print{display:none!important;}@page{margin:15mm 12mm;size:A4;}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F7F7F5;color:#1C1C1A;font-size:14px;}
+.page{max-width:860px;margin:0 auto;background:#fff;min-height:100vh;}
+.inner{padding:48px 52px 60px;}
+</style></head><body><div class="page">
+<div style="height:6px;background:linear-gradient(90deg,#F4874B,#2E8B57)"></div>
+<div class="inner">
+<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;padding-bottom:24px;padding-bottom:24px;border-bottom:1.5px solid #F0EDE8;gap:20px;flex-wrap:wrap">
+  <div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">CH</div>
+      <div><div><div style="font-size:20px;font-weight:700;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div><div><div style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Gestionnaire de tâches</div></div>
+  </div>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;padding-bottom:24px;border-bottom:1.5px solid #F0EDE8;gap:20px;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;gap:8px">
+      <div><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Destinataire</span><br/><strong style="color:#1C1C1A;font-size:14px;">${to}</strong></div>
+      <div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Préparé par</span><br/><strong style="color:#1C1C1A;font-size:14px;">${from}</strong></div>
+      <div>
+        <div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Date</span><br/><strong style="color:#1C1C1A;">${today}</strong></div>
+    </div>
 </div>
-<div style="margin-top:48px;padding-top:16px;border-top:1px solid #F0EDE8;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-  <div style="display:flex;align-items:center;gap:8px"><div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff">CH</div><span style="font-size:11px;color:#C0BDB8">CHAMORIN &mdash; Document confidentiel</span></div>
-  <span style="font-size:11px;color:#C0BDB8">Généré le ${today}</span>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
+  <div style="background:#E6F4ED;border-radius:12px;padding:18px 20px;border-left:4px solid #2E8B57"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1E6040;margin-bottom:6px">Réalisées</div><div><div style="font-size:32px;font-weight:700;color:#1E6040">${done.length}</div><div><div style="font-size:12px;color:#2E8B57;margin-top:4px">sur cette période</div></div>
+  <div style="background:#FEF0E8;border-radius:12px;padding:18px 20px;border-left:4px solid #F4874B"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:6px">En cours</div><div><div style="font-size:32px;font-weight:700;color:#C9602A">${prog.length}</div><div><div style="font-size:12px;color:#F4874B;margin-top:4px">à finaliser</div></div>
+  <div style="background:#F7F7F5;border-radius:12px;padding:18px 20px;border-left:4px solid #9A9894;border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #F0EDE8;gap:10px;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;align-items:center;gap:10px;gap:10px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;gap:10px;gap:10px;gap:10px;margin-bottom:12px;">
+            <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Progression globale</span><span style="font-weight:700;color:#1C1C1A;">${pctGlobal}%</span></div>
+  <div style="background:#F0EDE8;border-radius:20px;height:10px;overflow:hidden;"><div style="height:10px;border-radius:20px;background:linear-gradient(90deg,#F4874B,#2E8B57);width:${pctGlobal}%"></div></div>
 </div>
-<div class="no-print" style="text-align:center;margin-top:36px">
-  <button onclick="window.print()" style="background:linear-gradient(135deg,#F4874B,#C9602A);color:#fff;border:none;border-radius:12px;padding:14px 40px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🖨 Imprimer / Enregistrer en PDF</button>
-  <div style="font-size:12px;color:#9A9894;margin-top:10px">Choisir "Enregistrer en PDF" dans la boîte d'impression</div>
-</div>
-</div></div></body></html>`;
+ ${comment?`<div style="background:#FFFCF8;border:1px solid #F4874B30;border-left:4px solid #F4874B;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:28px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:8px">Note</div><div><div style="font-size:13px;color:#3A3936;line-height:1.7">${comment}</div></div>`:''}
+ ${section('Réalisations','#2E8B57',done)}
+ ${section('En cours','#C9602A',prog)}
+ ${section('À venir','#8A8880',todo)}
+ ${absSection()}
+ ${incProjects?projSection():''}
+<div style="margin-top:32px;padding-top:24px;padding-top:16px;border-top:1.5px solid #534AB720">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #534AB730">
+    <div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div>
+    <h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#534AB7;margin:0">Suivi des projets</h3>
+    <span style="font-size:12px;color:#9A9894">${projs.length} projet${projs.length>1?'s':''}</span>
+  </div>
+  <!-- Synthèse projets -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+    ${[
+      {l:'Total',v:projs.length,c:'#534AB7',bg:'#EEEDFE'},
+      {l:'En cours',v:projs.filter(p=>p.status==='En cours').length,c:'#C9602A',bg:'#FEF0E8'},
+      {l:'Terminés',v:projs.filter(p=>p.status==='Terminé').length,c:'#1E6040',bg:'#E6F4ED'},'En pause':{color:'#8A8880',bg:'#F2F1EE'}},
+      {l:'Avancement moy.',v:projs.length?Math.round(projs.reduce((s,p)=>s+(p.progress||0),0)/projs.length)+'%':'—',c:'#1C1C1A',bg:'#F7F7F5'},
+    ].map(k=>`<div style="background:${k.bg};border-radius:10px;padding:14px 16px">
+      <div style="font-size:11px;font-weight:700;color:${k.c};text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${k.l}</div>
+      <div style="font-size:26px;font-weight:700;color:${k.c}">${k.v}</div>
+    </div>`).join('')}
+  <!-- Tableau projets -->
+  <table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden;">
+    <thead><tr style="background:#534AB712">
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:22%">Projet</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:16%">Service</th>
+      <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:12%">Statut</th>
+      <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Priorité</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:20%">Avancement</th>
+      <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Échéance</th>
+      <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Équipe</th>
+        </tr></thead>
+        <tbody>
+          ${projs.map(p=>{
+            const ps=PSS[p.status]||PSS['Planifié'];const pr=PRIO[PRIORITY_STYLES[p.priority]||PRIORITY_STYLES['Moyenne'];
+            const stepsTotal=(p.steps||[]).length;const stepsDone=(p.steps||[]).filter(s=>s.done).length;
+            const members=(p.members||[]).map(id=>mName(id)).filter(Boolean).join(', ');
+            const color=p.color||'#534AB7';
+            return `<tr>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;"></div>
+                  <span style="font-size:13px;font-weight:600;color:#1C1C1A;">${p.name}</span>
+                  ${p.programme?`<span style="font-size:10px;font-weight:700;color:${color};background:${color}18;padding:1px 6px;border-radius:10px;border-radius:10px">${p.programme}</span>`:''}
+                </div>
+                ${p.family?`<div style="font-size:11px;color:#534AB7;margin-left:18px; margin-bottom:2px;">📂 ${p.family}</div>`:''}
+                ${p.desc?`<div style="font-size:11px;color:#6B6966;line-height:1.4;margin-left:18px">${p.desc.slice(0,80)}${p.desc.length>80?'…':''}</div>`:''}
+                ${stepsTotal?`<div style="font-size:11px;color:#9A9894;margin-top:4px;margin-left:18px">Étapes : <strong style="color:var(--text)">${stepsDone}/${stepsTotal}</strong></div>`:''}
+              </td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966;">${p.service||'—'}</td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${ps.bg};color:${ps.color}">${p.status}</span></td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center;"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${pr.bg};color:${pr.color}">${p.priority}</span></td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:middle;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;background:#F0EDE8;border-radius:20px;height:7px;overflow:hidden;"><div style="height:7px;border-radius:20px;background:${color};width:${p.progress||0}%"></div></div>
+                  <span style="font-size:12px;font-weight:700;color:#1C1C1A;min-width:30px;text-align:right;">${p.progress||0}%</span>
+                </div>
+              </td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center;font-size:12px;color:#6B6966;">${p.dateEnd?fmtDate(p.dateEnd):'—'}</td>
+              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966;">${members||'—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  };
 
   window.open(URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),'_blank');
   closeReportModal();
 }
 
-// ══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 //  COLLABORATEURS
-// ══════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 function renderColorOpts(){document.getElementById('color-opts').innerHTML=PALETTES.map((p,i)=>`<div class="color-opt${i===selectedPalette?' selected':''}" style="background:${p.color}" onclick="selectPalette(${i})"></div>`).join('');}
 window.selectPalette=function(i){selectedPalette=i;renderColorOpts();}
 function renderMemberList(){
-  document.getElementById('member-list').innerHTML=state.members.map(m=>{const p=getPalette(m);return `<div class="member-row"><span class="avatar" style="background:${p.bg};color:${p.color}">${initials(m.name)}</span><span class="mname">${m.name}</span><span class="role">${m.role||''}</span><button class="del-btn" onclick="deleteMember('${m.id}')">×</button></div>`;}).join('');
+  document.getElementById('member-list').innerHTML=state.members.map(m=>{const p=getPalette(m);return `<div class="member-row"><span class="avatar" style="background:${p.bg};color:${p.color}">${initials(m.name)}</span><span class="mname">${m.name}</span><span class="role">${m.role||''}</span><button class="del-btn" onclick="deleteMember('${m.id}')">×</button></div>`).join('');
 }
 window.openMembersModal=function(){renderMemberList();renderColorOpts();document.getElementById('members-modal-overlay').classList.add('open');}
 window.closeMembersModal=function(){document.getElementById('members-modal-overlay').classList.remove('open');}
-window.closeMembersModalOnBg=function(e){if(e.target===document.getElementById('members-modal-overlay'))closeMembersModal();}
+window.closeMembersModalOnBg=function(e){if(e.target===document.getElementById('members-modal-overlay'))closeMembersModal();window.openMembersModal();}
 window.addMember=function(){
   const name=document.getElementById('m-name').value.trim();const role=document.getElementById('m-role').value.trim();
   if(!name){document.getElementById('m-name').focus();return;}
   const id=genId(name);state.members.push({id,name,role,paletteIdx:selectedPalette});
   document.getElementById('m-name').value='';document.getElementById('m-role').value='';
-  renderMemberList();renderMemberSelects();renderAbsMemberSelect();saveState();
+  renderMemberList();renderMemberSelects();renderAbsMemberSelects();saveState();
 }
 window.deleteMember=function(id){
   if(state.members.length<=1){alert('Il faut au moins un membre.');return;}
@@ -1690,18 +1886,9 @@ window.deleteMember=function(id){
   state.members=state.members.filter(m=>m.id!==id);renderMemberList();renderMemberSelects();renderKanban();saveState();
 }
 
-// ══════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════; }
 //  INIT
-// ══════════════════════════════════════════
-document.getElementById('today-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-document.getElementById('new-task-title').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
-document.getElementById('new-event-title').addEventListener('keydown',e=>{if(e.key==='Enter')addEvent();});
-document.getElementById('m-name').addEventListener('keydown',e=>{if(e.key==='Enter')addMember();});
-document.getElementById('tm-done-input').addEventListener('keydown',e=>{if(e.key==='Enter')addDoneItem();});
-document.getElementById('pm-step-input').addEventListener('keydown',e=>{if(e.key==='Enter')addStep();});
-document.getElementById('plan-event-title').addEventListener('keydown',e=>{if(e.key==='Enter')addPlanningEvent();});
-
-initFirebase();
-</script>
-</body>
-</html>
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════;opacity:0.5px; pointer-events:none; transition:opacity .15s; }
+    @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.no-print{display:none!important;}@page{margin:15mm 12mm;size:A4;}}
+*{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F7F7F5;color:#1C1C1A;font-size
