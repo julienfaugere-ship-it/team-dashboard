@@ -1212,6 +1212,14 @@ function renderProjects(){
     return;
   }
 
+  // ENREGISTRER les fonctions sur window AVANT de générer le HTML
+  // Une fonction par projet : window._editP_ID et window._delP_ID
+  projs.forEach(p => {
+    const pid = +p.id;
+    window['_editP_' + pid] = function(){ openProjectModal(pid); };
+    window['_delP_'  + pid] = function(){ deleteOneProject(pid); };
+  });
+
   // Groupement par famille
   const groups = {};
   projs.forEach(p=>{
@@ -1234,29 +1242,6 @@ function renderProjects(){
     </div>`;
   });
   container.innerHTML = html;
-
-  // ── Attacher les events sur chaque carte ──────────────────────────
-  // Approche la plus simple et la plus fiable :
-  // on attache directement sur chaque bouton et chaque carte via querySelectorAll
-  container.querySelectorAll('.project-card').forEach(card=>{
-    const pid = +card.getAttribute('data-pid');
-
-    // Clic sur le bouton ×
-    const delBtn = card.querySelector('.proj-del-btn');
-    if(delBtn){
-      delBtn.addEventListener('click', function(e){
-        e.stopPropagation();
-        e.preventDefault();
-        deleteOneProject(pid);
-      });
-    }
-
-    // Clic sur la carte elle-même (hors bouton ×)
-    card.addEventListener('click', function(e){
-      if(e.target.closest('.proj-del-btn')) return; // ignore si c'est le bouton ×
-      openProjectModal(pid);
-    });
-  });
 }
 
 function projectCardHTML(p){
@@ -1269,7 +1254,8 @@ function projectCardHTML(p){
   const stepsDone  = p.steps.filter(s=>s.done).length;
   const daysLeft = p.dateEnd ? Math.round((new Date(p.dateEnd)-new Date())/86400000) : null;
   const pid = +p.id;
-  return `<div class="project-card" data-pid="${pid}">
+  // onclick appelle directement les fonctions window enregistrées — 100% fiable
+  return `<div class="project-card" onclick="_editP_${pid}()">
     <div style="height:4px;background:${color};border-radius:14px 14px 0 0"></div>
     <div class="project-card-header">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:4px">
@@ -1278,7 +1264,7 @@ function projectCardHTML(p){
           ${p.programme?`<div class="project-prog-line"><span class="project-prog-code">${p.programme}</span></div>`:''}
           ${p.service?`<div class="project-prog-line"><span>${p.service}</span></div>`:''}
         </div>
-        <button class="proj-del-btn" title="Supprimer ce projet">×</button>
+        <button class="proj-del-btn" title="Supprimer ce projet" onclick="event.stopPropagation();_delP_${pid}()">×</button>
       </div>
       <div class="project-badges" style="margin-top:8px">
         <span class="project-status-badge" style="background:${ss.bg};color:${ss.color}">${p.status}</span>
