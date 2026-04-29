@@ -381,7 +381,16 @@
       <div class="add-row">
         <input id="new-task-title" placeholder="Titre de la tâche..." />
         <select id="new-task-member"></select>
-        <select id="new-task-tag"><option>Dev</option><option>Design</option><option>Marketing</option><option>Admin</option><option>Autre</option></select>
+        <select id="new-task-tag">
+            <option>Commerce</option>
+            <option>Comptabilité</option>
+            <option>Marketing</option>
+            <option>Achats</option>
+            <option>Logistique</option>
+            <option>Qualité</option>
+            <option>Admin</option>
+            <option>Autre</option>
+        </select>
         <button class="primary" onclick="addTask()">+ Ajouter</button>
       </div>
     </div>
@@ -712,7 +721,17 @@ const PALETTES=[
   {color:'#8A6A2E',bg:'#F5EDDA'},{color:'#5A4E8A',bg:'#EDEAF5'},
 ];
 const PROJ_COLORS=['#F4874B','#2E8B57','#534AB7','#185fa5','#993356','#854f0b','#0F6E56','#993C1D','#4A7C8A','#8A6A2E'];
-const TAG_STYLES={Dev:{color:'#1E6040',bg:'#E6F4ED'},Design:{color:'#C9602A',bg:'#FEF0E8'},Marketing:{color:'#F4874B',bg:'#FDE8D8'},Admin:{color:'#7A5C3A',bg:'#F5EDE3'},Réunion:{color:'#4A7C8A',bg:'#E3EFF2'},Client:{color:'#8A6A2E',bg:'#F5EDDA'},Interne:{color:'#534AB7',bg:'#EEEDFE'},Autre:{color:'#8A8880',bg:'#F2F1EE'}};
+// TAG_STYLES mis à jour selon la demande
+const TAG_STYLES={
+  Commerce:{color:'#F4874B',bg:'#FDE8D8'},
+  Comptabilité:{color:'#1E6040',bg:'#E6F4ED'},
+  Marketing:{color:'#C9602A',bg:'#FEF0E8'},
+  Achats:{color:'#4A7C8A',bg:'#E3EFF2'},
+  Logistique:{color:'#7A5C3A',bg:'#F5EDE3'},
+  Qualité:{color:'#534AB7',bg:'#EEEDFE'},
+  Admin:{color:'#8A6A2E',bg:'#F5EDDA'},
+  Autre:{color:'#8A8880',bg:'#F2F1EE'}
+};
 const STATUS_LABELS={todo:'À faire',prog:'En cours',done:'Terminé'};
 const STATUS_STYLES={todo:{color:'#8A8880',bg:'#F2F1EE'},prog:{color:'#C9602A',bg:'#FEF0E8'},done:{color:'#1E6040',bg:'#E6F4ED'}};
 const PROJ_STATUS_STYLES={'En cours':{color:'#C9602A',bg:'#FEF0E8'},'Planifié':{color:'#185fa5',bg:'#E6F1FB'},'Terminé':{color:'#1E6040',bg:'#E6F4ED'},'En pause':{color:'#8A8880',bg:'#F2F1EE'}};
@@ -724,11 +743,11 @@ const DEFAULT_STATE={
   members:[{id:'JU',name:'Julien',role:'Admin',paletteIdx:2}],
   tasks:[
     {id:1,title:'Configurer le repository',member:'JU',status:'todo',tag:'Admin',desc:'',done:[],dateStart:'',dateEnd:''},
-    {id:2,title:'Rédiger le README',member:'JU',status:'prog',tag:'Dev',desc:'',done:['Structure définie'],dateStart:'2026-04-21',dateEnd:'2026-04-25'},
-    {id:3,title:'Déployer sur GitHub Pages',member:'JU',status:'done',tag:'Dev',desc:'',done:['Repository créé','GitHub Pages activé'],dateStart:'2026-04-20',dateEnd:'2026-04-22'},
+    {id:2,title:'Rédiger le README',member:'JU',status:'prog',tag:'Comptabilité',desc:'',done:['Structure définie'],dateStart:'2026-04-21',dateEnd:'2026-04-25'},
+    {id:3,title:'Déployer sur GitHub Pages',member:'JU',status:'done',tag:'Commerce',desc:'',done:['Repository créé','GitHub Pages activé'],dateStart:'2026-04-20',dateEnd:'2026-04-22'},
   ],
   projects:[],
-  events:[{id:1,time:'09:00',title:'Standup équipe',tag:'Réunion',date:toISO(new Date())},{id:2,time:'14:00',title:'Revue de code',tag:'Dev',date:toISO(new Date())}],
+  events:[{id:1,time:'09:00',title:'Standup équipe',tag:'Réunion',date:toISO(new Date())},{id:2,time:'14:00',title:'Revue de code',tag:'Commerce',date:toISO(new Date())}],
   absences:[],
   nextId:4,nextEventId:3,nextAbsId:1,nextProjId:1,
 };
@@ -1252,7 +1271,7 @@ function renderProjectCard(p){
     const stepsDone=(p.steps||[]).filter(s=>s.done).length;
     const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
 
-    // NOTE: Ajout de onclick="openProjectModal(${p.id})" sur la div principale pour l'édition
+    // Ajout de onclick sur la carte pour l'édition
     return `<div class="project-card" draggable="true" ondragstart="handleProjectDragStart(event, ${p.id})" onclick="openProjectModal(${p.id})">
       <div class="project-card-header">
         <div class="project-color-bar" style="background:${color}"></div>
@@ -1430,6 +1449,7 @@ window.saveProject=function(){
   } else { state.projects.push(proj); }
   renderProjects();saveState();closeProjectModal();
 }
+// Suppression stricte par ID : ne supprime que ce projet
 window.confirmDeleteProject=function(id){if(!confirm('Supprimer ce projet ?'))return;state.projects=state.projects.filter(p=>p.id!==id);renderProjects();saveState();}
 window.deleteProject=function(){if(currentProjId)confirmDeleteProject(currentProjId);closeProjectModal();}
 
