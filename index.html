@@ -1188,13 +1188,80 @@ function renderProjects(){
             <span>📂 ${famName}</span>
             <span style="font-weight:400;color:var(--text3);font-size:11px">${groupProjects.length} projet${groupProjects.length > 1 ? 's' : ''}</span>
         </div>
-        <div class="family-grid" id="grid-${famName.replace(/[^a-zA-Z0-9]/g,'_')}" ${onDrop}>
+        <div class="family-grid" id="grid-${famName.replace(/[^a-zA-Z0-9]/g,'_')}" data-family="${famName}">
             ${groupProjects.map(p => renderProjectCard(p)).join('')}
         </div>
     </div>`;
   });
 
   container.innerHTML = html;
+  setupProjectEvents();
+}
+
+// Délégation d'événements : UN seul listener sur le container
+// Gère : clic sur carte (édition) + clic sur bouton × (suppression)
+// + drag sur le handle coloré en haut de carte
+function setupProjectEvents(){
+  const container = document.getElementById('projects-container');
+  if(!container) return;
+
+  // Supprimer l'ancien listener si présent
+  const old = container._projHandler;
+  if(old) container.removeEventListener('click', old);
+
+  const handler = function(e){
+    // ── Suppression : bouton × ──────────────────────────────────────
+    const delBtn = e.target.closest('[data-action="delete"]');
+    if(delBtn){
+      e.stopPropagation();
+      const pid = parseInt(delBtn.getAttribute('data-project-id'));
+      confirmDeleteProject(pid);
+      return;
+    }
+
+    // ── Édition : clic sur la carte (hors bouton ×) ──────────────────
+    const card = e.target.closest('.project-card');
+    if(card){
+      const pid = parseInt(card.getAttribute('data-project-id'));
+      openProjectModal(pid);
+    }
+  };
+
+  container._projHandler = handler;
+  container.addEventListener('click', handler);
+
+  // ── Drag & Drop sur le handle (barre colorée) ─────────────────────
+  container.querySelectorAll('.proj-drag-handle').forEach(handle => {
+    handle.setAttribute('draggable','true');
+    handle.addEventListener('dragstart', function(e){
+      const pid = parseInt(this.getAttribute('data-drag-id'));
+      e.dataTransfer.setData('text/plain', pid);
+      e.dataTransfer.effectAllowed = 'move';
+      this.closest('.project-card').classList.add('dragging');
+      e.stopPropagation();
+    });
+  });
+
+  // Drop zones sur les family-grids
+  container.querySelectorAll('.family-grid').forEach(grid => {
+    grid.addEventListener('dragover', function(e){ e.preventDefault(); this.classList.add('drag-over'); });
+    grid.addEventListener('dragleave', function(e){ this.classList.remove('drag-over'); });
+    grid.addEventListener('drop', function(e){
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+      const pid = parseInt(e.dataTransfer.getData('text/plain'));
+      const famName = this.getAttribute('data-family');
+      const idx = state.projects.findIndex(p => parseInt(p.id) === pid);
+      if(idx >= 0){
+        const newFamily = famName === 'SANS FAMILLE' ? '' : famName;
+        if(state.projects[idx].family !== newFamily){
+          state.projects[idx].family = newFamily;
+          saveState(); renderProjects();
+        }
+      }
+    });
+  });
 }
 
 function renderProjectCard(p){
@@ -1206,14 +1273,14 @@ function renderProjectCard(p){
     const stepsTotal=(p.steps||[]).length;
     const stepsDone=(p.steps||[]).filter(s=>s.done).length;
     const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
+    const pid=parseInt(p.id);
 
-    // ✅ FIX : onclick sur la carte ouvre la modal d'édition
-    // Le bouton × utilise event.stopPropagation() pour ne PAS déclencher l'édition
-    return `<div class="project-card" draggable="true"
-        ondragstart="handleProjectDragStart(event, ${p.id})"
-        onclick="openProjectModal(${p.id})">
+    // data-project-id sur la carte, data-action="delete" sur le bouton ×
+    // La délégation d'événements dans setupProjectEvents() gère tout proprement
+    // SANS draggable sur la carte (évite le bug de capture d'événements)
+    return `<div class="project-card" data-project-id="${pid}">
       <div class="project-card-header">
-        <div class="project-color-bar" style="background:${color}"></div>
+        <div class="project-color-bar proj-drag-handle" data-drag-id="${pid}" style="background:${color};cursor:grab;height:8px"></div>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:8px">
           <div style="flex:1">
             <div class="project-name">${p.name}</div>
@@ -1232,10 +1299,7 @@ function renderProjectCard(p){
                 `:''}
             </div>
           </div>
-          <!-- ✅ FIX SUPPRESSION : stopPropagation empêche l'ouverture de la modal d'édition -->
-          <button class="proj-del-btn"
-            onclick="event.stopPropagation(); confirmDeleteProject(${p.id})"
-            title="Supprimer uniquement ce projet">×</button>
+          <button class="proj-del-btn" data-action="delete" data-project-id="${pid}" title="Supprimer ce projet">×</button>
         </div>
         <div class="project-badges">
           <span class="project-status-badge" style="background:${ss.bg};color:${ss.color}">${p.status}</span>
@@ -1258,30 +1322,7 @@ function renderProjectCard(p){
     </div>`;
 }
 
-// --- DRAG AND DROP ---
-window.handleProjectDragStart=function(e, projectId){
-    e.dataTransfer.setData("text/plain", projectId);
-    e.dataTransfer.effectAllowed = "move";
-    e.target.classList.add('dragging');
-}
-window.allowDrop=function(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
-window.leaveDrop=function(e){e.currentTarget.classList.remove('drag-over');}
-window.handleProjectDrop=function(e, targetFamily){
-    e.preventDefault();
-    const grid = e.currentTarget;
-    grid.classList.remove('drag-over');
-    document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
-    const projectId = parseInt(e.dataTransfer.getData("text/plain"));
-    const projectIndex = state.projects.findIndex(p => parseInt(p.id) === projectId);
-    if(projectIndex >= 0){
-        const newFamily = targetFamily === 'SANS FAMILLE' ? '' : targetFamily;
-        if(state.projects[projectIndex].family !== newFamily){
-            state.projects[projectIndex].family = newFamily;
-            saveState();
-            renderProjects();
-        }
-    }
-}
+// Drag & Drop géré par setupProjectEvents() via délégation
 
 // ══════════════════════════════════════════
 //  MODAL PROJET — ✅ CORRECTIONS ICI
