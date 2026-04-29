@@ -800,8 +800,18 @@ function startListening(){
     state.events   = toArray(state.events);
     state.absences = toArray(state.absences);
     state.projects = toArray(state.projects);
-    // S'assurer que les IDs de projets sont bien des numbers
-    state.projects = state.projects.map(p => ({...p, id: parseInt(p.id)}));
+    // Normaliser chaque projet : id en number, steps/members en vrais arrays
+    state.projects = state.projects.map(p => ({
+      ...p,
+      id:      parseInt(p.id),
+      steps:   toArray(p.steps),
+      members: toArray(p.members),
+    }));
+    // Normaliser tasks, events, absences de même
+    state.tasks    = state.tasks.map(t    => ({...t, id: parseInt(t.id), done: toArray(t.done)}));
+    state.events   = state.events.map(e   => ({...e, id: parseInt(e.id)}));
+    state.absences = state.absences.map(a => ({...a, id: parseInt(a.id)}));
+    state.members  = state.members.map(m  => ({...m}));
     renderAll(); setSyncStatus('ok');
     isRemoteUpdate=false;
   },(err)=>{ console.error(err); setSyncStatus('error'); });
@@ -1394,7 +1404,7 @@ window.saveProject=function(){
 // ✅ FIX 2 : Suppression STRICTEMENT par ID — ne touche pas aux autres projets du groupe
 window.confirmDeleteProject=function(id){
   const numId = parseInt(id);
-  const proj = (state.projects||[]).find(p => p.id === numId);
+  const proj = (state.projects||[]).find(p => parseInt(p.id) === numId);
   if(!proj) return;
   // Message clair : on supprime CE projet, pas sa famille
   if(!confirm(`Supprimer le projet "${proj.name}" ?\n\nLes autres projets du groupe "${proj.family || 'Sans famille'}" ne seront pas affectés.`)) return;
