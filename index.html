@@ -187,6 +187,7 @@
     .projects-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
     .project-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:0; overflow:hidden; transition:border-color .2s, box-shadow .2s; cursor:pointer; position:relative; }
     .project-card:hover { border-color:var(--purple); box-shadow:0 4px 20px rgba(83,74,183,.1); transform:translateY(-2px); }
+    .project-card:active { transform:scale(0.99); }
     .project-card.dragging { opacity:0.5; border:2px dashed var(--text3); background:var(--surface2); }
     .project-card-header { padding:14px 16px 10px; position:relative; }
     .project-color-bar { position:absolute; top:0; left:0; right:0; height:3px; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
@@ -1185,17 +1186,21 @@ window.deleteAbsence=function(id){state.absences=(state.absences||[]).filter(a=>
 // ══════════════════════════════════════════
 function renderProjects(){
   const container = document.getElementById('projects-container');
-  const filter=document.getElementById('proj-filter-status')?.value||'all'; // Note: filtrage statut désactivé visuellement pour l'instant car on groupe par famille, mais on garde la logique interne
+  const filter=document.getElementById('proj-filter-status')?.value||'all'; 
+
+  // IMPORTANT : On utilise TOUS les projets pour calculer les familles
+  // afin de garantir que la famille reste visible même si l'un d'eux est supprimé
+  const allProjects = state.projects || []; 
   
-  const projects=(state.projects||[]).filter(p=>filter==='all'||p.status===filter);
+  // Pour la synthèse, on filtre selon la vue (standard)
+  const projects = allProjects.filter(p=>filter==='all'||p.status===filter);
 
   // Synthèse
-  const all=state.projects||[];
   const synth=[
-    {label:'Total projets',val:all.length,color:'var(--purple)',icon:'🗂'},
-    {label:'En cours',val:all.filter(p=>p.status==='En cours').length,color:'var(--orange)',icon:'⚡'},
-    {label:'Terminés',val:all.filter(p=>p.status==='Terminé').length,color:'var(--green)',icon:'✅'},
-    {label:'Avancement moy.',val:all.length?Math.round(all.reduce((s,p)=>s+(p.progress||0),0)/all.length)+'%':'—',color:'var(--text)',icon:'📈'},
+    {label:'Total projets',val:allProjects.length,color:'var(--purple)',icon:'🗂'},
+    {label:'En cours',val:allProjects.filter(p=>p.status==='En cours').length,color:'var(--orange)',icon:'⚡'},
+    {label:'Terminés',val:allProjects.filter(p=>p.status==='Terminé').length,color:'var(--green)',icon:'✅'},
+    {label:'Avancement moy.',val:allProjects.length?Math.round(allProjects.reduce((s,p)=>s+(p.progress||0),0)/allProjects.length)+'%':'—',color:'var(--text)',icon:'📈'},
   ];
   document.getElementById('project-synth').innerHTML=synth.map(s=>`
     <div class="synth-card">
@@ -1209,10 +1214,11 @@ function renderProjects(){
     return;
   }
 
-  // Groupement par famille
+  // Groupement basé sur TOUS les projets
   const groups = {};
-  projects.forEach(p => {
-    const fam = (p.family || 'SANS FAMILLE').trim().toUpperCase();
+  allProjects.forEach(p => {
+    // Sécurité : si famille vide, on met 'SANS FAMILLE' pour éviter les clés vides
+    const fam = (p.family || 'SANS FAMILLE').trim().toUpperCase() || 'SANS FAMILLE';
     if(!groups[fam]) groups[fam] = [];
     groups[fam].push(p);
   });
@@ -1223,7 +1229,11 @@ function renderProjects(){
   // Rendu HTML
   let html = '';
   sortedFamilies.forEach(famName => {
-    const groupProjects = groups[famName];
+    // On filtre les projets à l'intérieur de la famille pour respecter le filtre global
+    const groupProjects = groups[famName].filter(p => filter==='all'||p.status===filter);
+    
+    // Si la famille n'a aucun projet correspondant au filtre, on l'affiche pas
+    if(groupProjects.length === 0) return;
     
     // Drag Drop Handlers pour la famille
     const onDrop = `ondrop="handleProjectDrop(event, '${famName}')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)"`;
@@ -1252,7 +1262,8 @@ function renderProjectCard(p){
     const stepsDone=(p.steps||[]).filter(s=>s.done).length;
     const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
 
-    return `<div class="project-card" draggable="true" ondragstart="handleProjectDragStart(event, ${p.id})">
+    // Ajout du onclick sur la carte entière pour l'édition
+    return `<div class="project-card" onclick="openProjectModal(${p.id})" draggable="true" ondragstart="handleProjectDragStart(event, ${p.id})">
       <div class="project-card-header">
         <div class="project-color-bar" style="background:${color}"></div>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:8px">
@@ -1271,7 +1282,7 @@ function renderProjectCard(p){
                 <!-- Ligne Service : Icône + Nom -->
                 ${p.service?`
                     <div class="project-prog-line">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                         <span>${p.service}</span>
                     </div>
                 `:''}
