@@ -188,10 +188,18 @@
     .schedule-date-title { font-size:16px; font-weight:700; color:var(--text); }
     .schedule-date-subtitle { font-size:12px; color:var(--text3); font-weight:400; }
     .timeline-list { flex:1; overflow-y:auto; padding-right:4px; }
-    .planning-event-card { background:var(--surface); border:0.5px solid var(--border); border-left:3px solid var(--purple); border-radius:4px; padding:8px 10px; margin-bottom:6px; font-size:13px; color:var(--text); display:flex; justify-content:space-between; align-items:center; transition:transform .1s; }
+    .planning-event-card { background:var(--surface); border:0.5px solid var(--border); border-left:3px solid var(--purple); border-radius:4px; padding:8px 10px; margin-bottom:6px; font-size:13px; color:var(--text); display:flex; justify-content:space-between; align-items:center; transition:all .2s; }
     .planning-event-card:hover { border-color:var(--orange); transform:translateX(2px); }
+    .planning-event-card.done { background:var(--done-bg); border-left-color:var(--green); opacity:.75; }
+    .planning-event-card.done .pe-title { text-decoration:line-through; color:var(--text3); }
+    .planning-event-card.done .pe-time { color:var(--green); }
     .pe-time { font-size:11px; font-weight:600; color:var(--orange); margin-right:8px; min-width:40px; }
     .pe-title { flex:1; }
+    .pe-check { width:20px; height:20px; border-radius:50%; border:1.5px solid var(--border2); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:8px; background:var(--surface); transition:all .15s; font-size:10px; font-weight:700; color:transparent; }
+    .pe-check:hover { border-color:var(--green); color:var(--green); }
+    .planning-event-card.done .pe-check { background:var(--green); border-color:var(--green); color:#fff; }
+    @keyframes checkPop { 0%{transform:scale(1)} 40%{transform:scale(1.3)} 100%{transform:scale(1)} }
+    .pe-check.popping { animation:checkPop .25s ease; }
 
     /* ══════════════════════════════════════════
        SUIVI PROJETS — Nouveau styles
@@ -1167,6 +1175,14 @@ window.addEvent=function(){
   document.getElementById('new-event-title').value='';renderAgenda();saveState();
 }
 window.deleteEvent=function(id){state.events=state.events.filter(e=>e.id!==id);renderAgenda();renderPlanning();saveState();}
+window.toggleEventDone=function(id){
+  const e=state.events.find(x=>x.id===id);if(!e)return;
+  e.done=!e.done;
+  // Animate check
+  const card=document.querySelector(`.planning-event-card .pe-check[onclick="toggleEventDone(${id})"]`);
+  if(card){card.classList.add('popping');setTimeout(()=>card.classList.remove('popping'),300);}
+  renderDailySchedule();renderAgenda();saveState();
+}
 
 // ══════════════════════════════════════════
 //  PLANNING
@@ -1203,7 +1219,13 @@ function renderDailySchedule(){
   const events=getEventsForDate(dateStr);
   const list=document.getElementById('schedule-list');
   if(!events.length){list.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Aucun RDV ce jour-là.</div>`;return;}
-  list.innerHTML=events.map(e=>`<div class="planning-event-card"><span class="pe-time">${e.time}</span><span class="pe-title">${e.title}</span><span class="tag" style="${tagStyle(e.tag)}">${e.tag}</span><button class="del-btn" onclick="deleteEvent(${e.id})">×</button></div>`).join('');
+  list.innerHTML=events.map(e=>`<div class="planning-event-card${e.done?' done':''}">
+    <div class="pe-check" onclick="toggleEventDone(${e.id})" title="${e.done?'Marquer comme non réalisé':'Marquer comme réalisé'}">✓</div>
+    <span class="pe-time">${e.time}</span>
+    <span class="pe-title">${e.title}</span>
+    ${e.done?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--done-bg);color:var(--done-color);flex-shrink:0;margin-right:6px">✓ Réalisé</span>`:`<span class="tag" style="${tagStyle(e.tag)}">${e.tag}</span>`}
+    <button class="del-btn" onclick="deleteEvent(${e.id})">×</button>
+  </div>`).join('');
 }
 window.addPlanningEvent=function(){
   const time=document.getElementById('plan-event-time').value;
