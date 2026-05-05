@@ -1,1668 +1,964 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gestionnaire de tâches</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --orange:#F4874B; --orange-light:#FEF0E8; --orange-dark:#C9602A;
-      --green:#2E8B57;  --green-light:#E6F4ED;  --green-dark:#1E6040;
-      --bg:#F7F7F5; --surface:#FFFFFF; --surface2:#F2F1EE;
-      --border:rgba(0,0,0,0.10); --border2:rgba(0,0,0,0.20);
-      --text:#1C1C1A; --text2:#5A5956; --text3:#9A9894;
-      --radius-md:8px; --radius-lg:14px; --radius-xl:20px;
-      --todo-color:#8A8880; --todo-bg:#F2F1EE;
-      --prog-color:#F4874B; --prog-bg:#FEF0E8;
-      --done-color:#2E8B57; --done-bg:#E6F4ED;
-      --red:#C0392B; --red-bg:#FCECEA;
-      --purple:#534AB7; --purple-bg:#EEEDFE;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg:#181816; --surface:#222220; --surface2:#2A2A27;
-        --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.18);
-        --text:#EDEAE2; --text2:#9A9890; --text3:#656360;
-        --orange-light:#3D2510; --orange-dark:#F4A274;
-        --green-light:#0E2E1E; --green-dark:#5DBE8A;
-        --todo-bg:#2A2A27; --todo-color:#9A9890;
-        --prog-bg:#3D2510; --prog-color:#F4A274;
-        --done-bg:#0E2E1E; --done-color:#5DBE8A;
-        --red-bg:#2E1010; --red:#E57373;
-        --purple-bg:#2A2660; --purple:#A09AEC;
-      }
-    }
-    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-size:14px; line-height:1.5; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MonMenu 🍽️</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FDF8F2;
+    --warm: #F5ECD7;
+    --terracotta: #C0603A;
+    --terra-light: #E8855E;
+    --terra-dark: #8B3A1F;
+    --sage: #6B8F71;
+    --sage-light: #A8C5AB;
+    --sage-dark: #3D5940;
+    --gold: #D4A843;
+    --gold-light: #F0D080;
+    --ink: #2C2416;
+    --ink-muted: #7A6E60;
+    --ink-light: #B5A898;
+    --white: #FFFFFF;
+    --border: rgba(44,36,22,0.12);
+    --shadow: 0 4px 24px rgba(44,36,22,0.10);
+    --shadow-sm: 0 2px 8px rgba(44,36,22,0.08);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
 
-    /* ── Loader ── */
-    #loader { position:fixed; inset:0; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; z-index:999; transition:opacity .4s; }
-    #loader .spinner { width:40px; height:40px; border-radius:50%; border:3px solid var(--border2); border-top-color:var(--orange); animation:spin .8s linear infinite; }
-    #loader p { font-size:13px; color:var(--text3); }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    #loader.hidden { opacity:0; pointer-events:none; }
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; display:flex; align-items:center; gap:10px; }
+  .logo-icon { font-size:1.8rem; }
+  nav { display:flex; gap:4px; }
+  nav button {
+    background: none; border: none; color: var(--ink-light);
+    padding: 8px 16px; border-radius: 8px; cursor:pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight:500;
+    transition: all 0.2s;
+  }
+  nav button:hover { color: var(--cream); background: rgba(255,255,255,0.1); }
+  nav button.active { color: var(--gold); background: rgba(212,168,67,0.15); }
 
-    /* ── Sync ── */
-    .sync-badge { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text3); }
-    .sync-dot { width:7px; height:7px; border-radius:50%; background:var(--green); }
-    .sync-dot.saving { background:var(--orange); animation:pulse .8s infinite; }
-    .sync-dot.error { background:var(--red); }
-    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+  /* MAIN LAYOUT */
+  main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
 
-    /* ── Topbar ── */
-    .topbar-wrap { background:var(--surface); border-bottom:0.5px solid var(--border); position:sticky; top:0; z-index:50; }
-    .topbar { max-width:1300px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:0 1.5rem; height:60px; gap:12px; flex-wrap:wrap; }
-    .brand { display:flex; align-items:center; gap:10px; }
-    .brand-icon { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--orange),var(--green)); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; }
-    .brand-name { font-size:16px; font-weight:600; color:var(--text); }
-    .brand-name span { color:var(--orange); }
-    .topbar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .date-label { font-size:12px; color:var(--text3); }
+  /* VIEWS */
+  .view { display:none; }
+  .view.active { display:block; }
 
-    /* ── Nav tabs ── */
-    .nav-tabs { max-width:1300px; margin:0 auto; padding:0 1.5rem; display:flex; gap:4px; border-bottom:0.5px solid var(--border); background:var(--surface); }
-    .nav-tab { padding:12px 16px; font-size:13px; font-weight:500; color:var(--text3); cursor:pointer; border:none; background:none; border-bottom:2px solid transparent; transition:color .15s,border-color .15s; }
-    .nav-tab:hover { color:var(--text2); background:none; transform:none; }
-    .nav-tab.active { color:var(--orange); border-bottom-color:var(--orange); }
+  /* PAGE TITLES */
+  .page-header { margin-bottom:2rem; }
+  .page-title { font-family:'Playfair Display',serif; font-size:2rem; color:var(--ink); margin-bottom:0.3rem; }
+  .page-sub { color:var(--ink-muted); font-size:0.95rem; }
 
-    /* ── Layout ── */
-    .app { max-width:1300px; margin:0 auto; padding:1.5rem; }
-    .tab-panel { display:none; }
-    .tab-panel.active { display:block; }
-    .grid3-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
-    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-    @media(max-width:900px){ .grid3{grid-template-columns:1fr;} }
+  /* WEEK PLANNER */
+  .week-controls {
+    display:flex; align-items:center; gap:16px; margin-bottom:1.5rem;
+    background:var(--white); border-radius:var(--radius-sm); padding:14px 20px;
+    border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  }
+  .week-nav { background:none; border:1px solid var(--border); border-radius:8px; width:36px; height:36px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1.1rem; transition:all 0.2s; }
+  .week-nav:hover { background:var(--warm); border-color:var(--terracotta); }
+  .week-label { font-weight:500; font-size:1rem; flex:1; text-align:center; }
+  .week-persons { display:flex; gap:8px; }
+  .person-filter {
+    display:flex; align-items:center; gap:6px; padding:6px 12px;
+    border-radius:20px; border:1.5px solid transparent; cursor:pointer;
+    font-size:0.82rem; font-weight:500; transition:all 0.2s; background:var(--warm);
+  }
+  .person-filter.active { border-color:currentColor; }
+  .person-avatar { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700; color:white; }
 
-    /* ── Cards ── */
-    .card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:1.1rem 1.25rem; }
-    .metric { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:1rem 1.25rem; display:flex; flex-direction:column; gap:4px; position:relative; overflow:hidden; }
-    .metric::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--orange),var(--green)); }
-    .metric .lbl { font-size:11px; font-weight:500; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; }
-    .metric .val { font-size:28px; font-weight:600; color:var(--text); line-height:1.1; }
-    .section-title { font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px; }
+  .week-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:12px; }
+  .day-col { display:flex; flex-direction:column; gap:8px; }
+  .day-header { text-align:center; padding:10px 0; }
+  .day-name { font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-muted); font-weight:600; }
+  .day-num { font-family:'Playfair Display',serif; font-size:1.6rem; color:var(--ink); line-height:1; }
+  .day-col.today .day-num { color:var(--terracotta); }
+  .day-col.today .day-name { color:var(--terracotta); }
 
-    /* ── Buttons ── */
-    button { background:var(--surface); border:0.5px solid var(--border2); border-radius:var(--radius-md); color:var(--text); padding:7px 14px; font-size:13px; cursor:pointer; transition:background .15s,transform .1s; font-family:inherit; }
-    button:hover { background:var(--surface2); }
-    button:active { transform:scale(0.97); }
-    button.primary { background:var(--orange); border-color:transparent; color:#fff; font-weight:600; }
-    button.primary:hover { background:var(--orange-dark); }
-    button.green { background:var(--green); border-color:transparent; color:#fff; font-weight:600; }
-    button.green:hover { background:var(--green-dark); }
-    button.purple { background:var(--purple); border-color:transparent; color:#fff; font-weight:600; }
-    button.purple:hover { background:#3f37a0; }
-    button.danger { background:var(--red-bg); border-color:transparent; color:var(--red); font-weight:500; }
-    button.ghost { background:transparent; border-color:var(--border2); color:var(--text2); }
-    button.report-btn { background:var(--orange-light); border-color:transparent; color:var(--orange-dark); font-weight:600; }
-    input, select, textarea { background:var(--surface2); border:0.5px solid var(--border); border-radius:var(--radius-md); color:var(--text); padding:7px 11px; font-size:13px; font-family:inherit; outline:none; transition:border-color .15s; }
-    input:focus, select:focus, textarea:focus { border-color:var(--orange); }
+  .meal-slot {
+    background:var(--white); border-radius:var(--radius-sm); border:1px solid var(--border);
+    padding:10px; min-height:90px; cursor:pointer; transition:all 0.2s; position:relative;
+  }
+  .meal-slot:hover { border-color:var(--terracotta); box-shadow: 0 2px 12px rgba(192,96,58,0.15); transform: translateY(-1px); }
+  .meal-slot.filled { border-color: var(--sage-light); }
+  .meal-type-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-light); font-weight:600; margin-bottom:6px; display:flex; align-items:center; gap:4px; }
+  .meal-name { font-size:0.85rem; font-weight:500; color:var(--ink); line-height:1.3; }
+  .meal-persons-icons { display:flex; gap:2px; margin-top:6px; flex-wrap:wrap; }
+  .mini-avatar { width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.5rem; font-weight:700; color:white; }
+  .add-meal-btn { display:flex; align-items:center; justify-content:center; color:var(--ink-light); height:30px; font-size:1.3rem; }
+  .meal-slot .rating-stars { font-size:0.7rem; margin-top:4px; }
 
-    /* ── Avatar / Tag ── */
-    .avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
-    .tag { font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600; }
+  /* MONTH VIEW */
+  .month-controls {
+    display:flex; align-items:center; gap:16px; margin-bottom:1.5rem;
+    background:var(--white); border-radius:var(--radius-sm); padding:14px 20px;
+    border:1px solid var(--border); box-shadow:var(--shadow-sm);
+  }
+  .month-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:var(--border); border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); }
+  .month-day-header { background:var(--ink); color:var(--gold); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding:10px 0; text-align:center; }
+  .month-day { background:var(--white); padding:10px; min-height:100px; cursor:pointer; transition:all 0.2s; }
+  .month-day:hover { background:var(--warm); }
+  .month-day.other-month { background: var(--cream); }
+  .month-day.today-month { background: rgba(192,96,58,0.06); }
+  .month-day-num { font-size:0.85rem; font-weight:600; color:var(--ink-muted); margin-bottom:6px; }
+  .month-day.today-month .month-day-num { color:var(--terracotta); font-weight:700; }
+  .month-meal-pill {
+    font-size:0.68rem; padding:2px 7px; border-radius:20px; margin-bottom:2px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
+    display:block;
+  }
+  .pill-midi { background:rgba(107,143,113,0.15); color:var(--sage-dark); }
+  .pill-soir { background:rgba(192,96,58,0.12); color:var(--terra-dark); }
 
-    /* ── Kanban ── */
-    .kanban { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-    @media(max-width:600px){ .kanban{grid-template-columns:1fr;} }
-    .kanban-col { background:var(--surface2); border-radius:var(--radius-md); padding:12px; min-height:100px; }
-    .col-header { display:flex; align-items:center; gap:7px; margin-bottom:10px; }
-    .col-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-    .col-title-txt { font-size:12px; font-weight:600; color:var(--text2); flex:1; }
-    .col-count { font-size:11px; color:var(--text3); background:var(--surface); border-radius:20px; padding:1px 7px; }
-    .task-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-md); padding:10px 12px; margin-bottom:8px; transition:border-color .15s; }
-    .task-card:hover { border-color:var(--orange); }
-    .task-card-top { display:flex; align-items:flex-start; gap:8px; }
-    .task-check { width:17px; height:17px; border-radius:5px; border:1.5px solid var(--border2); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; background:var(--surface); transition:all .15s; }
-    .task-check.checked { background:var(--green); border-color:var(--green); }
-    .task-check.checked::after { content:'✓'; font-size:10px; color:#fff; font-weight:700; }
-    .task-card-title { font-size:13px; font-weight:500; cursor:pointer; flex:1; color:var(--text); line-height:1.4; }
-    .task-card-title:hover { color:var(--orange); }
-    .task-meta { display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding-left:25px; flex-wrap:wrap; gap:6px; }
-    .task-dates { font-size:11px; color:var(--text3); display:flex; align-items:center; gap:6px; }
-    .task-dates .overdue { color:var(--red); font-weight:600; }
-    .task-dates .soon { color:var(--orange-dark); font-weight:600; }
-    .task-del { background:none; border:none; color:var(--text3); font-size:16px; padding:0 3px; cursor:pointer; opacity:0; transition:opacity .15s; line-height:1; }
-    .task-card:hover .task-del { opacity:1; }
-    .task-del:hover { color:var(--red); background:none; transform:none; }
-    .cycle-btn { font-size:11px; padding:2px 8px; border-radius:20px; cursor:pointer; border:0.5px solid var(--border); background:var(--surface2); color:var(--text2); font-weight:500; }
-    .cycle-btn:hover { background:var(--orange-light); color:var(--orange-dark); border-color:var(--orange); }
-    .add-row { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; align-items:center; }
-    .add-row input { flex:2; min-width:120px; }
-    .add-row select { flex:1; min-width:80px; }
-    .bulk-bar { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text2); flex-wrap:wrap; }
+  /* RECIPES */
+  .recipes-toolbar { display:flex; gap:12px; margin-bottom:1.5rem; align-items:center; flex-wrap:wrap; }
+  .search-input { flex:1; min-width:200px; padding:10px 16px; border:1px solid var(--border); border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:0.95rem; background:var(--white); color:var(--ink); }
+  .search-input:focus { outline:none; border-color:var(--terracotta); }
+  select.filter-select { padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:0.9rem; background:var(--white); color:var(--ink); cursor:pointer; }
+  .btn-add-recipe { background:var(--terracotta); color:white; border:none; padding:10px 20px; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
+  .btn-add-recipe:hover { background:var(--terra-dark); }
 
-    /* ── Agenda ── */
-    .agenda-item { display:flex; gap:12px; padding:9px 0; border-bottom:0.5px solid var(--border); align-items:flex-start; }
-    .agenda-item:last-child { border-bottom:none; }
-    .agenda-time { font-size:12px; color:var(--text3); min-width:40px; padding-top:2px; font-weight:500; }
-    .agenda-body { flex:1; }
-    .agenda-title-txt { font-size:13px; font-weight:500; margin-bottom:3px; }
-    .agenda-del { background:none; border:none; color:var(--text3); font-size:16px; padding:0 3px; cursor:pointer; opacity:0; transition:opacity .15s; flex-shrink:0; }
-    .agenda-item:hover .agenda-del { opacity:1; }
-    .agenda-del:hover { color:var(--red); background:none; transform:none; }
-    .agenda-add { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
-    .agenda-add input[type="time"] { width:90px; }
-    .agenda-add input[type="text"] { flex:1; min-width:100px; }
+  .recipes-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:16px; }
+  .recipe-card {
+    background:var(--white); border-radius:var(--radius); border:1px solid var(--border);
+    overflow:hidden; cursor:pointer; transition:all 0.25s; box-shadow:var(--shadow-sm);
+  }
+  .recipe-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); border-color:var(--terra-light); }
+  .recipe-img { height:140px; display:flex; align-items:center; justify-content:center; font-size:4rem; position:relative; }
+  .recipe-body { padding:16px; }
+  .recipe-category { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--sage); font-weight:600; margin-bottom:6px; }
+  .recipe-title { font-family:'Playfair Display',serif; font-size:1.1rem; margin-bottom:8px; line-height:1.3; }
+  .recipe-meta { display:flex; justify-content:space-between; align-items:center; }
+  .stars { color:var(--gold); font-size:0.9rem; letter-spacing:1px; }
+  .recipe-count { font-size:0.8rem; color:var(--ink-muted); }
+  .recipe-fav-persons { display:flex; gap:4px; margin-top:8px; }
 
-    /* ── KPI ── */
-    .kpi-row { display:flex; align-items:center; padding:8px 0; border-bottom:0.5px solid var(--border); }
-    .kpi-row:last-child { border-bottom:none; }
-    .kpi-label { font-size:13px; min-width:100px; color:var(--text2); }
-    .kpi-bar-bg { flex:1; height:6px; background:var(--surface2); border-radius:3px; margin:0 10px; overflow:hidden; }
-    .kpi-bar { height:6px; border-radius:3px; transition:width .5s; }
-    .kpi-val { font-size:13px; font-weight:600; min-width:36px; text-align:right; }
-    
-    /* Baromètre */
-    .barometer-section { margin-top:16px; padding-top:12px; border-top:0.5px solid var(--border); }
-    .barometer-title { font-size:12px; font-weight:700; color:var(--text3); margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em; }
-    .barometer-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-    .barometer-label { font-size:13px; font-weight:600; width:40px; color:var(--text); }
-    .barometer-track { flex:1; height:10px; background:var(--surface2); border-radius:5px; overflow:hidden; position:relative; }
-    .barometer-fill { height:100%; border-radius:5px; transition:width 0.5s ease; }
-    .barometer-text { font-size:12px; font-weight:600; color:var(--text2); width:60px; text-align:right; }
-    .counter-days { text-align:center; margin-top:10px; padding:8px; background:var(--surface2); border-radius:var(--radius-md); }
-    .counter-val { font-size:18px; font-weight:700; color:var(--text); }
-    .counter-lbl { font-size:11px; color:var(--text3); }
+  /* PERSONS */
+  .persons-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:20px; }
+  .person-card { background:var(--white); border-radius:var(--radius); border:1px solid var(--border); padding:24px; box-shadow:var(--shadow-sm); }
+  .person-header { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+  .person-big-avatar { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700; color:white; flex-shrink:0; }
+  .person-info h3 { font-family:'Playfair Display',serif; font-size:1.3rem; }
+  .person-info p { color:var(--ink-muted); font-size:0.85rem; }
+  .fav-section h4 { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-muted); font-weight:600; margin-bottom:10px; }
+  .fav-tag { display:inline-block; padding:5px 12px; border-radius:20px; background:var(--warm); font-size:0.82rem; margin:3px; border:1px solid var(--border); cursor:pointer; }
+  .add-fav { background:none; border:1.5px dashed var(--border); padding:5px 12px; border-radius:20px; font-size:0.82rem; cursor:pointer; color:var(--ink-muted); font-family:'DM Sans',sans-serif; margin:3px; }
+  .add-fav:hover { border-color:var(--terracotta); color:var(--terracotta); }
+  .person-stats { margin-top:16px; display:flex; gap:12px; }
+  .stat-box { flex:1; text-align:center; background:var(--cream); border-radius:var(--radius-sm); padding:12px 8px; }
+  .stat-num { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--terracotta); }
+  .stat-label { font-size:0.72rem; color:var(--ink-muted); }
 
+  /* TRENDS */
+  .trends-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+  .trend-card { background:var(--white); border-radius:var(--radius); border:1px solid var(--border); padding:20px; box-shadow:var(--shadow-sm); }
+  .trend-title { font-family:'Playfair Display',serif; font-size:1.1rem; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .trend-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .trend-rank { width:24px; height:24px; border-radius:50%; background:var(--warm); display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:var(--ink-muted); flex-shrink:0; }
+  .trend-rank.gold { background:var(--gold); color:white; }
+  .trend-rank.silver { background:var(--ink-light); color:white; }
+  .trend-rank.bronze { background:#CD7F32; color:white; }
+  .trend-name { flex:1; font-size:0.9rem; }
+  .trend-bar-wrap { width:100px; height:8px; background:var(--warm); border-radius:4px; overflow:hidden; }
+  .trend-bar { height:100%; border-radius:4px; background:var(--terracotta); transition:width 0.6s; }
+  .trend-score { font-size:0.85rem; font-weight:600; color:var(--terracotta); min-width:32px; text-align:right; }
 
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(44,36,22,0.55); z-index:1000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(3px); }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--white); border-radius:var(--radius); max-width:520px; width:90%; max-height:85vh; overflow-y:auto; box-shadow: 0 20px 60px rgba(44,36,22,0.25); }
+  .modal-header { padding:24px 28px 0; display:flex; align-items:flex-start; justify-content:space-between; }
+  .modal-title { font-family:'Playfair Display',serif; font-size:1.4rem; }
+  .modal-close { background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--ink-muted); padding:4px; line-height:1; }
+  .modal-body { padding:20px 28px 28px; }
+  .form-group { margin-bottom:16px; }
+  .form-label { display:block; font-size:0.82rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-muted); margin-bottom:6px; }
+  .form-input { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:0.95rem; color:var(--ink); background:var(--cream); }
+  .form-input:focus { outline:none; border-color:var(--terracotta); background:var(--white); }
+  .form-row { display:flex; gap:12px; }
+  .form-row .form-group { flex:1; }
+  .persons-checkboxes { display:flex; gap:8px; flex-wrap:wrap; }
+  .person-check { display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:20px; border:1.5px solid var(--border); cursor:pointer; transition:all 0.2s; font-size:0.85rem; }
+  .person-check.selected { border-color:currentColor; }
+  .star-rating { display:flex; gap:4px; }
+  .star-btn { background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--border); transition:color 0.15s; }
+  .star-btn.lit { color:var(--gold); }
+  .emoji-picker { display:flex; gap:8px; flex-wrap:wrap; }
+  .emoji-btn { font-size:1.8rem; padding:6px; border-radius:8px; border:1.5px solid transparent; cursor:pointer; background:none; transition:all 0.2s; }
+  .emoji-btn:hover, .emoji-btn.selected { border-color:var(--terracotta); background:var(--warm); }
+  .modal-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:20px; }
+  .btn-cancel { background:none; border:1px solid var(--border); padding:10px 20px; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; cursor:pointer; }
+  .btn-save { background:var(--terracotta); color:white; border:none; padding:10px 24px; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer; }
+  .btn-save:hover { background:var(--terra-dark); }
 
-    /* ── PLANNING TAB ── */
-    .planning-layout { display:grid; grid-template-columns: 320px 1fr; gap:16px; }
-    @media (max-width:800px) { .planning-layout { grid-template-columns: 1fr; } }
-    .calendar-wrapper { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; }
-    .calendar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-    .calendar-header h3 { font-size:15px; font-weight:600; color:var(--text); }
-    .cal-nav-btn { background:none; border:none; color:var(--text2); font-size:16px; cursor:pointer; padding:4px 8px; border-radius:4px; }
-    .cal-nav-btn:hover { background:var(--surface2); color:var(--orange); }
-    .calendar-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:4px; text-align:center; }
-    .cal-day-label { font-size:10px; font-weight:600; color:var(--text3); padding:4px 0; }
-    .day-cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; border-radius:50%; transition:all .15s; position:relative; color:var(--text2); }
-    .day-cell:hover { background:var(--surface2); color:var(--orange); }
-    .day-cell.today { border:1.5px solid var(--orange); color:var(--orange); font-weight:700; }
-    .day-cell.selected { background:var(--orange); color:#fff; font-weight:700; box-shadow:0 2px 6px rgba(244,135,75,.4); }
-    .day-cell.has-event::after { content:''; position:absolute; bottom:4px; width:4px; height:4px; border-radius:50%; background:var(--green); }
-    .day-cell.empty { cursor:default; }
-    .day-cell.empty:hover { background:transparent; }
-    .day-schedule-wrapper { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; display:flex; flex-direction:column; min-height:400px; }
-    .schedule-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:0.5px solid var(--border); }
-    .schedule-date-title { font-size:16px; font-weight:700; color:var(--text); }
-    .schedule-date-subtitle { font-size:12px; color:var(--text3); font-weight:400; }
-    .timeline-list { flex:1; overflow-y:auto; padding-right:4px; }
-    .planning-event-card { background:var(--surface); border:0.5px solid var(--border); border-left:3px solid var(--purple); border-radius:4px; padding:8px 10px; margin-bottom:6px; font-size:13px; color:var(--text); display:flex; justify-content:space-between; align-items:center; transition:all .2s; }
-    .planning-event-card:hover { border-color:var(--orange); transform:translateX(2px); }
-    .planning-event-card.done { background:var(--done-bg); border-left-color:var(--green); opacity:.75; }
-    .planning-event-card.done .pe-title { text-decoration:line-through; color:var(--text3); }
-    .planning-event-card.done .pe-time { color:var(--green); }
-    .pe-time { font-size:11px; font-weight:600; color:var(--orange); margin-right:8px; min-width:40px; }
-    .pe-title { flex:1; }
-    .pe-check { width:20px; height:20px; border-radius:50%; border:1.5px solid var(--border2); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:8px; background:var(--surface); transition:all .15s; font-size:10px; font-weight:700; color:transparent; }
-    .pe-check:hover { border-color:var(--green); color:var(--green); }
-    .planning-event-card.done .pe-check { background:var(--green); border-color:var(--green); color:#fff; }
-    @keyframes checkPop { 0%{transform:scale(1)} 40%{transform:scale(1.3)} 100%{transform:scale(1)} }
-    .pe-check.popping { animation:checkPop .25s ease; }
+  /* TOAST */
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--ink); color:var(--cream); padding:14px 20px; border-radius:var(--radius-sm); font-size:0.9rem; z-index:9999; transform:translateY(100px); opacity:0; transition:all 0.3s; pointer-events:none; }
+  .toast.show { transform:translateY(0); opacity:1; }
 
-    /* ══════════════════════════════════════════
-       SUIVI PROJETS — Nouveau styles
-    ══════════════════════════════════════════ */
+  /* RECURRENCE BADGE */
+  .recurrence-badge { position:absolute; top:6px; right:6px; background:var(--gold); color:white; font-size:0.6rem; padding:2px 5px; border-radius:4px; font-weight:700; }
 
-    /* Synthèse suivi */
-    .suivi-synth { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
-    @media(max-width:700px){ .suivi-synth{grid-template-columns:repeat(2,1fr);} }
-    .suivi-synth-card { 
-      background:var(--surface); border:0.5px solid var(--border); border-radius:14px; 
-      padding:16px 18px; position:relative; overflow:hidden;
-    }
-    .suivi-synth-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
-    .suivi-synth-card.orange::before { background:linear-gradient(90deg,var(--orange),var(--orange-dark)); }
-    .suivi-synth-card.green::before { background:linear-gradient(90deg,var(--green),var(--green-dark)); }
-    .suivi-synth-card.purple::before { background:linear-gradient(90deg,var(--purple),#3f37a0); }
-    .suivi-synth-card.blue::before { background:linear-gradient(90deg,#185fa5,#0d4f8a); }
-    .suivi-synth-card .ss-icon { font-size:22px; margin-bottom:6px; }
-    .suivi-synth-card .ss-val { font-size:28px; font-weight:700; line-height:1; }
-    .suivi-synth-card .ss-lbl { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
+  /* STATS ROW */
+  .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:2rem; }
+  .stat-card { background:var(--white); border-radius:var(--radius); padding:20px; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+  .stat-card-icon { font-size:1.8rem; margin-bottom:8px; }
+  .stat-card-num { font-family:'Playfair Display',serif; font-size:2rem; color:var(--terracotta); }
+  .stat-card-label { font-size:0.82rem; color:var(--ink-muted); margin-top:2px; }
 
-    /* Toolbar suivi */
-    .suivi-toolbar { 
-      display:flex; align-items:center; justify-content:space-between; 
-      margin-bottom:20px; flex-wrap:wrap; gap:10px;
-    }
-    .suivi-toolbar-left { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .suivi-search { display:flex; align-items:center; gap:8px; background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-md); padding:6px 12px; }
-    .suivi-search input { background:none; border:none; padding:0; font-size:13px; width:180px; color:var(--text); }
-    .suivi-search input::placeholder { color:var(--text3); }
-    .suivi-filter { font-size:12px; padding:6px 12px; }
-
-    /* Famille suivi */
-    .suivi-famille-block { margin-bottom:28px; animation:fadeIn .3s ease; }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-
-    .suivi-famille-header {
-      display:flex; align-items:center; gap:14px;
-      padding:14px 18px;
-      background:var(--surface);
-      border:1px solid var(--border);
-      border-bottom:none;
-      border-radius:14px 14px 0 0;
-      position:relative; overflow:hidden;
-      cursor:pointer;
-      transition:background .15s;
-    }
-    .suivi-famille-header:hover { background:var(--surface2); }
-    .suivi-famille-header::before { 
-      content:''; position:absolute; left:0; top:0; bottom:0; width:5px; 
-      background:var(--fam-color, var(--purple)); 
-    }
-    .sfh-icon { 
-      width:36px; height:36px; border-radius:9px; 
-      display:flex; align-items:center; justify-content:center;
-      font-size:16px; flex-shrink:0;
-      background:var(--fam-bg, var(--purple-bg));
-    }
-    .sfh-info { flex:1; min-width:0; }
-    .sfh-name { font-size:14px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.05em; }
-    .sfh-sub { font-size:12px; color:var(--text3); margin-top:2px; }
-    .sfh-stats { display:flex; align-items:center; gap:10px; }
-    .sfh-stat { text-align:center; }
-    .sfh-stat-val { font-size:16px; font-weight:700; color:var(--text); }
-    .sfh-stat-lbl { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.04em; }
-    .sfh-progress { display:flex; align-items:center; gap:10px; min-width:130px; }
-    .sfh-progress-track { flex:1; height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; }
-    .sfh-progress-fill { height:100%; border-radius:4px; transition:width .5s; }
-    .sfh-progress-pct { font-size:13px; font-weight:700; min-width:36px; text-align:right; color:var(--fam-color, var(--purple)); }
-    .sfh-toggle { font-size:16px; color:var(--text3); transition:transform .2s; flex-shrink:0; }
-    .sfh-toggle.collapsed { transform:rotate(-90deg); }
-
-    .suivi-famille-prog-bar { height:3px; background:var(--surface2); }
-    .suivi-famille-prog-fill { height:3px; background:var(--fam-color, var(--purple)); transition:width .5s; }
-
-    .suivi-famille-grid {
-      display:grid; grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); gap:14px;
-      padding:16px;
-      background:var(--surface);
-      border:1px solid var(--border); border-top:none;
-      border-radius:0 0 14px 14px;
-      transition:all .2s;
-    }
-    .suivi-famille-grid.collapsed { display:none; }
-
-    /* Carte projet suivi */
-    .suivi-proj-card {
-      background:var(--surface); border:1px solid var(--border); border-radius:12px;
-      overflow:hidden; cursor:pointer; transition:box-shadow .2s, transform .2s, border-color .2s;
-      position:relative;
-    }
-    .suivi-proj-card:hover { box-shadow:0 6px 24px rgba(0,0,0,.1); transform:translateY(-2px); border-color:var(--proj-color, var(--purple)); }
-
-    .spc-top-bar { height:4px; width:100%; background:var(--proj-color, var(--purple)); }
-
-    .spc-body { padding:14px 16px 10px; }
-
-    .spc-programme {
-      font-size:10px; font-weight:700; font-family:'Courier New',monospace;
-      display:inline-flex; align-items:center; gap:5px;
-      padding:3px 9px; border-radius:4px;
-      background:var(--proj-light, var(--purple-bg));
-      color:var(--proj-color, var(--purple));
-      margin-bottom:8px;
-    }
-
-    .spc-name { font-size:14px; font-weight:700; color:var(--text); margin-bottom:4px; line-height:1.35; }
-
-    .spc-service {
-      display:inline-flex; align-items:center; gap:5px;
-      font-size:11px; color:var(--text2);
-      background:var(--surface2); border:0.5px solid var(--border);
-      padding:2px 8px; border-radius:4px; margin-bottom:10px;
-    }
-
-    .spc-desc {
-      font-size:12px; color:var(--text2); line-height:1.55; margin-bottom:10px;
-      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-    }
-
-    .spc-badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
-    .spc-badge { font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600; }
-
-    /* Étapes visuelles */
-    .spc-steps { margin:0 16px 12px; }
-    .spc-steps-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-    .spc-steps-label { font-size:11px; color:var(--text3); font-weight:500; }
-    .spc-steps-count { font-size:11px; font-weight:700; color:var(--proj-color, var(--purple)); }
-    .spc-steps-bar-bg { height:5px; background:var(--surface2); border-radius:20px; overflow:hidden; margin-bottom:6px; }
-    .spc-steps-bar-fill { height:5px; border-radius:20px; background:var(--proj-color, var(--purple)); transition:width .5s; }
-    .spc-steps-dots { display:flex; gap:4px; flex-wrap:wrap; }
-    .spc-step-dot { 
-      width:8px; height:8px; border-radius:50%; transition:all .2s; position:relative;
-    }
-    .spc-step-dot.done { background:var(--proj-color, var(--purple)); }
-    .spc-step-dot.todo { background:var(--surface2); border:1.5px solid var(--border2); }
-    .spc-step-dot:hover::after { 
-      content:attr(data-label); position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
-      background:var(--text); color:var(--surface); font-size:10px; padding:3px 7px; border-radius:4px;
-      white-space:nowrap; pointer-events:none; z-index:10; font-family:-apple-system,sans-serif;
-    }
-
-    /* Avancement */
-    .spc-progress { padding:0 16px 10px; }
-    .spc-progress-row { display:flex; justify-content:space-between; font-size:11px; color:var(--text3); margin-bottom:5px; }
-    .spc-progress-row strong { color:var(--text); }
-    .spc-progress-bg { background:var(--surface2); border-radius:20px; height:6px; overflow:hidden; }
-    .spc-progress-fill { height:6px; border-radius:20px; transition:width .5s; }
-
-    /* Footer */
-    .spc-footer { 
-      padding:10px 16px; border-top:0.5px solid var(--border); 
-      display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
-    }
-    .spc-avatars { display:flex; }
-    .spc-avatar { 
-      width:22px; height:22px; border-radius:50%; border:2px solid var(--surface); 
-      margin-left:-5px; font-size:8px; font-weight:700; display:flex; align-items:center; justify-content:center;
-    }
-    .spc-avatar:first-child { margin-left:0; }
-    .spc-date { font-size:11px; color:var(--text3); }
-    .spc-del { 
-      background:none; border:none; color:var(--text3); font-size:15px; 
-      cursor:pointer; padding:0 4px; opacity:0; transition:opacity .15s; position:absolute; top:12px; right:12px;
-    }
-    .suivi-proj-card:hover .spc-del { opacity:1; }
-    .spc-del:hover { color:var(--red); background:none; transform:none; }
-
-    /* Carte "Nouveau" dans grille suivi */
-    .spc-new-card {
-      border:1.5px dashed var(--border2); border-radius:12px;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      gap:8px; padding:24px; color:var(--text3); cursor:pointer;
-      transition:all .2s; min-height:180px;
-    }
-    .spc-new-card:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-bg); }
-    .spc-new-card .plus { 
-      font-size:22px; width:40px; height:40px; border-radius:50%; 
-      border:1.5px dashed currentColor; display:flex; align-items:center; justify-content:center;
-      transition:all .2s;
-    }
-    .spc-new-card:hover .plus { background:var(--purple); color:#fff; border-color:var(--purple); }
-    .spc-new-card span { font-size:12px; font-weight:600; }
-    .spc-new-card small { font-size:11px; opacity:.7; }
-
-    /* Vue liste switch */
-    .view-toggle { display:flex; background:var(--surface2); border-radius:8px; padding:3px; gap:2px; }
-    .view-btn { background:none; border:none; padding:5px 10px; border-radius:6px; font-size:12px; color:var(--text3); cursor:pointer; transition:all .15s; }
-    .view-btn.active { background:var(--surface); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,.1); }
-
-    /* Vue liste */
-    .suivi-liste { display:none; }
-    .suivi-liste.active { display:block; }
-    .suivi-liste-row {
-      display:flex; align-items:center; gap:14px;
-      padding:12px 16px; background:var(--surface); border:0.5px solid var(--border);
-      border-radius:10px; margin-bottom:6px; cursor:pointer; transition:border-color .15s;
-    }
-    .suivi-liste-row:hover { border-color:var(--orange); }
-    .slr-color-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .slr-info { flex:1; min-width:0; }
-    .slr-name { font-size:13px; font-weight:600; color:var(--text); }
-    .slr-meta { font-size:11px; color:var(--text3); margin-top:1px; }
-    .slr-prog { display:flex; align-items:center; gap:8px; min-width:140px; }
-    .slr-prog-bar { flex:1; height:5px; background:var(--surface2); border-radius:3px; overflow:hidden; }
-    .slr-prog-fill { height:5px; border-radius:3px; }
-    .slr-prog-pct { font-size:12px; font-weight:700; color:var(--text); min-width:32px; text-align:right; }
-
-    /* ── Modals ── */
-    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:100; opacity:0; pointer-events:none; transition:opacity .2s; padding:1rem; }
-    .modal-overlay.open { opacity:1; pointer-events:all; }
-    .modal { background:var(--surface); border-radius:var(--radius-xl); border:0.5px solid var(--border); padding:1.75rem; width:540px; max-width:100%; max-height:90vh; overflow-y:auto; transform:translateY(14px); transition:transform .22s; }
-    .modal-overlay.open .modal { transform:translateY(0); }
-    .modal-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:1.25rem; }
-    .modal h2 { font-size:17px; font-weight:600; }
-    .modal-close { background:none; border:none; font-size:22px; color:var(--text3); cursor:pointer; padding:0; line-height:1; }
-    .modal-close:hover { color:var(--text); background:none; transform:none; }
-    .field { margin-bottom:12px; }
-    .field label { font-size:12px; font-weight:500; color:var(--text2); display:block; margin-bottom:5px; }
-    .field input, .field select, .field textarea { width:100%; }
-    .field textarea { resize:vertical; min-height:72px; }
-    .modal-footer { display:flex; gap:8px; justify-content:flex-end; margin-top:1.5rem; flex-wrap:wrap; }
-    .date-row { display:flex; gap:8px; }
-    .date-row .field { flex:1; }
-    .status-badge { display:inline-flex; align-items:center; font-size:12px; padding:3px 11px; border-radius:20px; font-weight:600; }
-    .task-detail-section { margin-top:16px; }
-    .task-detail-section h3 { font-size:12px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; }
-    .done-list { list-style:none; }
-    .done-list li { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:0.5px solid var(--border); font-size:13px; color:var(--text2); }
-    .done-list li:last-child { border-bottom:none; }
-    .done-check { color:var(--green); font-size:12px; margin-top:1px; flex-shrink:0; font-weight:700; }
-    .done-add { display:flex; gap:8px; margin-top:10px; }
-    .done-add input { flex:1; }
-    .status-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
-    .status-btn { font-size:12px; padding:5px 14px; border-radius:20px; font-weight:500; }
-    .member-list-modal { margin-bottom:1rem; }
-    .member-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:0.5px solid var(--border); }
-    .member-row:last-child { border-bottom:none; }
-    .member-row .mname { flex:1; font-size:13px; font-weight:500; }
-    .member-row .role { font-size:12px; color:var(--text3); }
-    .del-btn { background:none; border:none; color:var(--text3); font-size:17px; padding:0 4px; cursor:pointer; }
-    .del-btn:hover { color:var(--red); background:none; transform:none; }
-    .color-opts { display:flex; gap:8px; flex-wrap:wrap; }
-    .color-opt { width:30px; height:30px; border-radius:50%; cursor:pointer; border:2.5px solid transparent; transition:border-color .15s; }
-    .color-opt.selected { border-color:var(--text); }
-    .sep { border:none; border-top:0.5px solid var(--border); margin:1.1rem 0; }
-    .week-quick { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
-    .week-btn { font-size:12px; padding:4px 12px; border-radius:20px; background:var(--surface2); border:0.5px solid var(--border); color:var(--text2); cursor:pointer; }
-    .week-btn:hover { background:var(--orange-light); color:var(--orange-dark); border-color:var(--orange); }
-
-    /* ── Projet étapes ── */
-    .step-list { list-style:none; margin-bottom:6px; }
-    .step-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:0.5px solid var(--border); font-size:13px; }
-    .step-item:last-child { border-bottom:none; }
-    .step-check { width:16px; height:16px; border-radius:4px; border:1.5px solid var(--border2); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .15s; background:var(--surface); }
-    .step-check.done { background:var(--green); border-color:var(--green); }
-    .step-check.done::after { content:'✓'; font-size:9px; color:#fff; font-weight:700; }
-    .step-label { flex:1; }
-    .step-label.done { text-decoration:line-through; color:var(--text3); }
-
-    /* Couleurs projet */
-    .proj-colors { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
-    .proj-color-opt { width:26px; height:26px; border-radius:50%; cursor:pointer; border:2.5px solid transparent; transition:border-color .15s; }
-    .proj-color-opt.selected { border-color:var(--text); }
-
-    .app-footer { text-align:center; font-size:11px; color:var(--text3); padding:2rem 0 1rem; }
-    .app-footer strong { color:var(--orange); }
-  </style>
+  @media (max-width:900px) {
+    .week-grid { grid-template-columns: repeat(4,1fr); }
+    .trends-grid { grid-template-columns:1fr; }
+    .stats-row { grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:600px) {
+    .week-grid { grid-template-columns: repeat(2,1fr); }
+    main { padding:1rem; }
+  }
+</style>
 </head>
 <body>
 
-<div id="loader"><div class="spinner"></div><p>Connexion à la base de données…</p></div>
-
-<!-- Topbar -->
-<div class="topbar-wrap">
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-icon">CH</div>
-      <span class="brand-name">Gestionnaire de tâches</span>
-    </div>
-    <div class="topbar-right">
-      <div class="sync-badge"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Connecté</span></div>
-      <span class="date-label" id="today-date"></span>
-      <button class="report-btn" onclick="openReportModal()">⬇ Rapport PDF</button>
-      <button class="green" onclick="openMembersModal()">+ Collaborateurs</button>
-    </div>
+<header>
+  <div class="logo">
+    <span class="logo-icon">🍽️</span>
+    MonMenu
   </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('tab-dashboard',this)">📊 Dashboard</button>
-    <button class="nav-tab" onclick="switchTab('tab-planning',this)">📅 Planning</button>
-    <button class="nav-tab" onclick="switchTab('tab-suivi',this)">🚀 Suivi Projets</button>
-  </div>
-</div>
+  <nav>
+    <button class="active" onclick="showView('week')">Semaine</button>
+    <button onclick="showView('month')">Mois</button>
+    <button onclick="showView('recipes')">Recettes</button>
+    <button onclick="showView('persons')">Famille</button>
+    <button onclick="showView('trends')">Tendances</button>
+  </nav>
+</header>
 
-<div class="app">
+<main>
 
-  <!-- ════ TAB : DASHBOARD ════ -->
-  <div id="tab-dashboard" class="tab-panel active">
-    <div class="grid3-metrics" style="margin-bottom:16px">
-      <div class="metric"><div class="lbl">Tâches terminées</div><div class="val" id="m-done">0</div></div>
-      <div class="metric"><div class="lbl">En cours</div><div class="val" id="m-prog">0</div></div>
-      <div class="metric"><div class="lbl">Avancement</div><div class="val" id="m-pct">0%</div></div>
+  <!-- WEEK VIEW -->
+  <div class="view active" id="view-week">
+    <div class="page-header">
+      <h1 class="page-title">Planning de la semaine</h1>
+      <p class="page-sub">Cliquez sur un repas pour le modifier ou en ajouter un</p>
     </div>
-    <div class="card" style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div class="section-title" style="margin-bottom:0">Tâches &amp; statuts</div>
-        <div id="bulk-bar" style="display:none" class="bulk-bar">
-          <span id="sel-count">0 sélectionnée(s)</span>
-          <button class="danger" onclick="deleteSelected()">Supprimer la sélection</button>
-          <button class="ghost" onclick="clearSelection()">Annuler</button>
-        </div>
-      </div>
-      <div class="kanban">
-        <div class="kanban-col">
-          <div class="col-header"><span class="col-dot" style="background:var(--todo-color)"></span><span class="col-title-txt">À faire</span><span class="col-count" id="cnt-todo">0</span></div>
-          <div id="col-todo"></div>
-        </div>
-        <div class="kanban-col">
-          <div class="col-header"><span class="col-dot" style="background:var(--orange)"></span><span class="col-title-txt">En cours</span><span class="col-count" id="cnt-prog">0</span></div>
-          <div id="col-prog"></div>
-        </div>
-        <div class="kanban-col">
-          <div class="col-header"><span class="col-dot" style="background:var(--green)"></span><span class="col-title-txt">Terminé</span><span class="col-count" id="cnt-done">0</span></div>
-          <div id="col-done"></div>
-        </div>
-      </div>
-      <div class="add-row">
-        <input id="new-task-title" placeholder="Titre de la tâche..." />
-        <select id="new-task-member"></select>
-        <select id="new-task-tag">
-            <option>Commerce</option><option>Comptabilité</option><option>Marketing</option>
-            <option>Achats</option><option>Logistique</option><option>Qualité</option>
-            <option>Admin</option><option>Autre</option>
-        </select>
-        <button class="primary" onclick="addTask()">+ Ajouter</button>
-      </div>
+    <div class="week-controls">
+      <button class="week-nav" onclick="changeWeek(-1)">&#8592;</button>
+      <span class="week-label" id="week-label"></span>
+      <button class="week-nav" onclick="changeWeek(1)">&#8594;</button>
+      <div class="week-persons" id="week-persons-filter"></div>
     </div>
-    <div class="grid3">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div class="section-title" style="margin-bottom:0">Agenda du jour</div>
-            <button class="ghost" style="font-size:11px;padding:4px 8px" onclick="switchTabByName('tab-planning')">Voir le calendrier</button>
-        </div>
-        <div id="agenda-list"></div>
-        <div class="agenda-add">
-          <input type="time" id="new-event-time" value="09:00"/>
-          <input type="text" id="new-event-title" placeholder="Événement..."/>
-          <button class="primary" onclick="addEvent()">+</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="section-title">KPIs</div>
-        <div id="kpi-list"></div>
-      </div>
-      <div class="card">
-        <div class="section-title">Planning — Absences</div>
-        <div id="absence-list"></div>
-        <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <select id="new-abs-member" style="flex:1;min-width:80px"></select>
-            <select id="new-abs-type" style="flex:1;min-width:80px">
-              <option value="CP">🏖 Congé payé</option><option value="RTT">⏱ RTT</option>
-              <option value="Maladie">🤒 Maladie</option><option value="Autre">📋 Autre</option>
-            </select>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <input type="date" id="new-abs-start" style="flex:1;min-width:100px"/>
-            <span style="font-size:12px;color:var(--text3)">→</span>
-            <input type="date" id="new-abs-end" style="flex:1;min-width:100px"/>
-          </div>
-          <input id="new-abs-note" placeholder="Note (optionnel)..." style="width:100%"/>
-          <button class="green" onclick="addAbsence()" style="width:100%">+ Ajouter une absence</button>
-        </div>
-      </div>
-    </div>
+    <div class="week-grid" id="week-grid"></div>
   </div>
 
-  <!-- ════ TAB : PLANNING ════ -->
-  <div id="tab-planning" class="tab-panel">
-    <div class="planning-layout">
-        <div class="calendar-wrapper">
-            <div class="calendar-header">
-                <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
-                <h3 id="cal-month-year">Mois Année</h3>
-                <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
-            </div>
-            <div class="calendar-grid">
-                <div class="cal-day-label">Lun</div><div class="cal-day-label">Mar</div><div class="cal-day-label">Mer</div>
-                <div class="cal-day-label">Jeu</div><div class="cal-day-label">Ven</div><div class="cal-day-label">Sam</div><div class="cal-day-label">Dim</div>
-            </div>
-            <div style="margin-top:12px;text-align:center">
-                <button class="ghost" style="width:100%;font-size:12px" onclick="goToToday()">Aujourd'hui</button>
-            </div>
-        </div>
-        <div class="day-schedule-wrapper">
-            <div class="schedule-header">
-                <div>
-                    <div class="schedule-date-title" id="sched-date-title">Date Selectionnée</div>
-                    <div class="schedule-date-subtitle" id="sched-date-subtitle">Evénements de la journée</div>
-                </div>
-            </div>
-            <div class="timeline-list" id="schedule-list"></div>
-            <div style="margin-top:16px; padding-top:12px; border-top:0.5px solid var(--border)">
-                <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">Ajouter un RDV pour cette date</div>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                    <input type="time" id="plan-event-time" value="09:00" style="width:90px"/>
-                    <input type="text" id="plan-event-title" placeholder="Titre du rendez-vous..." style="flex:1;min-width:120px"/>
-                    <select id="plan-event-tag" style="width:100px">
-                        <option value="Client">Client</option><option value="Interne">Interne</option>
-                        <option value="Livraison">Livraison</option><option value="Autre">Autre</option>
-                    </select>
-                    <button class="primary" onclick="addPlanningEvent()">+</button>
-                </div>
-            </div>
-        </div>
+  <!-- MONTH VIEW -->
+  <div class="view" id="view-month">
+    <div class="page-header">
+      <h1 class="page-title">Planning du mois</h1>
+      <p class="page-sub">Vue d'ensemble de tous vos repas planifiés</p>
     </div>
+    <div class="month-controls">
+      <button class="week-nav" onclick="changeMonth(-1)">&#8592;</button>
+      <span class="week-label" id="month-label"></span>
+      <button class="week-nav" onclick="changeMonth(1)">&#8594;</button>
+    </div>
+    <div class="month-grid" id="month-grid"></div>
   </div>
 
-  <!-- ════ TAB : SUIVI PROJETS ════ -->
-  <div id="tab-suivi" class="tab-panel">
-
-    <!-- Synthèse -->
-    <div class="suivi-synth" id="suivi-synth"></div>
-
-    <!-- Toolbar -->
-    <div class="suivi-toolbar">
-      <div class="suivi-toolbar-left">
-        <div class="suivi-search">
-          <span style="font-size:14px;color:var(--text3)">🔍</span>
-          <input type="text" id="suivi-search-input" placeholder="Rechercher un projet..." oninput="renderSuivi()"/>
-        </div>
-        <select id="suivi-filter-status" class="suivi-filter" onchange="renderSuivi()">
-          <option value="all">Tous les statuts</option>
-          <option value="En cours">En cours</option>
-          <option value="Planifié">Planifié</option>
-          <option value="Terminé">Terminé</option>
-          <option value="En pause">En pause</option>
-        </select>
-        <select id="suivi-filter-service" class="suivi-filter" onchange="renderSuivi()">
-          <option value="all">Tous les services</option>
-          <option value="ADV">ADV</option>
-          <option value="COMPTABILITE">COMPTABILITE</option>
-          <option value="ACHATS">ACHATS</option>
-          <option value="COMMERCE">COMMERCE</option>
-          <option value="QUALITE">QUALITE</option>
-          <option value="MARKETING">MARKETING</option>
-          <option value="LOGISTIQUE">LOGISTIQUE</option>
-        </select>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <div class="view-toggle">
-          <button class="view-btn active" id="view-btn-grid" onclick="setSuiviView('grid')">⊞ Grille</button>
-          <button class="view-btn" id="view-btn-list" onclick="setSuiviView('list')">≡ Liste</button>
-        </div>
-        <button class="purple" onclick="openSuiviProjectModal()">+ Nouveau projet</button>
-      </div>
+  <!-- RECIPES VIEW -->
+  <div class="view" id="view-recipes">
+    <div class="page-header">
+      <h1 class="page-title">Livre de recettes</h1>
+      <p class="page-sub">Notez vos plats et retrouvez vos favoris</p>
     </div>
-
-    <!-- Contenu dynamique -->
-    <div id="suivi-container"></div>
-    <div id="suivi-liste" class="suivi-liste"></div>
-
+    <div class="recipes-toolbar">
+      <input type="text" class="search-input" placeholder="🔍 Rechercher une recette..." id="recipe-search" oninput="renderRecipes()">
+      <select class="filter-select" id="recipe-cat" onchange="renderRecipes()">
+        <option value="">Toutes catégories</option>
+        <option value="Viande">🥩 Viande</option>
+        <option value="Poisson">🐟 Poisson</option>
+        <option value="Végétarien">🥦 Végétarien</option>
+        <option value="Pâtes">🍝 Pâtes</option>
+        <option value="Soupe">🍲 Soupe</option>
+        <option value="Pizza">🍕 Pizza</option>
+        <option value="Salade">🥗 Salade</option>
+        <option value="Autre">✨ Autre</option>
+      </select>
+      <button class="btn-add-recipe" onclick="openRecipeModal()">+ Ajouter une recette</button>
+    </div>
+    <div class="recipes-grid" id="recipes-grid"></div>
   </div>
 
-  <div class="app-footer">© 2026 - Julien FAUGERE – Société <strong>CHAMORIN</strong></div>
-</div>
+  <!-- PERSONS VIEW -->
+  <div class="view" id="view-persons">
+    <div class="page-header">
+      <h1 class="page-title">Notre famille</h1>
+      <p class="page-sub">Gérez les préférences de chacun</p>
+    </div>
+    <div class="persons-grid" id="persons-grid"></div>
+  </div>
 
-<!-- ═══ Modal : Tâche ═══ -->
-<div class="modal-overlay" id="task-modal-overlay" onclick="closeTaskModalOnBg(event)">
+  <!-- TRENDS VIEW -->
+  <div class="view" id="view-trends">
+    <div class="page-header">
+      <h1 class="page-title">Tendances & Statistiques</h1>
+      <p class="page-sub">Analysez vos habitudes alimentaires</p>
+    </div>
+    <div class="stats-row" id="stats-row"></div>
+    <div class="trends-grid" id="trends-grid"></div>
+  </div>
+
+</main>
+
+<!-- MEAL MODAL -->
+<div class="modal-overlay" id="meal-modal">
   <div class="modal">
     <div class="modal-header">
-      <div style="flex:1">
-        <h2 id="tm-title" style="word-break:break-word;margin-bottom:8px"></h2>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <div id="tm-avatar" class="avatar"></div>
-          <span id="tm-member-name" style="font-size:13px;color:var(--text2)"></span>
-          <span id="tm-tag" class="tag"></span>
-          <span id="tm-status-badge" class="status-badge"></span>
+      <h2 class="modal-title" id="meal-modal-title">Planifier un repas</h2>
+      <button class="modal-close" onclick="closeMealModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Plat</label>
+        <input class="form-input" id="meal-recipe-search" placeholder="Chercher ou écrire un plat..." oninput="filterMealRecipes()" autocomplete="off">
+        <div id="meal-recipe-suggestions" style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);max-height:180px;overflow-y:auto;display:none;margin-top:4px;"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Participants</label>
+        <div class="persons-checkboxes" id="meal-persons"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note du repas</label>
+        <div class="star-rating" id="meal-stars">
+          <button class="star-btn" data-v="1" onclick="setMealStar(1)">★</button>
+          <button class="star-btn" data-v="2" onclick="setMealStar(2)">★</button>
+          <button class="star-btn" data-v="3" onclick="setMealStar(3)">★</button>
+          <button class="star-btn" data-v="4" onclick="setMealStar(4)">★</button>
+          <button class="star-btn" data-v="5" onclick="setMealStar(5)">★</button>
         </div>
       </div>
-      <button class="modal-close" onclick="closeTaskModal()">×</button>
-    </div>
-    <div class="date-row">
-      <div class="field"><label>Date de début</label><input type="date" id="tm-date-start"/></div>
-      <div class="field"><label>Date d'échéance</label><input type="date" id="tm-date-end"/></div>
-    </div>
-    <div class="field"><label>Description</label><textarea id="tm-desc" placeholder="Décrivez les actions à accomplir..."></textarea></div>
-    <div class="task-detail-section">
-      <h3>Ce qui a été réalisé</h3>
-      <ul class="done-list" id="tm-done-list"></ul>
-      <div class="done-add"><input id="tm-done-input" placeholder="Ajouter une réalisation..."/><button class="green" onclick="addDoneItem()">+</button></div>
-    </div>
-    <div class="task-detail-section">
-      <h3>Changer le statut</h3>
-      <div class="status-btns">
-        <button class="status-btn" style="background:var(--todo-bg);color:var(--todo-color);border:none" onclick="setTaskStatus('todo')">À faire</button>
-        <button class="status-btn" style="background:var(--prog-bg);color:var(--prog-color);border:none" onclick="setTaskStatus('prog')">En cours</button>
-        <button class="status-btn" style="background:var(--done-bg);color:var(--done-color);border:none" onclick="setTaskStatus('done')">Terminé</button>
+      <div class="form-group">
+        <label class="form-label">Récurrence</label>
+        <select class="form-input" id="meal-recurrence">
+          <option value="">Aucune</option>
+          <option value="weekly">Chaque semaine</option>
+          <option value="biweekly">Toutes les 2 semaines</option>
+          <option value="monthly">1x par mois</option>
+        </select>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="danger" onclick="deleteTaskFromModal()">Supprimer</button>
-      <button class="ghost" onclick="closeTaskModal()">Annuler</button>
-      <button class="primary" onclick="saveTaskModal()">Sauvegarder</button>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeMealModal()">Annuler</button>
+        <button class="btn-cancel" id="meal-del-btn" onclick="deleteMeal()" style="color:var(--terracotta);display:none;">Supprimer</button>
+        <button class="btn-save" onclick="saveMeal()">Enregistrer</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══ Modal : Suivi Projet ═══ -->
-<div class="modal-overlay" id="suivi-modal-overlay" onclick="closeSuiviModalOnBg(event)">
-  <div class="modal" style="width:600px">
-    <div class="modal-header">
-      <h2 id="sm-title-label">Nouveau projet — Suivi</h2>
-      <button class="modal-close" onclick="closeSuiviModal()">×</button>
-    </div>
-
-    <!-- Famille + Programme -->
-    <div class="date-row">
-      <div class="field" style="flex:1.5">
-        <label>📂 Famille de projet</label>
-        <input list="suivi-famille-list" id="sm-family" placeholder="ex: DIGITAL & OUTILS" autocomplete="off"/>
-        <datalist id="suivi-famille-list"></datalist>
-      </div>
-      <div class="field" style="flex:1">
-        <label>⌗ Programme</label>
-        <input id="sm-programme" placeholder="ex: PROG-2024-01"/>
-      </div>
-    </div>
-
-    <div class="field"><label>🏷 Nom du projet</label><input id="sm-name" placeholder="ex: Refonte site CHAMORIN"/></div>
-
-    <div class="date-row">
-      <div class="field" style="flex:1">
-        <label>🏢 Service</label>
-        <select id="sm-service">
-          <option value="">-- Choisir --</option>
-          <option value="ADV">ADV</option><option value="COMPTABILITE">COMPTABILITE</option>
-          <option value="ACHATS">ACHATS</option><option value="COMMERCE">COMMERCE</option>
-          <option value="QUALITE">QUALITE</option><option value="MARKETING">MARKETING</option>
-          <option value="LOGISTIQUE">LOGISTIQUE</option>
-        </select>
-      </div>
-      <div class="field" style="flex:1">
-        <label>📌 Statut</label>
-        <select id="sm-status">
-          <option>Planifié</option><option selected>En cours</option>
-          <option>En pause</option><option>Terminé</option>
-        </select>
-      </div>
-      <div class="field" style="flex:1">
-        <label>⚡ Priorité</label>
-        <select id="sm-priority">
-          <option>Haute</option><option selected>Moyenne</option><option>Basse</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="field"><label>📝 Description du projet / Ce que fait ce programme</label><textarea id="sm-desc" placeholder="Décrivez le contexte, les objectifs et ce que ce programme accomplit en production..." style="min-height:88px"></textarea></div>
-
-    <div class="date-row">
-      <div class="field"><label>📅 Date de début</label><input type="date" id="sm-date-start"/></div>
-      <div class="field"><label>🏁 Date de fin prévue</label><input type="date" id="sm-date-end"/></div>
-      <div class="field"><label>📈 Avancement (%)</label><input type="number" id="sm-progress" min="0" max="100" value="0"/></div>
-    </div>
-
-    <div class="field">
-      <label>👥 Membres assignés</label>
-      <div id="sm-members-list" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div>
-    </div>
-
-    <div class="field">
-      <label>🎨 Couleur du projet</label>
-      <div class="proj-colors" id="sm-colors"></div>
-    </div>
-
-    <div class="field">
-      <label>🔖 Étapes clés</label>
-      <div id="sm-steps-list" style="margin-bottom:6px"></div>
-      <div style="display:flex;gap:8px">
-        <input id="sm-step-input" placeholder="Ajouter une étape clé..." style="flex:1"/>
-        <button onclick="addSuiviStep()">+</button>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="danger" id="sm-delete-btn" onclick="deleteSuiviProject()" style="display:none">Supprimer</button>
-      <button class="ghost" onclick="closeSuiviModal()">Annuler</button>
-      <button class="purple" onclick="saveSuiviProject()">💾 Sauvegarder</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ Modal : Rapport ═══ -->
-<div class="modal-overlay" id="report-modal-overlay" onclick="closeReportModalOnBg(event)">
-  <div class="modal" style="width:580px">
-    <div class="modal-header">
-      <h2>Générer un rapport PDF</h2>
-      <button class="modal-close" onclick="closeReportModal()">×</button>
-    </div>
-    <div class="field"><label>Titre</label><input id="rp-title" placeholder="ex: Bilan Semaine 17"/></div>
-    <div class="date-row">
-      <div class="field"><label>Du</label><input type="date" id="rp-date-start"/></div>
-      <div class="field"><label>Au</label><input type="date" id="rp-date-end"/></div>
-    </div>
-    <div class="field"><label>Raccourcis semaines</label><div class="week-quick" id="week-quick-btns"></div></div>
-    <div class="field"><label>Destinataire</label><input id="rp-to" placeholder="ex: M. Dupont, Directeur"/></div>
-    <div class="date-row">
-      <div class="field"><label>Préparé par</label><input id="rp-from"/></div>
-      <div class="field"><label>Statuts tâches</label>
-        <select id="rp-status-filter">
-          <option value="all">Tous</option><option value="done">Terminées</option>
-          <option value="done,prog">Terminées + En cours</option><option value="prog">En cours</option>
-        </select>
-      </div>
-    </div>
-    <div class="field"><label>Commentaire</label><textarea id="rp-comment" placeholder="Points marquants..."></textarea></div>
-    <div class="field" style="display:flex;align-items:center;gap:8px">
-      <input type="checkbox" id="rp-inc-projects" checked style="width:auto;padding:0"/>
-      <label style="margin:0;font-size:13px;color:var(--text);font-weight:400">Inclure le suivi des projets</label>
-    </div>
-    <div class="modal-footer">
-      <button class="ghost" onclick="closeReportModal()">Annuler</button>
-      <button class="primary" onclick="generateReport()">⬇ Exporter</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ Modal : Collaborateurs ═══ -->
-<div class="modal-overlay" id="members-modal-overlay" onclick="closeMembersModalOnBg(event)">
+<!-- RECIPE MODAL -->
+<div class="modal-overlay" id="recipe-modal">
   <div class="modal">
     <div class="modal-header">
-      <h2>Collaborateurs</h2>
-      <button class="modal-close" onclick="closeMembersModal()">×</button>
+      <h2 class="modal-title">Nouvelle recette</h2>
+      <button class="modal-close" onclick="closeRecipeModal()">✕</button>
     </div>
-    <div class="member-list-modal" id="member-list"></div>
-    <hr class="sep"/>
-    <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text2)">Ajouter</div>
-    <div class="field"><label>Prénom</label><input id="m-name" placeholder="ex: Sophie"/></div>
-    <div class="field"><label>Rôle</label><input id="m-role" placeholder="ex: Designer"/></div>
-    <div class="field"><label>Couleur</label><div class="color-opts" id="color-opts"></div></div>
-    <div class="modal-footer">
-      <button class="ghost" onclick="closeMembersModal()">Fermer</button>
-      <button class="primary" onclick="addMember()">Ajouter</button>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nom du plat</label>
+        <input class="form-input" id="r-name" placeholder="Ex: Poulet rôti aux herbes">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Catégorie</label>
+          <select class="form-input" id="r-cat">
+            <option value="Viande">🥩 Viande</option>
+            <option value="Poisson">🐟 Poisson</option>
+            <option value="Végétarien">🥦 Végétarien</option>
+            <option value="Pâtes">🍝 Pâtes</option>
+            <option value="Soupe">🍲 Soupe</option>
+            <option value="Pizza">🍕 Pizza</option>
+            <option value="Salade">🥗 Salade</option>
+            <option value="Autre">✨ Autre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Temps (min)</label>
+          <input class="form-input" id="r-time" type="number" placeholder="30">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Emoji du plat</label>
+        <div class="emoji-picker" id="emoji-picker">
+          <button class="emoji-btn selected" data-e="🍗" onclick="selectEmoji(this)">🍗</button>
+          <button class="emoji-btn" data-e="🐟" onclick="selectEmoji(this)">🐟</button>
+          <button class="emoji-btn" data-e="🍝" onclick="selectEmoji(this)">🍝</button>
+          <button class="emoji-btn" data-e="🍕" onclick="selectEmoji(this)">🍕</button>
+          <button class="emoji-btn" data-e="🥗" onclick="selectEmoji(this)">🥗</button>
+          <button class="emoji-btn" data-e="🍲" onclick="selectEmoji(this)">🍲</button>
+          <button class="emoji-btn" data-e="🥩" onclick="selectEmoji(this)">🥩</button>
+          <button class="emoji-btn" data-e="🍛" onclick="selectEmoji(this)">🍛</button>
+          <button class="emoji-btn" data-e="🫕" onclick="selectEmoji(this)">🫕</button>
+          <button class="emoji-btn" data-e="🥘" onclick="selectEmoji(this)">🥘</button>
+          <button class="emoji-btn" data-e="🌮" onclick="selectEmoji(this)">🌮</button>
+          <button class="emoji-btn" data-e="🍔" onclick="selectEmoji(this)">🍔</button>
+          <button class="emoji-btn" data-e="🥚" onclick="selectEmoji(this)">🥚</button>
+          <button class="emoji-btn" data-e="🧆" onclick="selectEmoji(this)">🧆</button>
+          <button class="emoji-btn" data-e="🫔" onclick="selectEmoji(this)">🫔</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note initiale</label>
+        <div class="star-rating" id="recipe-stars">
+          <button class="star-btn" data-v="1" onclick="setRecipeStar(1)">★</button>
+          <button class="star-btn" data-v="2" onclick="setRecipeStar(2)">★</button>
+          <button class="star-btn" data-v="3" onclick="setRecipeStar(3)">★</button>
+          <button class="star-btn" data-v="4" onclick="setRecipeStar(4)">★</button>
+          <button class="star-btn" data-v="5" onclick="setRecipeStar(5)">★</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Favoris de</label>
+        <div class="persons-checkboxes" id="recipe-fav-persons"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeRecipeModal()">Annuler</button>
+        <button class="btn-save" onclick="saveRecipe()">Ajouter la recette</button>
+      </div>
     </div>
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<!-- FAV MODAL -->
+<div class="modal-overlay" id="fav-modal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2 class="modal-title">Ajouter un favori</h2>
+      <button class="modal-close" onclick="closeFavModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Choisir un plat</label>
+        <select class="form-input" id="fav-select"></select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeFavModal()">Annuler</button>
+        <button class="btn-save" onclick="addFav()">Ajouter</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCQY5-QU0Q-ommPEbKVe1CkJ5L-s-6f8bc",
-  authDomain: "chamorin-dashboard.firebaseapp.com",
-  databaseURL: "https://chamorin-dashboard-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "chamorin-dashboard",
-  storageBucket: "chamorin-dashboard.firebasestorage.app",
-  messagingSenderId: "241005862099",
-  appId: "1:241005862099:web:ca05650c7f9b7101a08826",
-  measurementId: "G-VEHF4YLEYD"
-};
-const fbApp = initializeApp(firebaseConfig);
-const db = getDatabase(fbApp);
-const ROOT = "chamorin";
+<div class="toast" id="toast"></div>
 
-// ── Constantes ──────────────────────────────
-const PALETTES=[
-  {color:'#C9602A',bg:'#FEF0E8'},{color:'#F4874B',bg:'#FDE8D8'},
-  {color:'#1E6040',bg:'#E6F4ED'},{color:'#2E8B57',bg:'#D6EFE2'},
-  {color:'#7A5C3A',bg:'#F5EDE3'},{color:'#4A7C8A',bg:'#E3EFF2'},
-  {color:'#8A6A2E',bg:'#F5EDDA'},{color:'#5A4E8A',bg:'#EDEAF5'},
+<script>
+// ========== DATA ==========
+const PERSONS = [
+  { id:'charlotte', name:'Charlotte', color:'#C0603A', initials:'CH' },
+  { id:'julien',   name:'Julien',    color:'#3D5940', initials:'JU' },
+  { id:'lou',      name:'Lou',       color:'#D4A843', initials:'LO' },
+  { id:'timeo',    name:'Timéo',     color:'#6B8F71', initials:'TI' }
 ];
-const PROJ_COLORS=['#F4874B','#2E8B57','#534AB7','#185fa5','#993356','#854f0b','#0F6E56','#993C1D','#4A7C8A','#8A6A2E'];
 
-// Couleur de fond légère pour chaque couleur de projet
-function colorLight(hex){
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},0.1)`;
-}
+const DAYS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const DAYS_SHORT = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MEAL_TYPES = [
+  { id:'midi', label:'Déjeuner', icon:'☀️' },
+  { id:'soir', label:'Dîner', icon:'🌙' }
+];
 
-const TAG_STYLES={
-  Commerce:{color:'#F4874B',bg:'#FDE8D8'},Comptabilité:{color:'#1E6040',bg:'#E6F4ED'},
-  Marketing:{color:'#C9602A',bg:'#FEF0E8'},Achats:{color:'#4A7C8A',bg:'#E3EFF2'},
-  Logistique:{color:'#7A5C3A',bg:'#F5EDE3'},Qualité:{color:'#534AB7',bg:'#EEEDFE'},
-  Admin:{color:'#8A6A2E',bg:'#F5EDDA'},Autre:{color:'#8A8880',bg:'#F2F1EE'}
-};
-const STATUS_LABELS={todo:'À faire',prog:'En cours',done:'Terminé'};
-const STATUS_STYLES={todo:{color:'#8A8880',bg:'#F2F1EE'},prog:{color:'#C9602A',bg:'#FEF0E8'},done:{color:'#1E6040',bg:'#E6F4ED'}};
-const PROJ_STATUS_STYLES={'En cours':{color:'#C9602A',bg:'#FEF0E8'},'Planifié':{color:'#185fa5',bg:'#E6F1FB'},'Terminé':{color:'#1E6040',bg:'#E6F4ED'},'En pause':{color:'#8A8880',bg:'#F2F1EE'}};
-const PRIORITY_STYLES={Haute:{color:'#C0392B',bg:'#FCECEA'},Moyenne:{color:'#854f0b',bg:'#FAEEDA'},Basse:{color:'#5f5e5a',bg:'#F1EFE8'}};
-const ABS_TYPES={CP:{label:'Congé payé',icon:'🏖',color:'#185fa5',bg:'#E6F1FB'},RTT:{label:'RTT',icon:'⏱',color:'#534AB7',bg:'#EEEDFE'},Maladie:{label:'Maladie',icon:'🤒',color:'#993356',bg:'#FBEAF0'},Autre:{label:'Autre',icon:'📋',color:'#7A5C3A',bg:'#F5EDE3'}};
-
-// Icônes familles automatiques
-const FAMILLE_ICONS=['💻','📦','🏭','📊','🎯','🔧','💰','🌐','🎨','📋','🚀','⚙️','🏗️','📱'];
-function getFamilleIcon(name, idx){
-  const n=name.toLowerCase();
-  if(n.includes('digital')||n.includes('tech')||n.includes('outil'))return '💻';
-  if(n.includes('commerce')||n.includes('vente'))return '📦';
-  if(n.includes('market'))return '🎯';
-  if(n.includes('compta')||n.includes('finance'))return '💰';
-  if(n.includes('qualit'))return '⭐';
-  if(n.includes('logis')||n.includes('supply'))return '🚚';
-  if(n.includes('adv')||n.includes('admin'))return '📋';
-  if(n.includes('achat'))return '🛒';
-  return FAMILLE_ICONS[idx % FAMILLE_ICONS.length];
-}
-
-const DEFAULT_STATE={
-  members:[{id:'JU',name:'Julien',role:'Admin',paletteIdx:2}],
-  tasks:[
-    {id:1,title:'Configurer le repository',member:'JU',status:'todo',tag:'Admin',desc:'',done:[],dateStart:'',dateEnd:''},
-    {id:2,title:'Rédiger le README',member:'JU',status:'prog',tag:'Comptabilité',desc:'',done:['Structure définie'],dateStart:'2026-04-21',dateEnd:'2026-04-25'},
-    {id:3,title:'Déployer sur GitHub Pages',member:'JU',status:'done',tag:'Commerce',desc:'',done:['Repository créé','GitHub Pages activé'],dateStart:'2026-04-20',dateEnd:'2026-04-22'},
+let state = {
+  recipes: [
+    { id:1, name:'Poulet rôti aux herbes', cat:'Viande', emoji:'🍗', time:60, rating:5, favPersons:['charlotte','julien'], count:8 },
+    { id:2, name:'Spaghetti Bolognaise', cat:'Pâtes', emoji:'🍝', time:40, rating:4, favPersons:['lou','timeo'], count:12 },
+    { id:3, name:'Poisson au four', cat:'Poisson', emoji:'🐟', time:35, rating:4, favPersons:['charlotte'], count:5 },
+    { id:4, name:'Pizza maison', cat:'Pizza', emoji:'🍕', time:45, rating:5, favPersons:['timeo','lou','julien'], count:10 },
+    { id:5, name:'Soupe de légumes', cat:'Soupe', emoji:'🍲', time:30, rating:3, favPersons:['charlotte'], count:6 },
+    { id:6, name:'Salade César', cat:'Salade', emoji:'🥗', time:15, rating:4, favPersons:['charlotte','julien'], count:4 },
+    { id:7, name:'Bœuf bourguignon', cat:'Viande', emoji:'🥩', time:120, rating:5, favPersons:['julien'], count:3 },
+    { id:8, name:'Tacos maison', cat:'Autre', emoji:'🌮', time:30, rating:5, favPersons:['lou','timeo','julien','charlotte'], count:7 },
   ],
-  suiviProjects:[], // Nouveau : projets onglet Suivi
-  events:[{id:1,time:'09:00',title:'Standup équipe',tag:'Réunion',date:toISO(new Date())},{id:2,time:'14:00',title:'Revue de code',tag:'Commerce',date:toISO(new Date())}],
-  absences:[],
-  nextId:4,nextEventId:3,nextAbsId:1,nextSuiviProjId:1,
+  meals: {}, // key: "YYYY-MM-DD-midi" => { recipe, persons, rating, recurrence }
+  persons: {
+    charlotte: { favs:['Poulet rôti aux herbes','Pizza maison','Salade César'] },
+    julien:    { favs:['Bœuf bourguignon','Spaghetti Bolognaise','Tacos maison'] },
+    lou:       { favs:['Pizza maison','Spaghetti Bolognaise','Tacos maison'] },
+    timeo:     { favs:['Pizza maison','Tacos maison','Spaghetti Bolognaise'] }
+  },
+  currentWeekOffset: 0,
+  currentMonthDate: new Date(),
+  filterPerson: null,
+  editingMeal: null,
+  mealStar: 0,
+  recipeStar: 0,
+  selectedEmoji: '🍗',
+  favPersonId: null,
+  nextId: 100
 };
-let state=JSON.parse(JSON.stringify(DEFAULT_STATE));
-let selectedTasks=new Set();
-let currentTaskId=null;
-let currentSuiviProjId=null;
-let selectedPalette=0;
-let selectedSuiviColor=0;
-let suiviMembersSelected=new Set();
-let suiviSteps=[];
-let suiviView='grid';
-let collapsedFamilies=new Set();
-let saveTimeout=null;
-let isRemoteUpdate=false;
-let planningDate = new Date();
 
-// ── Sync ────────────────────────────────────
-function setSyncStatus(s){
-  const dot=document.getElementById('sync-dot');
-  const lbl=document.getElementById('sync-label');
-  dot.className='sync-dot'+(s==='saving'?' saving':s==='error'?' error':'');
-  lbl.textContent=s==='saving'?'Sauvegarde…':s==='error'?'Erreur':'Synchronisé';
-}
-function saveState(){
-  if(isRemoteUpdate)return;
-  setSyncStatus('saving');
-  clearTimeout(saveTimeout);
-  saveTimeout=setTimeout(async()=>{
-    try{ await set(ref(db,ROOT),JSON.parse(JSON.stringify(state))); setSyncStatus('ok'); }
-    catch(e){ console.error(e); setSyncStatus('error'); }
-  },600);
-}
-function startListening(){
-  onValue(ref(db,ROOT),(snap)=>{
-    const data=snap.val(); if(!data)return;
-    isRemoteUpdate=true;
-    state=data;
-    state.tasks=state.tasks||[]; state.members=state.members||[];
-    state.events=state.events||[]; state.absences=state.absences||[];
-    state.suiviProjects=state.suiviProjects||[];
-    if(!state.nextSuiviProjId)state.nextSuiviProjId=1;
-    renderAll(); setSyncStatus('ok');
-    isRemoteUpdate=false;
-  },(err)=>{ console.error(err); setSyncStatus('error'); });
-}
-async function initFirebase(){
-  try{
-    const snap=await get(ref(db,ROOT));
-    if(!snap.exists()) await set(ref(db,ROOT),state);
-    document.getElementById('loader').classList.add('hidden');
-    startListening();
-  }catch(e){ console.error(e); setSyncStatus('error'); document.getElementById('loader').classList.add('hidden'); renderAll(); }
-}
+// Pre-populate some meals
+(function() {
+  const today = new Date();
+  const d = new Date(today);
+  // Go to Monday
+  d.setDate(d.getDate() - ((d.getDay()+6)%7));
+  const addMeal = (offset, type, recipe, persons, rating) => {
+    const day = new Date(d);
+    day.setDate(day.getDate() + offset);
+    const key = fmtDate(day) + '-' + type;
+    state.meals[key] = { recipe, persons, rating, recurrence:'' };
+  };
+  addMeal(0,'midi','Salade César',['charlotte','julien'],4);
+  addMeal(0,'soir','Pizza maison',['charlotte','julien','lou','timeo'],5);
+  addMeal(1,'midi','Spaghetti Bolognaise',['lou','timeo'],4);
+  addMeal(1,'soir','Poulet rôti aux herbes',['charlotte','julien','lou','timeo'],5);
+  addMeal(2,'midi','Soupe de légumes',['charlotte'],3);
+  addMeal(3,'soir','Tacos maison',['charlotte','julien','lou','timeo'],5);
+  addMeal(4,'midi','Poisson au four',['charlotte','julien'],4);
+  addMeal(5,'soir','Pizza maison',['charlotte','julien','lou','timeo'],5);
+  addMeal(6,'midi','Bœuf bourguignon',['julien'],5);
+})();
 
-// ── Helpers ─────────────────────────────────
-function initials(n){return n.trim().slice(0,2).toUpperCase();}
-function getPalette(m){return PALETTES[m.paletteIdx%PALETTES.length];}
-function memberById(id){return state.members.find(m=>m.id===id);}
-function tagStyle(tag){const s=TAG_STYLES[tag]||TAG_STYLES['Autre'];return `background:${s.bg};color:${s.color}`;}
-function genId(name){let base=(name.trim().slice(0,2).toUpperCase().replace(/[^A-Z]/g,'')||'XX'),id=base,i=2;while(state.members.some(m=>m.id===id))id=base+(i++);return id;}
-function fmtDate(iso){if(!iso)return '';const[y,m,d]=iso.split('-');return `${d}/${m}/${y.slice(2)}`;}
-function fmtDateFull(iso){if(!iso)return '';const[y,m,d]=iso.split('-');return `${d}/${m}/${y}`;}
-function isoWeek(date){const d=new Date(date);d.setHours(0,0,0,0);d.setDate(d.getDate()+3-(d.getDay()+6)%7);const w1=new Date(d.getFullYear(),0,4);return 1+Math.round(((d-w1)/86400000-3+(w1.getDay()+6)%7)/7);}
-function mondayOfWeek(year,week){const jan4=new Date(year,0,4);const dow=(jan4.getDay()+6)%7;const mon=new Date(jan4);mon.setDate(jan4.getDate()-dow+(week-1)*7);return mon;}
-function toISO(d){return d.toISOString().slice(0,10);}
-function dateStatus(t){if(!t.dateEnd)return null;const today=new Date();today.setHours(0,0,0,0);const due=new Date(t.dateEnd);const diff=Math.round((due-today)/86400000);return diff<0?'overdue':diff<=3?'soon':'ok';}
-function countWorkDays(start,end){let c=0,cur=new Date(start),last=new Date(end);while(cur<=last){const d=cur.getDay();if(d!==0&&d!==6)c++;cur.setDate(cur.getDate()+1);}return c;}
-
-// ── Tabs ────────────────────────────────────
-window.switchTab=function(id, btn){
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if(btn) btn.classList.add('active');
-  if(id==='tab-planning'){renderPlanning();}
-  if(id==='tab-suivi'){renderSuivi();}
+function fmtDate(d) {
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
-window.switchTabByName=function(id){
-  const tabs=document.querySelectorAll('.nav-tab');
-  const panels=document.querySelectorAll('.tab-panel');
-  const panel=document.getElementById(id);
-  if(!panel)return;
-  panels.forEach(p=>p.classList.remove('active'));
-  tabs.forEach(t=>t.classList.remove('active'));
-  panel.classList.add('active');
-  if(id==='tab-planning'){renderPlanning();}
-  if(id==='tab-suivi'){renderSuivi();}
+function getMondayOfWeek(offset) {
+  const today = new Date();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((today.getDay()+6)%7) + offset*7);
+  monday.setHours(0,0,0,0);
+  return monday;
+}
+function personById(id) { return PERSONS.find(p=>p.id===id); }
+
+// ========== VIEWS ==========
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  const btns = document.querySelectorAll('nav button');
+  const map = ['week','month','recipes','persons','trends'];
+  btns[map.indexOf(v)]?.classList.add('active');
+  if (v==='week') renderWeek();
+  if (v==='month') renderMonth();
+  if (v==='recipes') renderRecipes();
+  if (v==='persons') renderPersons();
+  if (v==='trends') renderTrends();
 }
 
-// ── Render all ──────────────────────────────
-function renderAll(){
-  renderMemberSelects();renderAbsMemberSelect();
-  renderKanban();renderAgenda();renderAbsences();
+// ========== WEEK VIEW ==========
+function changeWeek(d) {
+  state.currentWeekOffset += d;
+  renderWeek();
+}
+function renderWeek() {
+  const monday = getMondayOfWeek(state.currentWeekOffset);
+  const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+  const fmt = d => d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3);
+  document.getElementById('week-label').textContent = 'Semaine du '+fmt(monday)+' au '+fmt(sunday)+' '+sunday.getFullYear();
+
+  // Persons filter
+  const pf = document.getElementById('week-persons-filter');
+  pf.innerHTML = PERSONS.map(p=>`
+    <div class="person-filter ${state.filterPerson===p.id?'active':''}" style="color:${p.color}" onclick="togglePersonFilter('${p.id}')">
+      <div class="person-avatar" style="background:${p.color}">${p.initials}</div>
+      ${p.name}
+    </div>
+  `).join('');
+
+  const grid = document.getElementById('week-grid');
+  const today = fmtDate(new Date());
+  grid.innerHTML = '';
+  for (let i=0; i<7; i++) {
+    const day = new Date(monday);
+    day.setDate(monday.getDate()+i);
+    const dateStr = fmtDate(day);
+    const col = document.createElement('div');
+    col.className = 'day-col' + (dateStr===today?' today':'');
+    col.innerHTML = `
+      <div class="day-header">
+        <div class="day-name">${DAYS_SHORT[i]}</div>
+        <div class="day-num">${day.getDate()}</div>
+      </div>
+      ${MEAL_TYPES.map(mt => {
+        const key = dateStr+'-'+mt.id;
+        const meal = state.meals[key];
+        let html = '';
+        if (meal) {
+          const filtered = state.filterPerson ? meal.persons.includes(state.filterPerson) : true;
+          if (!filtered) { html = `<div class="meal-slot" onclick="openMealModal('${dateStr}','${mt.id}')"><div class="meal-type-label">${mt.icon} ${mt.label}</div><div style="color:var(--ink-light);font-size:0.8rem;text-align:center;padding:10px 0">—</div></div>`; }
+          else {
+            const stars = '★'.repeat(meal.rating||0)+'☆'.repeat(5-(meal.rating||0));
+            const avatars = meal.persons.map(pid=>{const p=personById(pid);return p?`<div class="mini-avatar" style="background:${p.color}">${p.initials}</div>`:''}).join('');
+            html = `<div class="meal-slot filled" onclick="openMealModal('${dateStr}','${mt.id}')">
+              ${meal.recurrence?'<span class="recurrence-badge">↺</span>':''}
+              <div class="meal-type-label">${mt.icon} ${mt.label}</div>
+              <div class="meal-name">${meal.recipe}</div>
+              <div class="meal-persons-icons">${avatars}</div>
+              <div class="rating-stars" style="color:var(--gold)">${stars}</div>
+            </div>`;
+          }
+        } else {
+          html = `<div class="meal-slot" onclick="openMealModal('${dateStr}','${mt.id}')">
+            <div class="meal-type-label">${mt.icon} ${mt.label}</div>
+            <div class="add-meal-btn">+</div>
+          </div>`;
+        }
+        return html;
+      }).join('')}
+    `;
+    grid.appendChild(col);
+  }
+}
+function togglePersonFilter(id) {
+  state.filterPerson = state.filterPerson===id ? null : id;
+  renderWeek();
 }
 
-function renderMemberSelects(){
-  ['new-task-member'].forEach(id=>{
-    const el=document.getElementById(id);if(!el)return;
-    const val=el.value;
-    el.innerHTML=state.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-    if(state.members.some(m=>m.id===val))el.value=val;
-  });
+// ========== MONTH VIEW ==========
+function changeMonth(d) {
+  state.currentMonthDate.setMonth(state.currentMonthDate.getMonth()+d);
+  renderMonth();
 }
-function renderAbsMemberSelect(){
-  const el=document.getElementById('new-abs-member');if(!el)return;
-  const val=el.value;
-  el.innerHTML=state.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-  if(state.members.some(m=>m.id===val))el.value=val;
-}
-
-// ══════════════════════════════════════════
-//  KANBAN
-// ══════════════════════════════════════════
-function renderKanban(){
-  ['todo','prog','done'].forEach(s=>{
-    const col=document.getElementById('col-'+s);
-    const cnt=document.getElementById('cnt-'+s);
-    const filtered=state.tasks.filter(t=>t.status===s);
-    cnt.textContent=filtered.length;
-    col.innerHTML=filtered.map(t=>{
-      const m=memberById(t.member);const p=m?getPalette(m):PALETTES[0];
-      const checked=selectedTasks.has(t.id);const ds=dateStatus(t);
-      const dateHtml=(t.dateStart||t.dateEnd)?`<div class="task-dates">
-        ${t.dateStart?`<span>📅 ${fmtDate(t.dateStart)}</span>`:''}
-        ${t.dateEnd?`<span class="due ${ds==='overdue'?'overdue':ds==='soon'?'soon':''}">${ds==='overdue'?'⚠ ':ds==='soon'?'⏰ ':'→ '}${fmtDate(t.dateEnd)}</span>`:''}
-      </div>`:'';
-      return `<div class="task-card">
-        <div class="task-card-top">
-          <div class="task-check${checked?' checked':''}" onclick="toggleSelect(${t.id})"></div>
-          <span class="task-card-title" onclick="openTaskModal(${t.id})">${t.title}</span>
-          <button class="task-del" onclick="deleteSingleTask(${t.id})">×</button>
-        </div>
-        <div class="task-meta">
-          <span class="avatar" style="background:${p.bg};color:${p.color}">${initials(m?m.name:t.member)}</span>
-          <div style="display:flex;gap:6px;align-items:center">
-            <span class="tag" style="${tagStyle(t.tag)}">${t.tag}</span>
-            <button class="cycle-btn" onclick="cycleTask(${t.id})">→</button>
-          </div>
-        </div>${dateHtml}
+function renderMonth() {
+  const d = state.currentMonthDate;
+  document.getElementById('month-label').textContent = MONTHS[d.getMonth()]+' '+d.getFullYear();
+  const grid = document.getElementById('month-grid');
+  const today = fmtDate(new Date());
+  // Headers
+  let html = DAYS_SHORT.map(dn=>`<div class="month-day-header">${dn}</div>`).join('');
+  const first = new Date(d.getFullYear(), d.getMonth(), 1);
+  const last = new Date(d.getFullYear(), d.getMonth()+1, 0);
+  const startDow = (first.getDay()+6)%7;
+  const totalCells = startDow + last.getDate();
+  const rows = Math.ceil(totalCells/7);
+  for (let i=0; i<rows*7; i++) {
+    const dayNum = i - startDow + 1;
+    if (dayNum < 1 || dayNum > last.getDate()) {
+      html += `<div class="month-day other-month"></div>`;
+    } else {
+      const day = new Date(d.getFullYear(), d.getMonth(), dayNum);
+      const ds = fmtDate(day);
+      const isToday = ds===today;
+      const midi = state.meals[ds+'-midi'];
+      const soir = state.meals[ds+'-soir'];
+      html += `<div class="month-day${isToday?' today-month':''}" onclick="goToWeekOf('${ds}')">
+        <div class="month-day-num">${dayNum}</div>
+        ${midi?`<span class="month-meal-pill pill-midi">${midi.recipe}</span>`:''}
+        ${soir?`<span class="month-meal-pill pill-soir">${soir.recipe}</span>`:''}
       </div>`;
-    }).join('');
-  });
-  updateMetrics();updateBulkBar();
+    }
+  }
+  grid.innerHTML = html;
 }
-window.toggleSelect=function(id){selectedTasks.has(id)?selectedTasks.delete(id):selectedTasks.add(id);renderKanban();}
-window.clearSelection=function(){selectedTasks.clear();renderKanban();}
-window.deleteSelected=function(){
-  if(!selectedTasks.size)return;
-  if(!confirm(`Supprimer ${selectedTasks.size} tâche(s) ?`))return;
-  state.tasks=state.tasks.filter(t=>!selectedTasks.has(t.id));selectedTasks.clear();renderKanban();saveState();
-}
-window.deleteSingleTask=function(id){
-  if(!confirm('Supprimer cette tâche ?'))return;
-  state.tasks=state.tasks.filter(t=>t.id!==id);selectedTasks.delete(id);renderKanban();saveState();
-}
-function updateBulkBar(){
-  document.getElementById('bulk-bar').style.display=selectedTasks.size>0?'flex':'none';
-  document.getElementById('sel-count').textContent=selectedTasks.size+' sélectionnée(s)';
-}
-window.cycleTask=function(id){
-  const t=state.tasks.find(x=>x.id===id);if(!t)return;
-  t.status={todo:'prog',prog:'done',done:'todo'}[t.status];renderKanban();saveState();
-}
-window.addTask=function(){
-  const title=document.getElementById('new-task-title').value.trim();
-  const member=document.getElementById('new-task-member').value;
-  const tag=document.getElementById('new-task-tag').value;
-  if(!title){document.getElementById('new-task-title').focus();return;}
-  state.tasks.push({id:state.nextId++,title,member,status:'todo',tag,desc:'',done:[],dateStart:'',dateEnd:''});
-  document.getElementById('new-task-title').value='';renderKanban();saveState();
-}
-function updateMetrics(){
-  const done=state.tasks.filter(t=>t.status==='done').length;
-  const prog=state.tasks.filter(t=>t.status==='prog').length;
-  const pct=state.tasks.length?Math.round(done/state.tasks.length*100):0;
-  document.getElementById('m-done').textContent=done;
-  document.getElementById('m-prog').textContent=prog;
-  document.getElementById('m-pct').textContent=pct+'%';
-  const n=state.tasks.length||1;
-  const totalDaysTaken=(state.absences||[]).reduce((acc,abs)=>acc+countWorkDays(abs.dateStart,abs.dateEnd),0);
-  const rttTaken=(state.absences||[]).filter(a=>a.type==='RTT').reduce((acc,cur)=>acc+countWorkDays(cur.dateStart,cur.dateEnd),0);
-  const cpTaken=(state.absences||[]).filter(a=>a.type==='CP').reduce((acc,cur)=>acc+countWorkDays(cur.dateStart,cur.dateEnd),0);
-  const rttTotal=12,cpTotal=25;
-  const rttPct=Math.min(100,Math.round((rttTaken/rttTotal)*100));
-  const cpPct=Math.min(100,Math.round((cpTaken/cpTotal)*100));
-  document.getElementById('kpi-list').innerHTML=[
-    {label:'Terminées',val:done,max:n,color:'var(--green)'},
-    {label:'En cours',val:prog,max:n,color:'var(--orange)'},
-    {label:'À faire',val:state.tasks.filter(t=>t.status==='todo').length,max:n,color:'var(--text3)'},
-    {label:'Avancement',val:pct,max:100,color:'var(--green)',suffix:'%'},
-  ].map(k=>`<div class="kpi-row">
-    <span class="kpi-label">${k.label}</span>
-    <div class="kpi-bar-bg"><div class="kpi-bar" style="width:${Math.round(k.val/k.max*100)}%;background:${k.color}"></div></div>
-    <span class="kpi-val">${k.val}${k.suffix||''}</span>
-  </div>`).join('')+`
-  <div class="barometer-section">
-    <div class="counter-days"><div class="counter-val">${totalDaysTaken}</div><div class="counter-lbl">Jours posés au total</div></div>
-    <div class="barometer-title" style="margin-top:12px">Baromètre Congés</div>
-    <div class="barometer-row"><div class="barometer-label">RTT</div><div class="barometer-track" style="background:#EEEDFE"><div class="barometer-fill" style="width:${rttPct}%;background:#534AB7"></div></div><div class="barometer-text">${rttTaken}/${rttTotal}</div></div>
-    <div class="barometer-row"><div class="barometer-label">CP</div><div class="barometer-track" style="background:#E6F1FB"><div class="barometer-fill" style="width:${cpPct}%;background:#185fa5"></div></div><div class="barometer-text">${cpTaken}/${cpTotal}</div></div>
-  </div>`;
+function goToWeekOf(dateStr) {
+  const d = new Date(dateStr);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayMonday = new Date(today); todayMonday.setDate(today.getDate()-((today.getDay()+6)%7));
+  const targetMonday = new Date(d); targetMonday.setDate(d.getDate()-((d.getDay()+6)%7));
+  const diff = Math.round((targetMonday-todayMonday)/(7*86400000));
+  state.currentWeekOffset = diff;
+  showView('week');
 }
 
-// ══════════════════════════════════════════
-//  MODAL TÂCHE
-// ══════════════════════════════════════════
-window.openTaskModal=function(id){
-  currentTaskId=id;const t=state.tasks.find(x=>x.id===id);if(!t)return;
-  const m=memberById(t.member);const p=m?getPalette(m):PALETTES[0];const ss=STATUS_STYLES[t.status];
-  document.getElementById('tm-title').textContent=t.title;
-  document.getElementById('tm-status-badge').textContent=STATUS_LABELS[t.status];
-  document.getElementById('tm-status-badge').style.cssText=`background:${ss.bg};color:${ss.color}`;
-  document.getElementById('tm-avatar').textContent=m?initials(m.name):'?';
-  document.getElementById('tm-avatar').style.cssText=`background:${p.bg};color:${p.color}`;
-  document.getElementById('tm-member-name').textContent=m?m.name:'';
-  document.getElementById('tm-tag').textContent=t.tag;document.getElementById('tm-tag').style.cssText=tagStyle(t.tag);
-  document.getElementById('tm-desc').value=t.desc||'';
-  document.getElementById('tm-date-start').value=t.dateStart||'';document.getElementById('tm-date-end').value=t.dateEnd||'';
-  renderDoneList(t);document.getElementById('task-modal-overlay').classList.add('open');
+// ========== MEAL MODAL ==========
+let mealModalData = {};
+function openMealModal(dateStr, type) {
+  mealModalData = { dateStr, type };
+  const key = dateStr+'-'+type;
+  const meal = state.meals[key];
+  const mt = MEAL_TYPES.find(m=>m.id===type);
+  const [y,mo,da] = dateStr.split('-');
+  const dayName = DAYS[(new Date(dateStr).getDay()+6)%7];
+  document.getElementById('meal-modal-title').textContent = `${mt.icon} ${mt.label} — ${dayName} ${parseInt(da)} ${MONTHS[parseInt(mo)-1]}`;
+  document.getElementById('meal-recipe-search').value = meal ? meal.recipe : '';
+  document.getElementById('meal-recurrence').value = meal ? (meal.recurrence||'') : '';
+  state.mealStar = meal ? (meal.rating||0) : 0;
+  updateMealStars();
+  const delBtn = document.getElementById('meal-del-btn');
+  delBtn.style.display = meal ? '' : 'none';
+  // Persons
+  const selPersons = meal ? meal.persons : ['charlotte','julien','lou','timeo'];
+  document.getElementById('meal-persons').innerHTML = PERSONS.map(p=>`
+    <div class="person-check ${selPersons.includes(p.id)?'selected':''}" style="color:${p.color}" onclick="toggleMealPerson(this,'${p.id}')">
+      <div class="person-avatar" style="background:${p.color}">${p.initials}</div> ${p.name}
+    </div>`).join('');
+  hideMealSuggestions();
+  document.getElementById('meal-modal').classList.add('open');
 }
-function renderDoneList(t){
-  document.getElementById('tm-done-list').innerHTML=(t.done||[]).map((d,i)=>
-    `<li><span class="done-check">✓</span><span style="flex:1">${d}</span><button class="del-btn" onclick="removeDoneItem(${i})">×</button></li>`
-  ).join('');
+function closeMealModal() { document.getElementById('meal-modal').classList.remove('open'); }
+function toggleMealPerson(el, id) { el.classList.toggle('selected'); }
+function setMealStar(v) { state.mealStar=v; updateMealStars(); }
+function updateMealStars() {
+  document.querySelectorAll('#meal-stars .star-btn').forEach(b=>{ b.classList.toggle('lit', parseInt(b.dataset.v)<=state.mealStar); });
 }
-window.addDoneItem=function(){const inp=document.getElementById('tm-done-input');const val=inp.value.trim();if(!val)return;const t=state.tasks.find(x=>x.id===currentTaskId);if(!t)return;if(!t.done)t.done=[];t.done.push(val);inp.value='';renderDoneList(t);}
-window.removeDoneItem=function(idx){const t=state.tasks.find(x=>x.id===currentTaskId);if(!t)return;t.done.splice(idx,1);renderDoneList(t);}
-window.setTaskStatus=function(status){const t=state.tasks.find(x=>x.id===currentTaskId);if(!t)return;t.status=status;const ss=STATUS_STYLES[status];document.getElementById('tm-status-badge').textContent=STATUS_LABELS[status];document.getElementById('tm-status-badge').style.cssText=`background:${ss.bg};color:${ss.color}`;}
-window.saveTaskModal=function(){const t=state.tasks.find(x=>x.id===currentTaskId);if(!t)return;t.desc=document.getElementById('tm-desc').value;t.dateStart=document.getElementById('tm-date-start').value;t.dateEnd=document.getElementById('tm-date-end').value;renderKanban();saveState();closeTaskModal();}
-window.deleteTaskFromModal=function(){if(!confirm('Supprimer ?'))return;state.tasks=state.tasks.filter(t=>t.id!==currentTaskId);selectedTasks.delete(currentTaskId);renderKanban();saveState();closeTaskModal();}
-window.closeTaskModal=function(){document.getElementById('task-modal-overlay').classList.remove('open');}
-window.closeTaskModalOnBg=function(e){if(e.target===document.getElementById('task-modal-overlay'))closeTaskModal();}
-
-// ══════════════════════════════════════════
-//  AGENDA
-// ══════════════════════════════════════════
-function getEventsForDate(isoDate){
-  const todayStr=toISO(new Date());
-  return [...state.events].filter(e=>(e.date||todayStr)===isoDate).sort((a,b)=>a.time.localeCompare(b.time));
-}
-function renderAgenda(){
-  const todayStr=toISO(new Date());
-  const events=getEventsForDate(todayStr);
-  document.getElementById('agenda-list').innerHTML=events.map(e=>`
-    <div class="agenda-item">
-      <span class="agenda-time">${e.time}</span>
-      <div class="agenda-body"><div class="agenda-title-txt">${e.title}</div><div style="margin-top:3px"><span class="tag" style="${tagStyle(e.tag)}">${e.tag}</span></div></div>
-      <button class="agenda-del" onclick="deleteEvent(${e.id})">×</button>
+function filterMealRecipes() {
+  const q = document.getElementById('meal-recipe-search').value.toLowerCase();
+  const box = document.getElementById('meal-recipe-suggestions');
+  if (!q) { hideMealSuggestions(); return; }
+  const matches = state.recipes.filter(r=>r.name.toLowerCase().includes(q)).slice(0,6);
+  if (!matches.length) { hideMealSuggestions(); return; }
+  box.style.display='block';
+  box.innerHTML = matches.map(r=>`
+    <div onclick="selectMealRecipe('${r.name}')" style="padding:10px 14px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);">
+      <span style="font-size:1.3rem">${r.emoji}</span> ${r.name} <span style="margin-left:auto;color:var(--gold);font-size:0.8rem">${'★'.repeat(r.rating)}</span>
     </div>`).join('');
 }
-window.addEvent=function(){
-  const time=document.getElementById('new-event-time').value;
-  const title=document.getElementById('new-event-title').value.trim();
-  if(!title){document.getElementById('new-event-title').focus();return;}
-  state.events.push({id:state.nextEventId++,time,title,tag:'Autre',date:toISO(new Date())});
-  document.getElementById('new-event-title').value='';renderAgenda();saveState();
+function hideMealSuggestions() { document.getElementById('meal-recipe-suggestions').style.display='none'; }
+function selectMealRecipe(name) { document.getElementById('meal-recipe-search').value=name; hideMealSuggestions(); }
+function saveMeal() {
+  const recipe = document.getElementById('meal-recipe-search').value.trim();
+  if (!recipe) { showToast('Veuillez indiquer un plat'); return; }
+  const persons = [...document.querySelectorAll('#meal-persons .person-check.selected')].map(el=>el.getAttribute('onclick').match(/'(\w+)'\)/)[1]);
+  const recurrence = document.getElementById('meal-recurrence').value;
+  const key = mealModalData.dateStr+'-'+mealModalData.type;
+  state.meals[key] = { recipe, persons, rating: state.mealStar, recurrence };
+  // Update recipe count
+  const rec = state.recipes.find(r=>r.name===recipe);
+  if (rec) rec.count++;
+  // Handle recurrence
+  if (recurrence) applyRecurrence(mealModalData.dateStr, mealModalData.type, recipe, persons, recurrence);
+  closeMealModal();
+  renderWeek();
+  showToast('Repas enregistré ✓');
 }
-window.deleteEvent=function(id){state.events=state.events.filter(e=>e.id!==id);renderAgenda();renderPlanning();saveState();}
-window.toggleEventDone=function(id){
-  const e=state.events.find(x=>x.id===id);if(!e)return;
-  e.done=!e.done;
-  // Animate check
-  const card=document.querySelector(`.planning-event-card .pe-check[onclick="toggleEventDone(${id})"]`);
-  if(card){card.classList.add('popping');setTimeout(()=>card.classList.remove('popping'),300);}
-  renderDailySchedule();renderAgenda();saveState();
+function deleteMeal() {
+  const key = mealModalData.dateStr+'-'+mealModalData.type;
+  delete state.meals[key];
+  closeMealModal();
+  renderWeek();
+  showToast('Repas supprimé');
 }
-
-// ══════════════════════════════════════════
-//  PLANNING
-// ══════════════════════════════════════════
-window.renderPlanning=function(){renderCalendarGrid();renderDailySchedule();}
-window.changeMonth=function(delta){planningDate.setMonth(planningDate.getMonth()+delta);renderCalendarGrid();}
-window.goToToday=function(){planningDate=new Date();renderCalendarGrid();}
-window.selectPlanningDate=function(d){planningDate=new Date(d);renderCalendarGrid();renderDailySchedule();}
-function renderCalendarGrid(){
-  const year=planningDate.getFullYear(),month=planningDate.getMonth();
-  const todayStr=toISO(new Date()),selectedStr=toISO(planningDate);
-  const monthNames=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-  document.getElementById('cal-month-year').textContent=`${monthNames[month]} ${year}`;
-  const firstDayOfMonth=new Date(year,month,1).getDay();
-  const daysInMonth=new Date(year,month+1,0).getDate();
-  const startOffset=firstDayOfMonth===0?6:firstDayOfMonth-1;
-  const grid=document.querySelector('.calendar-grid');
-  grid.innerHTML=`<div class="cal-day-label">Lun</div><div class="cal-day-label">Mar</div><div class="cal-day-label">Mer</div><div class="cal-day-label">Jeu</div><div class="cal-day-label">Ven</div><div class="cal-day-label">Sam</div><div class="cal-day-label">Dim</div>`;
-  for(let i=0;i<startOffset;i++){const cell=document.createElement('div');cell.className='day-cell empty';grid.appendChild(cell);}
-  for(let d=1;d<=daysInMonth;d++){
-    const dateIso=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const hasEvent=state.events.some(e=>(e.date||todayStr)===dateIso);
-    const cell=document.createElement('div');cell.className='day-cell';cell.textContent=d;
-    if(dateIso===todayStr)cell.classList.add('today');
-    if(dateIso===selectedStr)cell.classList.add('selected');
-    if(hasEvent)cell.classList.add('has-event');
-    cell.onclick=()=>selectPlanningDate(dateIso);grid.appendChild(cell);
+function applyRecurrence(dateStr, type, recipe, persons, freq) {
+  const base = new Date(dateStr);
+  const weeks = freq==='weekly'?12 : freq==='biweekly'?6 : 3;
+  const step = freq==='weekly'?7 : freq==='biweekly'?14 : 30;
+  for (let i=1; i<=weeks; i++) {
+    const d = new Date(base);
+    d.setDate(d.getDate()+step*i);
+    const k = fmtDate(d)+'-'+type;
+    if (!state.meals[k]) state.meals[k] = { recipe, persons, rating:0, recurrence: freq };
   }
 }
-function renderDailySchedule(){
-  const dateStr=toISO(planningDate);
-  const options={weekday:'long',year:'numeric',month:'long',day:'numeric'};
-  document.getElementById('sched-date-title').textContent=planningDate.toLocaleDateString('fr-FR',options);
-  const events=getEventsForDate(dateStr);
-  const list=document.getElementById('schedule-list');
-  if(!events.length){list.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Aucun RDV ce jour-là.</div>`;return;}
-  list.innerHTML=events.map(e=>`<div class="planning-event-card${e.done?' done':''}">
-    <div class="pe-check" onclick="toggleEventDone(${e.id})" title="${e.done?'Marquer comme non réalisé':'Marquer comme réalisé'}">✓</div>
-    <span class="pe-time">${e.time}</span>
-    <span class="pe-title">${e.title}</span>
-    ${e.done?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--done-bg);color:var(--done-color);flex-shrink:0;margin-right:6px">✓ Réalisé</span>`:`<span class="tag" style="${tagStyle(e.tag)}">${e.tag}</span>`}
-    <button class="del-btn" onclick="deleteEvent(${e.id})">×</button>
-  </div>`).join('');
-}
-window.addPlanningEvent=function(){
-  const time=document.getElementById('plan-event-time').value;
-  const title=document.getElementById('plan-event-title').value.trim();
-  const tag=document.getElementById('plan-event-tag').value;
-  const dateStr=toISO(planningDate);
-  if(!title){document.getElementById('plan-event-title').focus();return;}
-  state.events.push({id:state.nextEventId++,time,title,tag,date:dateStr});
-  document.getElementById('plan-event-title').value='';renderDailySchedule();renderCalendarGrid();saveState();
-}
 
-// ══════════════════════════════════════════
-//  ABSENCES
-// ══════════════════════════════════════════
-function renderAbsences(){
-  const list=document.getElementById('absence-list');
-  const abs=[...(state.absences||[])].sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
-  if(!abs.length){list.innerHTML=`<div style="font-size:13px;color:var(--text3);padding:12px 0;text-align:center">Aucune absence enregistrée</div>`;return;}
-  const today=toISO(new Date());
-  list.innerHTML=abs.map(a=>{
-    const m=memberById(a.member);const p=m?getPalette(m):PALETTES[0];const t=ABS_TYPES[a.type]||ABS_TYPES['Autre'];
-    const days=countWorkDays(a.dateStart,a.dateEnd);const isPast=a.dateEnd<today;const isCurrent=a.dateStart<=today&&a.dateEnd>=today;
-    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border);opacity:${isPast?'0.55':'1'}">
-      <span style="font-size:18px;line-height:1;margin-top:2px">${t.icon}</span>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px">
-          <span style="font-size:13px;font-weight:600;color:var(--text)">${m?m.name:a.member}</span>
-          <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${t.bg};color:${t.color}">${t.label}</span>
-          ${isCurrent?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--orange-light);color:var(--orange-dark)">EN COURS</span>`:''}
-        </div>
-        <div style="font-size:12px;color:var(--text2)">${fmtDate(a.dateStart)}${a.dateStart!==a.dateEnd?' → '+fmtDate(a.dateEnd):''} &bull; <strong>${days}</strong> jour${days>1?'s':''} ouvré${days>1?'s':''}</div>
-        ${a.note?`<div style="font-size:12px;color:var(--text3);margin-top:2px;font-style:italic">${a.note}</div>`:''}
-      </div>
-      <button style="background:none;border:none;color:var(--text3);font-size:16px;padding:0 3px;cursor:pointer;flex-shrink:0;line-height:1" onmouseover="this.style.color='#C0392B'" onmouseout="this.style.color=''" onclick="deleteAbsence(${a.id})">×</button>
-    </div>`;
-  }).join('');
-}
-window.addAbsence=function(){
-  const member=document.getElementById('new-abs-member').value;
-  const type=document.getElementById('new-abs-type').value;
-  const dateStart=document.getElementById('new-abs-start').value;
-  const dateEnd=document.getElementById('new-abs-end').value||dateStart;
-  const note=document.getElementById('new-abs-note').value.trim();
-  if(!dateStart){document.getElementById('new-abs-start').focus();return;}
-  if(dateEnd<dateStart){alert('La date de fin doit être après la date de début.');return;}
-  state.absences=state.absences||[];
-  state.absences.push({id:state.nextAbsId++,member,type,dateStart,dateEnd,note});
-  document.getElementById('new-abs-start').value='';document.getElementById('new-abs-end').value='';document.getElementById('new-abs-note').value='';
-  renderAbsences();saveState();
-}
-window.deleteAbsence=function(id){state.absences=(state.absences||[]).filter(a=>a.id!==id);renderAbsences();saveState();}
-
-
-// ══════════════════════════════════════════
-//  SUIVI PROJETS — Nouveau
-// ══════════════════════════════════════════
-
-window.setSuiviView=function(view){
-  suiviView=view;
-  document.getElementById('view-btn-grid').classList.toggle('active',view==='grid');
-  document.getElementById('view-btn-list').classList.toggle('active',view==='list');
-  renderSuivi();
-}
-
-window.toggleFamille=function(famKey){
-  if(collapsedFamilies.has(famKey))collapsedFamilies.delete(famKey);
-  else collapsedFamilies.add(famKey);
-  renderSuivi();
-}
-
-window.renderSuivi=function(){
-  const projs=state.suiviProjects||[];
-  const searchVal=(document.getElementById('suivi-search-input')?.value||'').toLowerCase();
-  const filterStatus=document.getElementById('suivi-filter-status')?.value||'all';
-  const filterService=document.getElementById('suivi-filter-service')?.value||'all';
-
-  // Filtrage
-  const filtered=projs.filter(p=>{
-    if(filterStatus!=='all'&&p.status!==filterStatus)return false;
-    if(filterService!=='all'&&p.service!==filterService)return false;
-    if(searchVal&&!p.name.toLowerCase().includes(searchVal)&&!p.programme?.toLowerCase().includes(searchVal)&&!p.family?.toLowerCase().includes(searchVal)&&!p.desc?.toLowerCase().includes(searchVal))return false;
+// ========== RECIPES VIEW ==========
+function renderRecipes() {
+  const q = document.getElementById('recipe-search').value.toLowerCase();
+  const cat = document.getElementById('recipe-cat').value;
+  const filtered = state.recipes.filter(r => {
+    if (q && !r.name.toLowerCase().includes(q)) return false;
+    if (cat && r.cat!==cat) return false;
     return true;
   });
+  const grid = document.getElementById('recipes-grid');
+  if (!filtered.length) { grid.innerHTML='<p style="color:var(--ink-muted);padding:20px">Aucune recette trouvée.</p>'; return; }
+  grid.innerHTML = filtered.map(r => {
+    const stars = '★'.repeat(r.rating)+'☆'.repeat(5-r.rating);
+    const favPeople = r.favPersons.map(pid=>{const p=personById(pid);return p?`<div class="mini-avatar" style="background:${p.color}">${p.initials}</div>`:''}).join('');
+    const bg = { Viande:'#FAECE7', Poisson:'#E6F1FB', Végétarien:'#EAF3DE', Pâtes:'#FDF8F2', Soupe:'#F0EDD8', Pizza:'#FAECE7', Salade:'#EAF3DE', Autre:'#F5ECD7' }[r.cat]||'#F5ECD7';
+    return `<div class="recipe-card">
+      <div class="recipe-img" style="background:${bg}"><span style="font-size:4rem">${r.emoji}</span></div>
+      <div class="recipe-body">
+        <div class="recipe-category">${r.cat} · ${r.time} min</div>
+        <div class="recipe-title">${r.name}</div>
+        <div class="recipe-meta">
+          <span class="stars">${stars}</span>
+          <span class="recipe-count">Cuisinée ${r.count}×</span>
+        </div>
+        <div class="recipe-fav-persons">${favPeople}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openRecipeModal() {
+  document.getElementById('r-name').value='';
+  document.getElementById('r-time').value='';
+  state.recipeStar=0; updateRecipeStars();
+  state.selectedEmoji='🍗';
+  document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.toggle('selected',b.dataset.e==='🍗'));
+  document.getElementById('recipe-fav-persons').innerHTML = PERSONS.map(p=>`
+    <div class="person-check" style="color:${p.color}" onclick="this.classList.toggle('selected')">
+      <div class="person-avatar" style="background:${p.color}">${p.initials}</div> ${p.name}
+    </div>`).join('');
+  document.getElementById('recipe-modal').classList.add('open');
+}
+function closeRecipeModal() { document.getElementById('recipe-modal').classList.remove('open'); }
+function setRecipeStar(v) { state.recipeStar=v; updateRecipeStars(); }
+function updateRecipeStars() {
+  document.querySelectorAll('#recipe-stars .star-btn').forEach(b=>{ b.classList.toggle('lit', parseInt(b.dataset.v)<=state.recipeStar); });
+}
+function selectEmoji(btn) {
+  document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.selectedEmoji = btn.dataset.e;
+}
+function saveRecipe() {
+  const name = document.getElementById('r-name').value.trim();
+  if (!name) { showToast('Veuillez nommer la recette'); return; }
+  const favPersons = [...document.querySelectorAll('#recipe-fav-persons .person-check.selected')].map(el=>{
+    const m = el.getAttribute('onclick').match(/'(\w+)'\)/); return m?m[1]:null;
+  }).filter(Boolean);
+  state.recipes.push({
+    id: state.nextId++, name, cat: document.getElementById('r-cat').value,
+    emoji: state.selectedEmoji, time: parseInt(document.getElementById('r-time').value)||30,
+    rating: state.recipeStar, favPersons, count:0
+  });
+  closeRecipeModal();
+  renderRecipes();
+  showToast('Recette ajoutée ✓');
+}
 
-  // Synthèse
-  const all=projs;
-  document.getElementById('suivi-synth').innerHTML=`
-    <div class="suivi-synth-card purple"><div class="ss-icon">🗂</div><div class="ss-val" style="color:var(--purple)">${all.length}</div><div class="ss-lbl">Projets total</div></div>
-    <div class="suivi-synth-card orange"><div class="ss-icon">⚡</div><div class="ss-val" style="color:var(--orange)">${all.filter(p=>p.status==='En cours').length}</div><div class="ss-lbl">En cours</div></div>
-    <div class="suivi-synth-card green"><div class="ss-icon">✅</div><div class="ss-val" style="color:var(--green)">${all.filter(p=>p.status==='Terminé').length}</div><div class="ss-lbl">Terminés</div></div>
-    <div class="suivi-synth-card blue"><div class="ss-icon">📈</div><div class="ss-val" style="color:#185fa5">${all.length?Math.round(all.reduce((s,p)=>s+(p.progress||0),0)/all.length)+'%':'—'}</div><div class="ss-lbl">Avancement moyen</div></div>
+// ========== PERSONS VIEW ==========
+function renderPersons() {
+  const grid = document.getElementById('persons-grid');
+  grid.innerHTML = PERSONS.map(p => {
+    const pd = state.persons[p.id];
+    const meals = Object.values(state.meals).filter(m=>m.persons&&m.persons.includes(p.id)).length;
+    const favs = pd.favs.map(f=>`<span class="fav-tag">🍽️ ${f}</span>`).join('');
+    return `<div class="person-card">
+      <div class="person-header">
+        <div class="person-big-avatar" style="background:${p.color}">${p.initials}</div>
+        <div class="person-info">
+          <h3>${p.name}</h3>
+          <p>Membre de la famille</p>
+        </div>
+      </div>
+      <div class="fav-section">
+        <h4>Plats préférés</h4>
+        <div style="margin-bottom:8px">${favs}
+          <button class="add-fav" onclick="openFavModal('${p.id}')">+ Ajouter</button>
+        </div>
+      </div>
+      <div class="person-stats">
+        <div class="stat-box"><div class="stat-num">${meals}</div><div class="stat-label">Repas planifiés</div></div>
+        <div class="stat-box"><div class="stat-num">${pd.favs.length}</div><div class="stat-label">Plats favoris</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openFavModal(personId) {
+  state.favPersonId = personId;
+  const sel = document.getElementById('fav-select');
+  const existing = state.persons[personId].favs;
+  sel.innerHTML = state.recipes.filter(r=>!existing.includes(r.name)).map(r=>`<option value="${r.name}">${r.emoji} ${r.name}</option>`).join('');
+  document.getElementById('fav-modal').classList.add('open');
+}
+function closeFavModal() { document.getElementById('fav-modal').classList.remove('open'); }
+function addFav() {
+  const val = document.getElementById('fav-select').value;
+  if (!val) return;
+  state.persons[state.favPersonId].favs.push(val);
+  closeFavModal();
+  renderPersons();
+  showToast('Favori ajouté ✓');
+}
+
+// ========== TRENDS VIEW ==========
+function renderTrends() {
+  // Stats
+  const totalMeals = Object.keys(state.meals).length;
+  const allRecipes = state.recipes.length;
+  const avgRating = state.recipes.length ? (state.recipes.reduce((a,r)=>a+r.rating,0)/state.recipes.length).toFixed(1) : 0;
+  const recurring = Object.values(state.meals).filter(m=>m.recurrence).length;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="stat-card-icon">🗓️</div><div class="stat-card-num">${totalMeals}</div><div class="stat-card-label">Repas planifiés</div></div>
+    <div class="stat-card"><div class="stat-card-icon">📖</div><div class="stat-card-num">${allRecipes}</div><div class="stat-card-label">Recettes</div></div>
+    <div class="stat-card"><div class="stat-card-icon">⭐</div><div class="stat-card-num">${avgRating}</div><div class="stat-card-label">Note moyenne</div></div>
+    <div class="stat-card"><div class="stat-card-icon">↺</div><div class="stat-card-num">${recurring}</div><div class="stat-card-label">Repas récurrents</div></div>
   `;
+  // Top recipes
+  const top = [...state.recipes].sort((a,b)=>b.count-a.count).slice(0,5);
+  const maxCount = top[0]?.count||1;
+  const topHtml = top.map((r,i)=>`
+    <div class="trend-row">
+      <div class="trend-rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${i+1}</div>
+      <span style="font-size:1.2rem">${r.emoji}</span>
+      <span class="trend-name">${r.name}</span>
+      <div class="trend-bar-wrap"><div class="trend-bar" style="width:${Math.round(r.count/maxCount*100)}%"></div></div>
+      <span class="trend-score">${r.count}×</span>
+    </div>`).join('');
 
-  const container=document.getElementById('suivi-container');
-  const listeEl=document.getElementById('suivi-liste');
+  // Top rated
+  const topRated = [...state.recipes].sort((a,b)=>b.rating-a.rating||b.count-a.count).slice(0,5);
+  const ratedHtml = topRated.map((r,i)=>`
+    <div class="trend-row">
+      <div class="trend-rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${i+1}</div>
+      <span style="font-size:1.2rem">${r.emoji}</span>
+      <span class="trend-name">${r.name}</span>
+      <span style="color:var(--gold)">${'★'.repeat(r.rating)}</span>
+      <span class="trend-score">${r.rating}/5</span>
+    </div>`).join('');
 
-  if(suiviView==='list'){
-    container.style.display='none';
-    listeEl.classList.add('active');
-    if(!filtered.length){listeEl.innerHTML=`<div style="text-align:center;padding:48px 0;color:var(--text3)">Aucun projet trouvé</div>`;return;}
-    listeEl.innerHTML=filtered.map(p=>{
-      const color=p.color||PROJ_COLORS[0];const ss=PROJ_STATUS_STYLES[p.status]||PROJ_STATUS_STYLES['Planifié'];
-      return `<div class="suivi-liste-row" onclick="openSuiviProjectModal(${p.id})">
-        <div class="slr-color-dot" style="background:${color}"></div>
-        <div class="slr-info">
-          <div class="slr-name">${p.name}</div>
-          <div class="slr-meta">${p.programme?`<span style="font-family:'Courier New',monospace;font-size:10px;color:${color}">${p.programme}</span> · `:''} ${p.family||'—'} · ${p.service||'—'}</div>
-        </div>
-        <span style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:${ss.bg};color:${ss.color};flex-shrink:0">${p.status}</span>
-        <div class="slr-prog">
-          <div class="slr-prog-bar"><div class="slr-prog-fill" style="width:${p.progress||0}%;background:${color}"></div></div>
-          <span class="slr-prog-pct">${p.progress||0}%</span>
-        </div>
-      </div>`;
-    }).join('');
-    return;
-  }
-
-  // Vue grille
-  container.style.display='block';
-  listeEl.classList.remove('active');
-
-  if(!filtered.length){
-    container.innerHTML=`<div style="text-align:center;padding:48px 0;color:var(--text3);font-size:14px">
-      ${projs.length===0?`Aucun projet — cliquez sur <strong>+ Nouveau projet</strong> pour commencer`:'Aucun projet ne correspond à votre recherche'}
-    </div>`;
-    return;
-  }
-
-  // Grouper par famille
-  const groups={};
-  filtered.forEach(p=>{
-    const fam=(p.family||'SANS FAMILLE').trim().toUpperCase();
-    if(!groups[fam])groups[fam]=[];groups[fam].push(p);
-  });
-  const sortedFamilies=Object.keys(groups).sort();
-
-  let html='';
-  sortedFamilies.forEach((famName,famIdx)=>{
-    const groupProjects=groups[famName];
-    const isCollapsed=collapsedFamilies.has(famName);
-
-    // Stats famille
-    const famAvg=groupProjects.length?Math.round(groupProjects.reduce((s,p)=>s+(p.progress||0),0)/groupProjects.length):0;
-    const famDone=groupProjects.filter(p=>p.status==='Terminé').length;
-    const famProg=groupProjects.filter(p=>p.status==='En cours').length;
-
-    // Couleur dominante de la famille (couleur du 1er projet)
-    const famColor=groupProjects[0]?.color||PROJ_COLORS[famIdx%PROJ_COLORS.length];
-    const famBg=colorLight(famColor);
-    const famIcon=getFamilleIcon(famName,famIdx);
-
-    html+=`<div class="suivi-famille-block">
-      <div class="suivi-famille-header" style="--fam-color:${famColor};--fam-bg:${famBg}" onclick="toggleFamille('${famName}')">
-        <div class="sfh-icon" style="background:${famBg}">${famIcon}</div>
-        <div class="sfh-info">
-          <div class="sfh-name">${famName}</div>
-          <div class="sfh-sub">${groupProjects.length} projet${groupProjects.length>1?'s':''} · ${famProg} en cours · ${famDone} terminé${famDone>1?'s':''}</div>
-        </div>
-        <div class="sfh-progress">
-          <div class="sfh-progress-track" style="background:${famBg}"><div class="sfh-progress-fill" style="width:${famAvg}%;background:${famColor}"></div></div>
-          <span class="sfh-progress-pct" style="color:${famColor}">${famAvg}%</span>
-        </div>
-        <span class="sfh-toggle${isCollapsed?' collapsed':''}">▾</span>
+  // Fav per person
+  const personFavHtml = PERSONS.map(p=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div class="person-big-avatar" style="background:${p.color};width:36px;height:36px;font-size:0.85rem">${p.initials}</div>
+      <div>
+        <div style="font-weight:500;font-size:0.9rem">${p.name}</div>
+        <div style="font-size:0.8rem;color:var(--ink-muted)">${state.persons[p.id].favs.slice(0,2).join(', ')}</div>
       </div>
-      <div class="suivi-famille-prog-bar"><div class="suivi-famille-prog-fill" style="width:${famAvg}%;background:${famColor}"></div></div>
-      <div class="suivi-famille-grid${isCollapsed?' collapsed':''}">
-        ${groupProjects.map(p=>renderSuiviCard(p)).join('')}
-        <div class="spc-new-card" onclick="openSuiviProjectModal(null,'${famName}')">
-          <div class="plus">+</div>
-          <span>Nouveau projet</span>
-          <small>${famName}</small>
-        </div>
-      </div>
-    </div>`;
-  });
+    </div>`).join('');
 
-  container.innerHTML=html;
+  // Cat breakdown
+  const cats = {};
+  state.recipes.forEach(r=>{ cats[r.cat]=(cats[r.cat]||0)+r.count; });
+  const catSorted = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const maxCat = catSorted[0]?.[1]||1;
+  const catEmojis = { Viande:'🥩', Poisson:'🐟', Végétarien:'🥦', Pâtes:'🍝', Soupe:'🍲', Pizza:'🍕', Salade:'🥗', Autre:'✨' };
+  const catHtml = catSorted.map((c,i)=>`
+    <div class="trend-row">
+      <div class="trend-rank ${i===0?'gold':''}">${i+1}</div>
+      <span style="font-size:1.2rem">${catEmojis[c[0]]||'🍽️'}</span>
+      <span class="trend-name">${c[0]}</span>
+      <div class="trend-bar-wrap"><div class="trend-bar" style="width:${Math.round(c[1]/maxCat*100)}%;background:var(--sage)"></div></div>
+      <span class="trend-score" style="color:var(--sage)">${c[1]}×</span>
+    </div>`).join('');
+
+  document.getElementById('trends-grid').innerHTML = `
+    <div class="trend-card"><div class="trend-title">🏆 Plats les plus cuisinés</div>${topHtml}</div>
+    <div class="trend-card"><div class="trend-title">⭐ Mieux notés</div>${ratedHtml}</div>
+    <div class="trend-card"><div class="trend-title">❤️ Favoris par personne</div>${personFavHtml}</div>
+    <div class="trend-card"><div class="trend-title">🍽️ Catégories préférées</div>${catHtml}</div>
+  `;
 }
 
-function renderSuiviCard(p){
-  const color=p.color||PROJ_COLORS[0];
-  const light=colorLight(color);
-  const ss=PROJ_STATUS_STYLES[p.status]||PROJ_STATUS_STYLES['Planifié'];
-  const ps=PRIORITY_STYLES[p.priority]||PRIORITY_STYLES['Moyenne'];
-  const progress=p.progress||0;
-  const members=(p.members||[]).map(id=>memberById(id)).filter(Boolean);
-  const steps=p.steps||[];
-  const stepsTotal=steps.length,stepsDone=steps.filter(s=>s.done).length;
-  const stepsPct=stepsTotal?Math.round(stepsDone/stepsTotal*100):0;
-  const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
-
-  const stepDots=stepsTotal?steps.map((s,i)=>
-    `<div class="spc-step-dot ${s.done?'done':'todo'}" style="${s.done?`background:${color}`:'border-color:'+color+'40'}" data-label="${s.label}" title="${s.label}${s.done?' ✓':''}"></div>`
-  ).join(''):'';
-
-  return `<div class="suivi-proj-card" style="--proj-color:${color};--proj-light:${light}" onclick="openSuiviProjectModal(${p.id})">
-    <button class="spc-del" onclick="event.stopPropagation();deleteSuiviProjectById(${p.id})">×</button>
-    <div class="spc-top-bar" style="background:${color}"></div>
-    <div class="spc-body">
-      ${p.programme?`<div class="spc-programme" style="background:${light};color:${color}"><span>⌗</span>${p.programme}</div>`:''}
-      <div class="spc-name">${p.name}</div>
-      ${p.service?`<div class="spc-service" style="border-color:${color}30"><span style="font-size:10px">🏢</span>${p.service}</div>`:''}
-      ${p.desc?`<div class="spc-desc">${p.desc}</div>`:''}
-      <div class="spc-badges">
-        <span class="spc-badge" style="background:${ss.bg};color:${ss.color}">${p.status}</span>
-        <span class="spc-badge" style="background:${ps.bg};color:${ps.color}">${p.priority}</span>
-        ${daysLeft!==null?`<span style="font-size:11px;color:${daysLeft<0?'var(--red)':daysLeft<=7?'var(--orange-dark)':'var(--text3)'};font-weight:600">${daysLeft<0?'⚠ '+Math.abs(daysLeft)+'j dépassé':daysLeft===0?'Aujourd\'hui':daysLeft+'j restants'}</span>`:''}
-      </div>
-    </div>
-    ${stepsTotal?`<div class="spc-steps">
-      <div class="spc-steps-header">
-        <span class="spc-steps-label">Étapes clés</span>
-        <span class="spc-steps-count" style="color:${color}">${stepsDone}/${stepsTotal}</span>
-      </div>
-      <div class="spc-steps-bar-bg"><div class="spc-steps-bar-fill" style="width:${stepsPct}%;background:${color}"></div></div>
-      <div class="spc-steps-dots">${stepDots}</div>
-    </div>`:''}
-    <div class="spc-progress">
-      <div class="spc-progress-row"><span>Avancement global</span><strong>${progress}%</strong></div>
-      <div class="spc-progress-bg"><div class="spc-progress-fill" style="width:${progress}%;background:${color}"></div></div>
-    </div>
-    <div class="spc-footer">
-      <div class="spc-avatars">
-        ${members.map(m=>{const pl=getPalette(m);return `<div class="spc-avatar" style="background:${pl.bg};color:${pl.color}">${initials(m.name)}</div>`;}).join('')||`<span style="font-size:11px;color:var(--text3)">Non assigné</span>`}
-      </div>
-      ${p.dateEnd?`<span class="spc-date" style="${daysLeft!==null&&daysLeft<0?'color:var(--red);font-weight:600':''}">→ ${fmtDate(p.dateEnd)}</span>`:''}
-    </div>
-  </div>`;
+// ========== TOAST ==========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// ── Modal Suivi ──────────────────────────────
-window.openSuiviProjectModal=function(id, prefillFamily){
-  currentSuiviProjId=id||null;
-  const p=id?state.suiviProjects.find(x=>x.id===id):null;
-  document.getElementById('sm-title-label').textContent=p?'Modifier le projet':'Nouveau projet — Suivi';
-  document.getElementById('sm-delete-btn').style.display=p?'block':'none';
+// ========== CLOSE MODALS ==========
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+document.addEventListener('click', e=>{
+  if (!document.getElementById('meal-recipe-suggestions').contains(e.target) && e.target.id!=='meal-recipe-search') hideMealSuggestions();
+});
 
-  // Familles autocomplete
-  const uniqueFamilies=[...new Set((state.suiviProjects||[]).map(p=>p.family).filter(Boolean))];
-  document.getElementById('suivi-famille-list').innerHTML=uniqueFamilies.map(f=>`<option value="${f}">`).join('');
-
-  document.getElementById('sm-family').value=p?p.family||'':(prefillFamily||'');
-  document.getElementById('sm-programme').value=p?p.programme||'':'';
-  document.getElementById('sm-name').value=p?p.name:'';
-  document.getElementById('sm-service').value=p?p.service||'':'';
-  document.getElementById('sm-desc').value=p?p.desc||'':'';
-  document.getElementById('sm-date-start').value=p?p.dateStart||'':'';
-  document.getElementById('sm-date-end').value=p?p.dateEnd||'':'';
-  document.getElementById('sm-status').value=p?p.status:'En cours';
-  document.getElementById('sm-priority').value=p?p.priority:'Moyenne';
-  document.getElementById('sm-progress').value=p?p.progress||0:0;
-
-  suiviMembersSelected=new Set(p&&p.members?p.members:[]);
-  suiviSteps=p&&p.steps?JSON.parse(JSON.stringify(p.steps)):[];
-  selectedSuiviColor=p?PROJ_COLORS.indexOf(p.color):-1;
-  if(selectedSuiviColor<0)selectedSuiviColor=0;
-
-  renderSuiviColorOpts();renderSuiviMembers();renderSuiviStepsList();
-  document.getElementById('suivi-modal-overlay').classList.add('open');
-}
-window.closeSuiviModal=function(){document.getElementById('suivi-modal-overlay').classList.remove('open');}
-window.closeSuiviModalOnBg=function(e){if(e.target===document.getElementById('suivi-modal-overlay'))closeSuiviModal();}
-
-function renderSuiviColorOpts(){
-  document.getElementById('sm-colors').innerHTML=PROJ_COLORS.map((c,i)=>
-    `<div class="proj-color-opt${i===selectedSuiviColor?' selected':''}" style="background:${c}" onclick="selectSuiviColor(${i})"></div>`
-  ).join('');
-}
-window.selectSuiviColor=function(i){selectedSuiviColor=i;renderSuiviColorOpts();}
-
-function renderSuiviMembers(){
-  document.getElementById('sm-members-list').innerHTML=state.members.map(m=>{
-    const p=getPalette(m);const sel=suiviMembersSelected.has(m.id);
-    return `<div onclick="toggleSuiviMember('${m.id}')" style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;cursor:pointer;background:${sel?p.bg:'var(--surface2)'};border:1.5px solid ${sel?p.color:'var(--border)'};transition:all .15s">
-      <span class="avatar" style="width:22px;height:22px;font-size:9px;background:${p.bg};color:${p.color}">${initials(m.name)}</span>
-      <span style="font-size:12px;font-weight:${sel?'600':'400'};color:${sel?p.color:'var(--text2)'}">${m.name}</span>
-    </div>`;
-  }).join('');
-}
-window.toggleSuiviMember=function(id){suiviMembersSelected.has(id)?suiviMembersSelected.delete(id):suiviMembersSelected.add(id);renderSuiviMembers();}
-
-function renderSuiviStepsList(){
-  document.getElementById('sm-steps-list').innerHTML=suiviSteps.length?`<ul class="step-list">${suiviSteps.map((s,i)=>`
-    <li class="step-item">
-      <div class="step-check${s.done?' done':''}" onclick="toggleSuiviStep(${i})"></div>
-      <span class="step-label${s.done?' done':''}">${s.label}</span>
-      <button class="del-btn" onclick="removeSuiviStep(${i})">×</button>
-    </li>`).join('')}</ul>`:'';
-}
-window.toggleSuiviStep=function(i){suiviSteps[i].done=!suiviSteps[i].done;renderSuiviStepsList();}
-window.removeSuiviStep=function(i){suiviSteps.splice(i,1);renderSuiviStepsList();}
-window.addSuiviStep=function(){
-  const inp=document.getElementById('sm-step-input');const val=inp.value.trim();
-  if(!val)return;suiviSteps.push({label:val,done:false});inp.value='';renderSuiviStepsList();
-}
-
-window.saveSuiviProject=function(){
-  const name=document.getElementById('sm-name').value.trim();
-  if(!name){document.getElementById('sm-name').focus();return;}
-  if(!state.suiviProjects)state.suiviProjects=[];
-  if(!state.nextSuiviProjId)state.nextSuiviProjId=1;
-  const proj={
-    id:currentSuiviProjId||(state.nextSuiviProjId++),
-    name,
-    family:document.getElementById('sm-family').value.trim(),
-    programme:document.getElementById('sm-programme').value.trim(),
-    service:document.getElementById('sm-service').value,
-    desc:document.getElementById('sm-desc').value.trim(),
-    dateStart:document.getElementById('sm-date-start').value,
-    dateEnd:document.getElementById('sm-date-end').value,
-    status:document.getElementById('sm-status').value,
-    priority:document.getElementById('sm-priority').value,
-    progress:parseInt(document.getElementById('sm-progress').value)||0,
-    color:PROJ_COLORS[selectedSuiviColor],
-    members:[...suiviMembersSelected],
-    steps:JSON.parse(JSON.stringify(suiviSteps)),
-  };
-  if(currentSuiviProjId){
-    const idx=state.suiviProjects.findIndex(p=>p.id===currentSuiviProjId);
-    if(idx>=0)state.suiviProjects[idx]=proj;else state.suiviProjects.push(proj);
-  }else{state.suiviProjects.push(proj);}
-  renderSuivi();saveState();closeSuiviModal();
-}
-
-window.deleteSuiviProjectById=function(id){
-  if(!confirm('Supprimer ce projet ?'))return;
-  state.suiviProjects=(state.suiviProjects||[]).filter(p=>p.id!==id);
-  renderSuivi();saveState();
-}
-window.deleteSuiviProject=function(){if(currentSuiviProjId)deleteSuiviProjectById(currentSuiviProjId);closeSuiviModal();}
-
-// ══════════════════════════════════════════
-//  RAPPORT PDF
-// ══════════════════════════════════════════
-function buildWeekButtons(){
-  const wrap=document.getElementById('week-quick-btns');const today=new Date();const cw=isoWeek(today);const year=today.getFullYear();
-  const weeks=[];for(let w=cw-3;w<=cw+1;w++){if(w<1||w>53)continue;const mon=mondayOfWeek(year,w);const fri=new Date(mon);fri.setDate(mon.getDate()+4);weeks.push({w,mon:toISO(mon),fri:toISO(fri),label:`S${w} — ${mon.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} au ${fri.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}`});}
-  wrap.innerHTML=weeks.map(wk=>`<button class="week-btn" onclick="applyWeek('${wk.mon}','${wk.fri}','${wk.w}')">${wk.label}</button>`).join('');
-}
-window.applyWeek=function(start,end,w){document.getElementById('rp-date-start').value=start;document.getElementById('rp-date-end').value=end;document.getElementById('rp-title').value=`Rapport Semaine ${w} — CHAMORIN`;}
-window.openReportModal=function(){const me=state.members[0];document.getElementById('rp-from').value=me?me.name:'';buildWeekButtons();document.getElementById('report-modal-overlay').classList.add('open');}
-window.closeReportModal=function(){document.getElementById('report-modal-overlay').classList.remove('open');}
-window.closeReportModalOnBg=function(e){if(e.target===document.getElementById('report-modal-overlay'))closeReportModal();}
-
-window.generateReport=function(){
-  const title=document.getElementById('rp-title').value.trim()||'Rapport d\'activité';
-  const dateS=document.getElementById('rp-date-start').value;
-  const dateE=document.getElementById('rp-date-end').value;
-  const to=document.getElementById('rp-to').value.trim()||'—';
-  const from=document.getElementById('rp-from').value.trim()||'—';
-  const comment=document.getElementById('rp-comment').value.trim();
-  const statusFilter=document.getElementById('rp-status-filter').value;
-  const incProjects=document.getElementById('rp-inc-projects').checked;
-  const statusList=statusFilter==='all'?['todo','prog','done']:statusFilter.split(',');
-  const tasksFiltered=state.tasks.filter(t=>{
-    if(!statusList.includes(t.status))return false;
-    if(!dateS&&!dateE)return true;
-    const r=t.dateEnd||t.dateStart;if(!r)return false;
-    if(dateS&&r<dateS)return false;if(dateE&&r>dateE)return false;return true;
-  });
-  const done=tasksFiltered.filter(t=>t.status==='done');
-  const prog=tasksFiltered.filter(t=>t.status==='prog');
-  const todo=tasksFiltered.filter(t=>t.status==='todo');
-  const totalAll=state.tasks.length;const totalDone=state.tasks.filter(t=>t.status==='done').length;
-  const pctGlobal=totalAll?Math.round(totalDone/totalAll*100):0;
-  const today=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const periodLabel=dateS&&dateE?`Du ${new Date(dateS).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})} au ${new Date(dateE).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}`:'Toutes les dates';
-  const weekNum=dateS?isoWeek(new Date(dateS)):'';
-  const mName=id=>{const m=memberById(id);return m?m.name:id;};
-  const wdCount=(s,e)=>{let c=0,d=new Date(s),l=new Date(e);while(d<=l){const w=d.getDay();if(w!==0&&w!==6)c++;d.setDate(d.getDate()+1);}return c;};
-  const taskRows=tasks=>tasks.map(t=>{
-    const ss=STATUS_STYLES[t.status];const ts=TAG_STYLES[t.tag]||TAG_STYLES['Autre'];
-    const dateStr=(t.dateStart||t.dateEnd)?`${fmtDate(t.dateStart)}${t.dateStart&&t.dateEnd?' → ':''}${fmtDate(t.dateEnd)}`:'—';
-    return `<tr><td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top"><div style="font-size:13px;font-weight:600;color:#1C1C1A;margin-bottom:4px">${t.title}</div>${t.desc?`<div style="font-size:12px;color:#6B6966;margin-bottom:6px;line-height:1.5">${t.desc}</div>`:''}${t.done&&t.done.length?`<div>${t.done.map(d=>`<div style="font-size:12px;color:#1E6040;display:flex;gap:6px;margin-bottom:3px"><span style="font-weight:700;flex-shrink:0">✓</span>${d}</div>`).join('')}</div>`:''}</td><td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;white-space:nowrap"><div style="font-size:12px;font-weight:600;color:#1C1C1A">${mName(t.member)}</div><div style="font-size:11px;color:#9A9894;margin-top:2px">${dateStr}</div></td><td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${ts.bg};color:${ts.color}">${t.tag}</span></td><td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${ss.bg};color:${ss.color}">${STATUS_LABELS[t.status]}</span></td></tr>`;
-  }).join('');
-  const section=(label,color,tasks)=>tasks.length===0?'':
-    `<div style="margin-top:32px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid ${color}30"><div style="width:12px;height:12px;border-radius:50%;background:${color}"></div><h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${color};margin:0">${label}</h3><span style="font-size:12px;color:#9A9894">${tasks.length} tâche${tasks.length>1?'s':''}</span></div><table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden"><thead><tr style="background:${color}12"><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:46%">Tâche</th><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Responsable</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Catégorie</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Statut</th></tr></thead><tbody>${taskRows(tasks)}</tbody></table></div>`;
-  const projSection=()=>{
-    const projs=(state.suiviProjects||[]);if(!projs.length)return '';
-    const PSS={'En cours':{color:'#C9602A',bg:'#FEF0E8'},'Planifié':{color:'#185fa5',bg:'#E6F1FB'},'Terminé':{color:'#1E6040',bg:'#E6F4ED'},'En pause':{color:'#8A8880',bg:'#F2F1EE'}};
-    const PRIO={Haute:{color:'#C0392B',bg:'#FCECEA'},Moyenne:{color:'#854f0b',bg:'#FAEEDA'},Basse:{color:'#5f5e5a',bg:'#F1EFE8'}};
-    return `<div style="margin-top:40px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #534AB730"><div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div><h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#534AB7;margin:0">Suivi des projets</h3><span style="font-size:12px;color:#9A9894">${projs.length} projet${projs.length>1?'s':''}</span></div>
-    <table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden"><thead><tr style="background:#534AB712"><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em">Projet</th><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em">Service</th><th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em">Statut</th><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em">Avancement</th><th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em">Échéance</th></tr></thead><tbody>
-    ${projs.map(p=>{const ps=PSS[p.status]||PSS['Planifié'];const color=p.color||'#534AB7';return `<tr><td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top"><div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></div><span style="font-size:13px;font-weight:600">${p.name}</span>${p.programme?`<span style="font-size:10px;font-weight:700;color:${color};background:${color}18;padding:1px 6px;border-radius:10px">${p.programme}</span>`:''}</div>${p.family?`<div style="font-size:11px;color:#534AB7;margin-left:18px;margin-top:2px">📂 ${p.family}</div>`:''}</td><td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;font-size:12px;color:#6B6966">${p.service||'—'}</td><td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${ps.bg};color:${ps.color}">${p.status}</span></td><td style="padding:12px 14px;border-bottom:1px solid #F0EDE8"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;background:#F0EDE8;border-radius:20px;height:6px;overflow:hidden"><div style="height:6px;border-radius:20px;background:${color};width:${p.progress||0}%"></div></div><span style="font-size:12px;font-weight:700">${p.progress||0}%</span></div></td><td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;text-align:center;font-size:12px;color:#6B6966">${p.dateEnd?fmtDate(p.dateEnd):'—'}</td></tr>`;}).join('')}
-    </tbody></table></div>`;
-  };
-  const absSection=()=>{
-    const absAll=(state.absences||[]).filter(a=>{if(!dateS&&!dateE)return true;if(dateS&&a.dateEnd<dateS)return false;if(dateE&&a.dateStart>dateE)return false;return true;}).sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
-    if(!absAll.length)return '';
-    const ABS=ABS_TYPES;
-    const recap=Object.entries(ABS).map(([key,t])=>{const items=absAll.filter(a=>a.type===key);if(!items.length)return '';const total=items.reduce((s,a)=>s+wdCount(a.dateStart,a.dateEnd),0);return `<div style="background:${t.bg};border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">${t.icon}</span><div><div style="font-size:11px;font-weight:700;color:${t.color};text-transform:uppercase">${t.label}</div><div style="font-size:20px;font-weight:700;color:${t.color}">${total} <span style="font-size:12px;font-weight:400">j</span></div></div></div>`;}).join('');
-    const rows=absAll.map(a=>{const m=memberById(a.member);const t=ABS[a.type]||ABS['Autre'];const days=wdCount(a.dateStart,a.dateEnd);return `<tr><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8">${m?m.name:a.member}</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;text-align:center"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${t.bg};color:${t.color}">${t.label}</span></td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;text-align:center">${a.dateStart===a.dateEnd?fmtDate(a.dateStart):`${fmtDate(a.dateStart)} → ${fmtDate(a.dateEnd)}`}</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;text-align:center;font-weight:700">${days} j</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;font-style:italic;color:#6B6966">${a.note||'—'}</td></tr>`;}).join('');
-    return `<div style="margin-top:32px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #534AB720"><div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div><h3 style="font-size:12px;font-weight:700;text-transform:uppercase;color:#534AB7;margin:0">Planning — Absences</h3></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">${recap}</div><table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden"><thead><tr style="background:#534AB712"><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase">Collaborateur</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase">Type</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase">Période</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase">Durée</th><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase">Note</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  };
-  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>${title} — CHAMORIN</title><style>@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.no-print{display:none!important;}@page{margin:15mm 12mm;size:A4;}}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F7F7F5;color:#1C1C1A;font-size:14px;}.page{max-width:860px;margin:0 auto;background:#fff;min-height:100vh;}.inner{padding:48px 52px 60px;}</style></head><body><div class="page"><div style="height:6px;background:linear-gradient(90deg,#F4874B,#2E8B57)"></div><div class="inner"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;padding-bottom:24px;border-bottom:1.5px solid #F0EDE8;gap:20px;flex-wrap:wrap"><div><div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">CH</div><div><div style="font-size:20px;font-weight:700;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div><div style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Gestionnaire de tâches</div></div></div><div style="font-size:24px;font-weight:700;color:#1C1C1A;margin-bottom:6px">${title}</div>${weekNum?`<div style="display:inline-block;background:#FEF0E8;color:#C9602A;font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px">Semaine ${weekNum}</div>`:''}<div style="font-size:13px;color:#6B6966;margin-top:6px">${periodLabel}</div></div><div style="text-align:right;font-size:13px;color:#6B6966;line-height:2"><div><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Destinataire</span><br/><strong style="color:#1C1C1A;font-size:14px">${to}</strong></div><div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Préparé par</span><br/><strong style="color:#1C1C1A;font-size:14px">${from}</strong></div><div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Date</span><br/><strong style="color:#1C1C1A">${today}</strong></div></div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px"><div style="background:#E6F4ED;border-radius:12px;padding:18px 20px;border-left:4px solid #2E8B57"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1E6040;margin-bottom:6px">Réalisées</div><div style="font-size:32px;font-weight:700;color:#1E6040">${done.length}</div></div><div style="background:#FEF0E8;border-radius:12px;padding:18px 20px;border-left:4px solid #F4874B"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:6px">En cours</div><div style="font-size:32px;font-weight:700;color:#C9602A">${prog.length}</div></div><div style="background:#F7F7F5;border-radius:12px;padding:18px 20px;border-left:4px solid #9A9894"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5A5956;margin-bottom:6px">Avancement</div><div style="font-size:32px;font-weight:700;color:#1C1C1A">${pctGlobal}%</div></div></div><div style="margin-bottom:32px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#9A9894;margin-bottom:6px"><span>Progression globale</span><span style="font-weight:700;color:#1C1C1A">${pctGlobal}%</span></div><div style="background:#F0EDE8;border-radius:20px;height:10px;overflow:hidden"><div style="height:10px;border-radius:20px;background:linear-gradient(90deg,#F4874B,#2E8B57);width:${pctGlobal}%"></div></div></div>${comment?`<div style="background:#FFFCF8;border:1px solid #F4874B30;border-left:4px solid #F4874B;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:28px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:8px">Note</div><div style="font-size:13px;color:#3A3936;line-height:1.7">${comment}</div></div>`:''} ${section('Réalisations','#2E8B57',done)} ${section('En cours','#C9602A',prog)} ${section('À venir','#8A8880',todo)} ${absSection()} ${incProjects?projSection():''}<div style="margin-top:32px;padding-top:24px;border-top:1.5px solid #F0EDE8"><div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9A9894;margin-bottom:14px">Équipe</div><div style="display:flex;gap:12px;flex-wrap:wrap">${state.members.map(m=>{const p=getPalette(m);const mT=tasksFiltered.filter(t=>t.member===m.id);return `<div style="display:flex;align-items:center;gap:10px;background:#F7F7F5;border-radius:10px;padding:10px 14px"><div style="width:36px;height:36px;border-radius:50%;background:${p.bg};color:${p.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${initials(m.name)}</div><div><div style="font-size:13px;font-weight:600;color:#1C1C1A">${m.name}</div><div style="font-size:11px;color:#9A9894">${m.role||'Collaborateur'} · ${mT.length} tâche${mT.length>1?'s':''}</div></div></div>`;}).join('')}</div></div><div style="margin-top:48px;padding-top:16px;border-top:1px solid #F0EDE8;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div style="display:flex;align-items:center;gap:8px"><div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff">CH</div><span style="font-size:11px;color:#C0BDB8">CHAMORIN — Document confidentiel</span></div><span style="font-size:11px;color:#C0BDB8">Généré le ${today}</span></div><div class="no-print" style="text-align:center;margin-top:36px"><button onclick="window.print()" style="background:linear-gradient(135deg,#F4874B,#C9602A);color:#fff;border:none;border-radius:12px;padding:14px 40px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🖨 Imprimer / Enregistrer en PDF</button><div style="font-size:12px;color:#9A9894;margin-top:10px">Choisir "Enregistrer en PDF" dans la boîte d'impression</div></div></div></div></body></html>`;
-  window.open(URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),'_blank');
-  closeReportModal();
-}
-
-// ══════════════════════════════════════════
-//  COLLABORATEURS
-// ══════════════════════════════════════════
-function renderColorOpts(){document.getElementById('color-opts').innerHTML=PALETTES.map((p,i)=>`<div class="color-opt${i===selectedPalette?' selected':''}" style="background:${p.color}" onclick="selectPalette(${i})"></div>`).join('');}
-window.selectPalette=function(i){selectedPalette=i;renderColorOpts();}
-function renderMemberList(){
-  document.getElementById('member-list').innerHTML=state.members.map(m=>{const p=getPalette(m);return `<div class="member-row"><span class="avatar" style="background:${p.bg};color:${p.color}">${initials(m.name)}</span><span class="mname">${m.name}</span><span class="role">${m.role||''}</span><button class="del-btn" onclick="deleteMember('${m.id}')">×</button></div>`;}).join('');
-}
-window.openMembersModal=function(){renderMemberList();renderColorOpts();document.getElementById('members-modal-overlay').classList.add('open');}
-window.closeMembersModal=function(){document.getElementById('members-modal-overlay').classList.remove('open');}
-window.closeMembersModalOnBg=function(e){if(e.target===document.getElementById('members-modal-overlay'))closeMembersModal();}
-window.addMember=function(){
-  const name=document.getElementById('m-name').value.trim();const role=document.getElementById('m-role').value.trim();
-  if(!name){document.getElementById('m-name').focus();return;}
-  const id=genId(name);state.members.push({id,name,role,paletteIdx:selectedPalette});
-  document.getElementById('m-name').value='';document.getElementById('m-role').value='';
-  renderMemberList();renderMemberSelects();renderAbsMemberSelect();saveState();
-}
-window.deleteMember=function(id){
-  if(state.members.length<=1){alert('Il faut au moins un membre.');return;}
-  if(!confirm('Supprimer ?'))return;
-  state.members=state.members.filter(m=>m.id!==id);renderMemberList();renderMemberSelects();renderKanban();saveState();
-}
-
-// ══════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════
-document.getElementById('today-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-document.getElementById('new-task-title').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
-document.getElementById('new-event-title').addEventListener('keydown',e=>{if(e.key==='Enter')addEvent();});
-document.getElementById('m-name').addEventListener('keydown',e=>{if(e.key==='Enter')addMember();});
-document.getElementById('tm-done-input').addEventListener('keydown',e=>{if(e.key==='Enter')addDoneItem();});
-document.getElementById('plan-event-title').addEventListener('keydown',e=>{if(e.key==='Enter')addPlanningEvent();});
-document.getElementById('sm-step-input').addEventListener('keydown',e=>{if(e.key==='Enter')addSuiviStep();});
-document.getElementById('sm-name').addEventListener('keydown',e=>{if(e.key==='Enter')saveSuiviProject();});
-
-initFirebase();
+// ========== INIT ==========
+renderWeek();
 </script>
 </body>
 </html>
