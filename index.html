@@ -72,6 +72,7 @@
     .grid3-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
     .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
     @media(max-width:900px){ .grid3{grid-template-columns:1fr;} }
+    @media(max-width:600px){ .grid3-metrics{grid-template-columns:repeat(2,1fr);} }
 
     /* ── Cards ── */
     .card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:1.1rem 1.25rem; }
@@ -104,6 +105,7 @@
     /* ── Kanban ── */
     .kanban { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
     @media(max-width:600px){ .kanban{grid-template-columns:1fr;} }
+    @media(max-width:480px){ .grid3-metrics{grid-template-columns:1fr;} }
     .kanban-col { background:var(--surface2); border-radius:var(--radius-md); padding:12px; min-height:100px; }
     .col-header { display:flex; align-items:center; gap:7px; margin-bottom:10px; }
     .col-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
@@ -168,7 +170,7 @@
 
     /* ── PLANNING TAB ── */
     .planning-layout { display:grid; grid-template-columns: 320px 1fr; gap:16px; }
-    @media (max-width:800px) { .planning-layout { grid-template-columns: 1fr; } }
+    @media (max-width:900px) { .planning-layout { grid-template-columns: 1fr; } }
     .calendar-wrapper { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; }
     .calendar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
     .calendar-header h3 { font-size:15px; font-weight:600; color:var(--text); }
@@ -208,6 +210,7 @@
     /* Synthèse suivi */
     .suivi-synth { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
     @media(max-width:700px){ .suivi-synth{grid-template-columns:repeat(2,1fr);} }
+    @media(max-width:400px){ .suivi-synth{grid-template-columns:1fr;} }
     .suivi-synth-card { 
       background:var(--surface); border:0.5px solid var(--border); border-radius:14px; 
       padding:16px 18px; position:relative; overflow:hidden;
@@ -467,6 +470,98 @@
 
     .app-footer { text-align:center; font-size:11px; color:var(--text3); padding:2rem 0 1rem; }
     .app-footer strong { color:var(--orange); }
+    /* ══════════════════════════════════════
+       RESPONSIVE — Tablette & Mobile
+    ══════════════════════════════════════ */
+
+    /* Topbar */
+    @media(max-width:700px){
+      .topbar { height:auto; padding:10px 1rem; flex-wrap:wrap; gap:8px; }
+      .topbar-right { flex-wrap:wrap; gap:6px; }
+      .date-label { display:none; }
+      .nav-tabs { padding:0 .75rem; overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; }
+      .nav-tab { padding:10px 12px; font-size:12px; white-space:nowrap; }
+      .app { padding:1rem .75rem; }
+    }
+    @media(max-width:480px){
+      .brand-name { font-size:14px; }
+      .report-btn, button.green { padding:6px 10px; font-size:12px; }
+      .topbar-right { width:100%; justify-content:flex-end; }
+    }
+
+    /* Dashboard kanban */
+    @media(max-width:480px){
+      .kanban { grid-template-columns:1fr; }
+      .grid3-metrics { grid-template-columns:1fr; }
+      .metric .val { font-size:22px; }
+    }
+
+    /* Add-row tâche */
+    @media(max-width:600px){
+      .add-row { flex-direction:column; align-items:stretch; }
+      .add-row input, .add-row select, .add-row button { width:100%; min-width:unset; flex:unset; }
+      #add-desc-row { flex-direction:column; }
+    }
+
+    /* Agenda add */
+    @media(max-width:500px){
+      .agenda-add { flex-wrap:wrap; }
+      .agenda-add input[type="text"] { width:100%; }
+    }
+
+    /* KPI section */
+    @media(max-width:600px){
+      .kpi-label { min-width:72px; font-size:12px; }
+    }
+
+    /* Planning */
+    @media(max-width:600px){
+      .calendar-wrapper { padding:12px; }
+      .day-schedule-wrapper { padding:12px; }
+      .schedule-date-title { font-size:14px; }
+      .planning-event-card { flex-wrap:wrap; gap:4px; }
+      .pe-title { width:100%; order:3; }
+    }
+
+    /* Modals */
+    @media(max-width:600px){
+      .modal { padding:1.25rem 1rem; border-radius:16px 16px 0 0; }
+      .modal-overlay { align-items:flex-end; padding:0; }
+      .modal { width:100% !important; max-width:100%; max-height:92vh; border-radius:16px 16px 0 0; }
+      .date-row { flex-direction:column; }
+      .date-row .field { width:100%; }
+      .modal-footer { flex-direction:column-reverse; }
+      .modal-footer button { width:100%; text-align:center; justify-content:center; }
+    }
+
+    /* Suivi projets */
+    @media(max-width:700px){
+      .suivi-toolbar { flex-direction:column; align-items:stretch; }
+      .suivi-toolbar-left { flex-wrap:wrap; }
+      .suivi-search { flex:1; min-width:0; }
+      .suivi-search input { width:100%; }
+      .suivi-famille-grid { grid-template-columns:1fr !important; }
+      .sfh-stats { display:none; }
+      .sfh-progress { min-width:80px; }
+    }
+    @media(max-width:480px){
+      .sfh-progress { display:none; }
+      .suivi-synth { grid-template-columns:repeat(2,1fr); }
+      .suivi-synth-card .ss-val { font-size:22px; }
+      .view-toggle { display:none; }
+    }
+
+    /* Rapport modal */
+    @media(max-width:600px){
+      .week-quick { flex-direction:column; }
+      .week-btn { text-align:left; }
+    }
+
+    /* Footer */
+    @media(max-width:500px){
+      .app-footer { font-size:10px; padding:1.5rem 0 .75rem; }
+    }
+
   </style>
 </head>
 <body>
@@ -527,7 +622,7 @@
         </div>
       </div>
       <div class="add-row">
-        <input id="new-task-title" placeholder="Titre de la tâche..." />
+        <input id="new-task-title" placeholder="Titre de la tâche..." style="flex:2;min-width:140px"/>
         <select id="new-task-member"></select>
         <select id="new-task-tag">
             <option>Commerce</option><option>Comptabilité</option><option>Marketing</option>
@@ -535,6 +630,13 @@
             <option>Admin</option><option>Autre</option>
         </select>
         <button class="primary" onclick="addTask()">+ Ajouter</button>
+      </div>
+      <div class="add-desc-row" id="add-desc-row" style="display:none;margin-top:8px;gap:8px;align-items:flex-start">
+        <textarea id="new-task-desc" placeholder="Description (optionnel)..." rows="2" style="flex:1;resize:vertical;min-height:44px;font-size:12px"></textarea>
+        <button class="ghost" style="font-size:11px;padding:5px 10px;white-space:nowrap;margin-top:0" onclick="toggleDescRow(false)">✕ Masquer</button>
+      </div>
+      <div style="margin-top:6px">
+        <button class="ghost" id="add-desc-btn" style="font-size:11px;padding:4px 10px;color:var(--text3)" onclick="toggleDescRow(true)">+ Ajouter une description</button>
       </div>
     </div>
     <div class="grid3">
@@ -608,8 +710,10 @@
                     <input type="time" id="plan-event-time" value="09:00" style="width:90px"/>
                     <input type="text" id="plan-event-title" placeholder="Titre du rendez-vous..." style="flex:1;min-width:120px"/>
                     <select id="plan-event-tag" style="width:100px">
-                        <option value="Client">Client</option><option value="Interne">Interne</option>
-                        <option value="Livraison">Livraison</option><option value="Autre">Autre</option>
+                        <option value="Achats">Achats</option><option value="ADV">ADV</option>
+                        <option value="Comptabilité">Comptabilité</option><option value="Commerce">Commerce</option>
+                        <option value="Qualité">Qualité</option><option value="Logistique">Logistique</option>
+                        <option value="Marketing">Marketing</option><option value="Autre">Autre</option>
                     </select>
                     <button class="primary" onclick="addPlanningEvent()">+</button>
                 </div>
@@ -1084,9 +1188,20 @@ window.addTask=function(){
   const title=document.getElementById('new-task-title').value.trim();
   const member=document.getElementById('new-task-member').value;
   const tag=document.getElementById('new-task-tag').value;
+  const desc=document.getElementById('new-task-desc')?.value.trim()||'';
   if(!title){document.getElementById('new-task-title').focus();return;}
-  state.tasks.push({id:state.nextId++,title,member,status:'todo',tag,desc:'',done:[],dateStart:'',dateEnd:''});
-  document.getElementById('new-task-title').value='';renderKanban();saveState();
+  state.tasks.push({id:state.nextId++,title,member,status:'todo',tag,desc,done:[],dateStart:'',dateEnd:''});
+  document.getElementById('new-task-title').value='';
+  if(document.getElementById('new-task-desc'))document.getElementById('new-task-desc').value='';
+  toggleDescRow(false);
+  renderKanban();saveState();
+}
+window.toggleDescRow=function(show){
+  const row=document.getElementById('add-desc-row');
+  const btn=document.getElementById('add-desc-btn');
+  if(row)row.style.display=show?'flex':'none';
+  if(btn)btn.style.display=show?'none':'inline-block';
+  if(show&&document.getElementById('new-task-desc'))document.getElementById('new-task-desc').focus();
 }
 function updateMetrics(){
   const done=state.tasks.filter(t=>t.status==='done').length;
