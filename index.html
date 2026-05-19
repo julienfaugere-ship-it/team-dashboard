@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CHAMORIN — Dashboard équipe</title>
+  <title>Gestionnaire de tâches</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -151,38 +151,262 @@
     .kpi-bar-bg { flex:1; height:6px; background:var(--surface2); border-radius:3px; margin:0 10px; overflow:hidden; }
     .kpi-bar { height:6px; border-radius:3px; transition:width .5s; }
     .kpi-val { font-size:13px; font-weight:600; min-width:36px; text-align:right; }
+    
+    /* Baromètre */
+    .barometer-section { margin-top:16px; padding-top:12px; border-top:0.5px solid var(--border); }
+    .barometer-title { font-size:12px; font-weight:700; color:var(--text3); margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em; }
+    .barometer-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .barometer-label { font-size:13px; font-weight:600; width:40px; color:var(--text); }
+    .barometer-track { flex:1; height:10px; background:var(--surface2); border-radius:5px; overflow:hidden; position:relative; }
+    .barometer-fill { height:100%; border-radius:5px; transition:width 0.5s ease; }
+    .barometer-text { font-size:12px; font-weight:600; color:var(--text2); width:60px; text-align:right; }
+    .counter-days { text-align:center; margin-top:10px; padding:8px; background:var(--surface2); border-radius:var(--radius-md); }
+    .counter-val { font-size:18px; font-weight:700; color:var(--text); }
+    .counter-lbl { font-size:11px; color:var(--text3); }
 
-    /* ── PROJETS ── */
-    .projects-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
-    .project-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:0; overflow:hidden; transition:border-color .2s, box-shadow .2s; }
-    .project-card:hover { border-color:var(--purple); box-shadow:0 4px 20px rgba(83,74,183,.1); }
-    .project-card-header { padding:14px 16px 10px; position:relative; }
-    .project-color-bar { position:absolute; top:0; left:0; right:0; height:3px; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
-    .project-name { font-size:15px; font-weight:600; color:var(--text); margin-bottom:4px; cursor:pointer; }
-    .project-name:hover { color:var(--purple); }
-    .project-client { font-size:12px; color:var(--text3); margin-bottom:8px; }
-    .project-badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-    .project-status-badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }
-    .project-progress-wrap { padding:0 16px 12px; }
-    .project-progress-label { display:flex; justify-content:space-between; font-size:11px; color:var(--text3); margin-bottom:5px; }
-    .project-progress-bg { background:var(--surface2); border-radius:20px; height:6px; overflow:hidden; }
-    .project-progress-fill { height:6px; border-radius:20px; transition:width .5s; }
-    .project-footer { padding:10px 16px; border-top:0.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
-    .project-members { display:flex; }
-    .project-members .avatar { width:24px; height:24px; font-size:9px; border:2px solid var(--surface); margin-left:-6px; }
-    .project-members .avatar:first-child { margin-left:0; }
-    .project-actions { display:flex; gap:6px; }
-    .project-actions button { padding:4px 10px; font-size:12px; }
-    .proj-del-btn { background:none; border:none; color:var(--text3); font-size:15px; cursor:pointer; padding:0 4px; opacity:0; transition:opacity .15s; }
-    .project-card:hover .proj-del-btn { opacity:1; }
-    .proj-del-btn:hover { color:var(--red); background:none; transform:none; }
 
-    /* ── Synthèse projets ── */
-    .project-synth { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
-    @media(max-width:700px){ .project-synth{grid-template-columns:repeat(2,1fr);} }
-    .synth-card { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-md); padding:14px 16px; }
-    .synth-card .s-val { font-size:24px; font-weight:700; }
-    .synth-card .s-lbl { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+
+    /* ── PLANNING TAB ── */
+    .planning-layout { display:grid; grid-template-columns: 320px 1fr; gap:16px; }
+    @media (max-width:800px) { .planning-layout { grid-template-columns: 1fr; } }
+    .calendar-wrapper { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; }
+    .calendar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .calendar-header h3 { font-size:15px; font-weight:600; color:var(--text); }
+    .cal-nav-btn { background:none; border:none; color:var(--text2); font-size:16px; cursor:pointer; padding:4px 8px; border-radius:4px; }
+    .cal-nav-btn:hover { background:var(--surface2); color:var(--orange); }
+    .calendar-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:4px; text-align:center; }
+    .cal-day-label { font-size:10px; font-weight:600; color:var(--text3); padding:4px 0; }
+    .day-cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; border-radius:50%; transition:all .15s; position:relative; color:var(--text2); }
+    .day-cell:hover { background:var(--surface2); color:var(--orange); }
+    .day-cell.today { border:1.5px solid var(--orange); color:var(--orange); font-weight:700; }
+    .day-cell.selected { background:var(--orange); color:#fff; font-weight:700; box-shadow:0 2px 6px rgba(244,135,75,.4); }
+    .day-cell.has-event::after { content:''; position:absolute; bottom:4px; width:4px; height:4px; border-radius:50%; background:var(--green); }
+    .day-cell.empty { cursor:default; }
+    .day-cell.empty:hover { background:transparent; }
+    .day-schedule-wrapper { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:16px; display:flex; flex-direction:column; min-height:400px; }
+    .schedule-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:0.5px solid var(--border); }
+    .schedule-date-title { font-size:16px; font-weight:700; color:var(--text); }
+    .schedule-date-subtitle { font-size:12px; color:var(--text3); font-weight:400; }
+    .timeline-list { flex:1; overflow-y:auto; padding-right:4px; }
+    .planning-event-card { background:var(--surface); border:0.5px solid var(--border); border-left:3px solid var(--purple); border-radius:4px; padding:8px 10px; margin-bottom:6px; font-size:13px; color:var(--text); display:flex; justify-content:space-between; align-items:center; transition:all .2s; }
+    .planning-event-card:hover { border-color:var(--orange); transform:translateX(2px); }
+    .planning-event-card.done { background:var(--done-bg); border-left-color:var(--green); opacity:.75; }
+    .planning-event-card.done .pe-title { text-decoration:line-through; color:var(--text3); }
+    .planning-event-card.done .pe-time { color:var(--green); }
+    .pe-time { font-size:11px; font-weight:600; color:var(--orange); margin-right:8px; min-width:40px; }
+    .pe-title { flex:1; }
+    .pe-check { width:20px; height:20px; border-radius:50%; border:1.5px solid var(--border2); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:8px; background:var(--surface); transition:all .15s; font-size:10px; font-weight:700; color:transparent; }
+    .pe-check:hover { border-color:var(--green); color:var(--green); }
+    .planning-event-card.done .pe-check { background:var(--green); border-color:var(--green); color:#fff; }
+    @keyframes checkPop { 0%{transform:scale(1)} 40%{transform:scale(1.3)} 100%{transform:scale(1)} }
+    .pe-check.popping { animation:checkPop .25s ease; }
+
+    /* ══════════════════════════════════════════
+       SUIVI PROJETS — Nouveau styles
+    ══════════════════════════════════════════ */
+
+    /* Synthèse suivi */
+    .suivi-synth { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+    @media(max-width:700px){ .suivi-synth{grid-template-columns:repeat(2,1fr);} }
+    .suivi-synth-card { 
+      background:var(--surface); border:0.5px solid var(--border); border-radius:14px; 
+      padding:16px 18px; position:relative; overflow:hidden;
+    }
+    .suivi-synth-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .suivi-synth-card.orange::before { background:linear-gradient(90deg,var(--orange),var(--orange-dark)); }
+    .suivi-synth-card.green::before { background:linear-gradient(90deg,var(--green),var(--green-dark)); }
+    .suivi-synth-card.purple::before { background:linear-gradient(90deg,var(--purple),#3f37a0); }
+    .suivi-synth-card.blue::before { background:linear-gradient(90deg,#185fa5,#0d4f8a); }
+    .suivi-synth-card .ss-icon { font-size:22px; margin-bottom:6px; }
+    .suivi-synth-card .ss-val { font-size:28px; font-weight:700; line-height:1; }
+    .suivi-synth-card .ss-lbl { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
+
+    /* Toolbar suivi */
+    .suivi-toolbar { 
+      display:flex; align-items:center; justify-content:space-between; 
+      margin-bottom:20px; flex-wrap:wrap; gap:10px;
+    }
+    .suivi-toolbar-left { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .suivi-search { display:flex; align-items:center; gap:8px; background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius-md); padding:6px 12px; }
+    .suivi-search input { background:none; border:none; padding:0; font-size:13px; width:180px; color:var(--text); }
+    .suivi-search input::placeholder { color:var(--text3); }
+    .suivi-filter { font-size:12px; padding:6px 12px; }
+
+    /* Famille suivi */
+    .suivi-famille-block { margin-bottom:28px; animation:fadeIn .3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+    .suivi-famille-header {
+      display:flex; align-items:center; gap:14px;
+      padding:14px 18px;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-bottom:none;
+      border-radius:14px 14px 0 0;
+      position:relative; overflow:hidden;
+      cursor:pointer;
+      transition:background .15s;
+    }
+    .suivi-famille-header:hover { background:var(--surface2); }
+    .suivi-famille-header::before { 
+      content:''; position:absolute; left:0; top:0; bottom:0; width:5px; 
+      background:var(--fam-color, var(--purple)); 
+    }
+    .sfh-icon { 
+      width:36px; height:36px; border-radius:9px; 
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; flex-shrink:0;
+      background:var(--fam-bg, var(--purple-bg));
+    }
+    .sfh-info { flex:1; min-width:0; }
+    .sfh-name { font-size:14px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.05em; }
+    .sfh-sub { font-size:12px; color:var(--text3); margin-top:2px; }
+    .sfh-stats { display:flex; align-items:center; gap:10px; }
+    .sfh-stat { text-align:center; }
+    .sfh-stat-val { font-size:16px; font-weight:700; color:var(--text); }
+    .sfh-stat-lbl { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.04em; }
+    .sfh-progress { display:flex; align-items:center; gap:10px; min-width:130px; }
+    .sfh-progress-track { flex:1; height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; }
+    .sfh-progress-fill { height:100%; border-radius:4px; transition:width .5s; }
+    .sfh-progress-pct { font-size:13px; font-weight:700; min-width:36px; text-align:right; color:var(--fam-color, var(--purple)); }
+    .sfh-toggle { font-size:16px; color:var(--text3); transition:transform .2s; flex-shrink:0; }
+    .sfh-toggle.collapsed { transform:rotate(-90deg); }
+
+    .suivi-famille-prog-bar { height:3px; background:var(--surface2); }
+    .suivi-famille-prog-fill { height:3px; background:var(--fam-color, var(--purple)); transition:width .5s; }
+
+    .suivi-famille-grid {
+      display:grid; grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); gap:14px;
+      padding:16px;
+      background:var(--surface);
+      border:1px solid var(--border); border-top:none;
+      border-radius:0 0 14px 14px;
+      transition:all .2s;
+    }
+    .suivi-famille-grid.collapsed { display:none; }
+
+    /* Carte projet suivi */
+    .suivi-proj-card {
+      background:var(--surface); border:1px solid var(--border); border-radius:12px;
+      overflow:hidden; cursor:pointer; transition:box-shadow .2s, transform .2s, border-color .2s;
+      position:relative;
+    }
+    .suivi-proj-card:hover { box-shadow:0 6px 24px rgba(0,0,0,.1); transform:translateY(-2px); border-color:var(--proj-color, var(--purple)); }
+
+    .spc-top-bar { height:4px; width:100%; background:var(--proj-color, var(--purple)); }
+
+    .spc-body { padding:14px 16px 10px; }
+
+    .spc-programme {
+      font-size:10px; font-weight:700; font-family:'Courier New',monospace;
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 9px; border-radius:4px;
+      background:var(--proj-light, var(--purple-bg));
+      color:var(--proj-color, var(--purple));
+      margin-bottom:8px;
+    }
+
+    .spc-name { font-size:14px; font-weight:700; color:var(--text); margin-bottom:4px; line-height:1.35; }
+
+    .spc-service {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:11px; color:var(--text2);
+      background:var(--surface2); border:0.5px solid var(--border);
+      padding:2px 8px; border-radius:4px; margin-bottom:10px;
+    }
+
+    .spc-desc {
+      font-size:12px; color:var(--text2); line-height:1.55; margin-bottom:10px;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    }
+
+    .spc-badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+    .spc-badge { font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600; }
+
+    /* Étapes visuelles */
+    .spc-steps { margin:0 16px 12px; }
+    .spc-steps-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .spc-steps-label { font-size:11px; color:var(--text3); font-weight:500; }
+    .spc-steps-count { font-size:11px; font-weight:700; color:var(--proj-color, var(--purple)); }
+    .spc-steps-bar-bg { height:5px; background:var(--surface2); border-radius:20px; overflow:hidden; margin-bottom:6px; }
+    .spc-steps-bar-fill { height:5px; border-radius:20px; background:var(--proj-color, var(--purple)); transition:width .5s; }
+    .spc-steps-dots { display:flex; gap:4px; flex-wrap:wrap; }
+    .spc-step-dot { 
+      width:8px; height:8px; border-radius:50%; transition:all .2s; position:relative;
+    }
+    .spc-step-dot.done { background:var(--proj-color, var(--purple)); }
+    .spc-step-dot.todo { background:var(--surface2); border:1.5px solid var(--border2); }
+    .spc-step-dot:hover::after { 
+      content:attr(data-label); position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+      background:var(--text); color:var(--surface); font-size:10px; padding:3px 7px; border-radius:4px;
+      white-space:nowrap; pointer-events:none; z-index:10; font-family:-apple-system,sans-serif;
+    }
+
+    /* Avancement */
+    .spc-progress { padding:0 16px 10px; }
+    .spc-progress-row { display:flex; justify-content:space-between; font-size:11px; color:var(--text3); margin-bottom:5px; }
+    .spc-progress-row strong { color:var(--text); }
+    .spc-progress-bg { background:var(--surface2); border-radius:20px; height:6px; overflow:hidden; }
+    .spc-progress-fill { height:6px; border-radius:20px; transition:width .5s; }
+
+    /* Footer */
+    .spc-footer { 
+      padding:10px 16px; border-top:0.5px solid var(--border); 
+      display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
+    }
+    .spc-avatars { display:flex; }
+    .spc-avatar { 
+      width:22px; height:22px; border-radius:50%; border:2px solid var(--surface); 
+      margin-left:-5px; font-size:8px; font-weight:700; display:flex; align-items:center; justify-content:center;
+    }
+    .spc-avatar:first-child { margin-left:0; }
+    .spc-date { font-size:11px; color:var(--text3); }
+    .spc-del { 
+      background:none; border:none; color:var(--text3); font-size:15px; 
+      cursor:pointer; padding:0 4px; opacity:0; transition:opacity .15s; position:absolute; top:12px; right:12px;
+    }
+    .suivi-proj-card:hover .spc-del { opacity:1; }
+    .spc-del:hover { color:var(--red); background:none; transform:none; }
+
+    /* Carte "Nouveau" dans grille suivi */
+    .spc-new-card {
+      border:1.5px dashed var(--border2); border-radius:12px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:8px; padding:24px; color:var(--text3); cursor:pointer;
+      transition:all .2s; min-height:180px;
+    }
+    .spc-new-card:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-bg); }
+    .spc-new-card .plus { 
+      font-size:22px; width:40px; height:40px; border-radius:50%; 
+      border:1.5px dashed currentColor; display:flex; align-items:center; justify-content:center;
+      transition:all .2s;
+    }
+    .spc-new-card:hover .plus { background:var(--purple); color:#fff; border-color:var(--purple); }
+    .spc-new-card span { font-size:12px; font-weight:600; }
+    .spc-new-card small { font-size:11px; opacity:.7; }
+
+    /* Vue liste switch */
+    .view-toggle { display:flex; background:var(--surface2); border-radius:8px; padding:3px; gap:2px; }
+    .view-btn { background:none; border:none; padding:5px 10px; border-radius:6px; font-size:12px; color:var(--text3); cursor:pointer; transition:all .15s; }
+    .view-btn.active { background:var(--surface); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,.1); }
+
+    /* Vue liste */
+    .suivi-liste { display:none; }
+    .suivi-liste.active { display:block; }
+    .suivi-liste-row {
+      display:flex; align-items:center; gap:14px;
+      padding:12px 16px; background:var(--surface); border:0.5px solid var(--border);
+      border-radius:10px; margin-bottom:6px; cursor:pointer; transition:border-color .15s;
+    }
+    .suivi-liste-row:hover { border-color:var(--orange); }
+    .slr-color-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .slr-info { flex:1; min-width:0; }
+    .slr-name { font-size:13px; font-weight:600; color:var(--text); }
+    .slr-meta { font-size:11px; color:var(--text3); margin-top:1px; }
+    .slr-prog { display:flex; align-items:center; gap:8px; min-width:140px; }
+    .slr-prog-bar { flex:1; height:5px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+    .slr-prog-fill { height:5px; border-radius:3px; }
+    .slr-prog-pct { font-size:12px; font-weight:700; color:var(--text); min-width:32px; text-align:right; }
 
     /* ── Modals ── */
     .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:100; opacity:0; pointer-events:none; transition:opacity .2s; padding:1rem; }
@@ -254,7 +478,7 @@
   <div class="topbar">
     <div class="brand">
       <div class="brand-icon">CH</div>
-      <span class="brand-name">CHAMO<span>RIN</span></span>
+      <span class="brand-name">Gestionnaire de tâches</span>
     </div>
     <div class="topbar-right">
       <div class="sync-badge"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Connecté</span></div>
@@ -263,10 +487,10 @@
       <button class="green" onclick="openMembersModal()">+ Collaborateurs</button>
     </div>
   </div>
-  <!-- Navigation par onglets -->
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('tab-dashboard')">📊 Dashboard</button>
-    <button class="nav-tab" onclick="switchTab('tab-projets')">🗂 Projets</button>
+    <button class="nav-tab active" onclick="switchTab('tab-dashboard',this)">📊 Dashboard</button>
+    <button class="nav-tab" onclick="switchTab('tab-planning',this)">📅 Planning</button>
+    <button class="nav-tab" onclick="switchTab('tab-suivi',this)">🚀 Suivi Projets</button>
   </div>
 </div>
 
@@ -279,7 +503,6 @@
       <div class="metric"><div class="lbl">En cours</div><div class="val" id="m-prog">0</div></div>
       <div class="metric"><div class="lbl">Avancement</div><div class="val" id="m-pct">0%</div></div>
     </div>
-
     <div class="card" style="margin-bottom:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div class="section-title" style="margin-bottom:0">Tâches &amp; statuts</div>
@@ -306,28 +529,24 @@
       <div class="add-row">
         <input id="new-task-title" placeholder="Titre de la tâche..." />
         <select id="new-task-member"></select>
-        <select id="new-task-tag"><option>Dev</option><option>Design</option><option>Marketing</option><option>Admin</option><option>Autre</option></select>
+        <select id="new-task-tag">
+            <option>Commerce</option><option>Comptabilité</option><option>Marketing</option>
+            <option>Achats</option><option>Logistique</option><option>Qualité</option>
+            <option>Admin</option><option>Autre</option>
+        </select>
         <button class="primary" onclick="addTask()">+ Ajouter</button>
       </div>
     </div>
-
     <div class="grid3">
       <div class="card">
-        <div class="section-title">Agenda du jour</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div class="section-title" style="margin-bottom:0">Agenda du jour</div>
+            <button class="ghost" style="font-size:11px;padding:4px 8px" onclick="switchTabByName('tab-planning')">Voir le calendrier</button>
+        </div>
         <div id="agenda-list"></div>
         <div class="agenda-add">
           <input type="time" id="new-event-time" value="09:00"/>
           <input type="text" id="new-event-title" placeholder="Événement..."/>
-          <select id="new-event-tag">
-            <option value="Achat">Achat</option>
-            <option value="Commerce">Commerce</option>
-            <option value="Comptabilité">Comptabilité</option>
-            <option value="Litige">Litige</option>
-            <option value="Qualité">Qualité</option>
-            <option value="Logistique">Logistique</option>
-            <option value="ADV">ADV</option>
-            <option value="Autre">Autre</option>
-          </select>
           <button class="primary" onclick="addEvent()">+</button>
         </div>
       </div>
@@ -342,10 +561,8 @@
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <select id="new-abs-member" style="flex:1;min-width:80px"></select>
             <select id="new-abs-type" style="flex:1;min-width:80px">
-              <option value="CP">🏖 Congé payé</option>
-              <option value="RTT">⏱ RTT</option>
-              <option value="Maladie">🤒 Maladie</option>
-              <option value="Autre">📋 Autre</option>
+              <option value="CP">🏖 Congé payé</option><option value="RTT">⏱ RTT</option>
+              <option value="Maladie">🤒 Maladie</option><option value="Autre">📋 Autre</option>
             </select>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -360,31 +577,94 @@
     </div>
   </div>
 
-  <!-- ════ TAB : PROJETS ════ -->
-  <div id="tab-projets" class="tab-panel">
+  <!-- ════ TAB : PLANNING ════ -->
+  <div id="tab-planning" class="tab-panel">
+    <div class="planning-layout">
+        <div class="calendar-wrapper">
+            <div class="calendar-header">
+                <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+                <h3 id="cal-month-year">Mois Année</h3>
+                <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+            </div>
+            <div class="calendar-grid">
+                <div class="cal-day-label">Lun</div><div class="cal-day-label">Mar</div><div class="cal-day-label">Mer</div>
+                <div class="cal-day-label">Jeu</div><div class="cal-day-label">Ven</div><div class="cal-day-label">Sam</div><div class="cal-day-label">Dim</div>
+            </div>
+            <div style="margin-top:12px;text-align:center">
+                <button class="ghost" style="width:100%;font-size:12px" onclick="goToToday()">Aujourd'hui</button>
+            </div>
+        </div>
+        <div class="day-schedule-wrapper">
+            <div class="schedule-header">
+                <div>
+                    <div class="schedule-date-title" id="sched-date-title">Date Selectionnée</div>
+                    <div class="schedule-date-subtitle" id="sched-date-subtitle">Evénements de la journée</div>
+                </div>
+            </div>
+            <div class="timeline-list" id="schedule-list"></div>
+            <div style="margin-top:16px; padding-top:12px; border-top:0.5px solid var(--border)">
+                <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text2)">Ajouter un RDV pour cette date</div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <input type="time" id="plan-event-time" value="09:00" style="width:90px"/>
+                    <input type="text" id="plan-event-title" placeholder="Titre du rendez-vous..." style="flex:1;min-width:120px"/>
+                    <select id="plan-event-tag" style="width:100px">
+                        <option value="Client">Client</option><option value="Interne">Interne</option>
+                        <option value="Livraison">Livraison</option><option value="Autre">Autre</option>
+                    </select>
+                    <button class="primary" onclick="addPlanningEvent()">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
 
-    <!-- Synthèse globale -->
-    <div class="project-synth" id="project-synth"></div>
+  <!-- ════ TAB : SUIVI PROJETS ════ -->
+  <div id="tab-suivi" class="tab-panel">
 
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-      <div class="section-title" style="margin-bottom:0">Tous les projets</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <select id="proj-filter-status" style="font-size:12px" onchange="renderProjects()">
+    <!-- Synthèse -->
+    <div class="suivi-synth" id="suivi-synth"></div>
+
+    <!-- Toolbar -->
+    <div class="suivi-toolbar">
+      <div class="suivi-toolbar-left">
+        <div class="suivi-search">
+          <span style="font-size:14px;color:var(--text3)">🔍</span>
+          <input type="text" id="suivi-search-input" placeholder="Rechercher un projet..." oninput="renderSuivi()"/>
+        </div>
+        <select id="suivi-filter-status" class="suivi-filter" onchange="renderSuivi()">
           <option value="all">Tous les statuts</option>
           <option value="En cours">En cours</option>
           <option value="Planifié">Planifié</option>
           <option value="Terminé">Terminé</option>
           <option value="En pause">En pause</option>
         </select>
-        <button class="purple" onclick="openProjectModal()">+ Nouveau projet</button>
+        <select id="suivi-filter-service" class="suivi-filter" onchange="renderSuivi()">
+          <option value="all">Tous les services</option>
+          <option value="ADV">ADV</option>
+          <option value="COMPTABILITE">COMPTABILITE</option>
+          <option value="ACHATS">ACHATS</option>
+          <option value="COMMERCE">COMMERCE</option>
+          <option value="QUALITE">QUALITE</option>
+          <option value="MARKETING">MARKETING</option>
+          <option value="LOGISTIQUE">LOGISTIQUE</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="view-toggle">
+          <button class="view-btn active" id="view-btn-grid" onclick="setSuiviView('grid')">⊞ Grille</button>
+          <button class="view-btn" id="view-btn-list" onclick="setSuiviView('list')">≡ Liste</button>
+        </div>
+        <button class="purple" onclick="openSuiviProjectModal()">+ Nouveau projet</button>
       </div>
     </div>
 
-    <div class="projects-grid" id="projects-grid"></div>
+    <!-- Contenu dynamique -->
+    <div id="suivi-container"></div>
+    <div id="suivi-liste" class="suivi-liste"></div>
 
   </div>
 
-  <div class="app-footer">Dashboard collaboratif &mdash; <strong>CHAMORIN</strong></div>
+  <div class="app-footer">Copyright Julien FAUGERE – Société <strong>CHAMORIN</strong></div>
 </div>
 
 <!-- ═══ Modal : Tâche ═══ -->
@@ -428,70 +708,86 @@
   </div>
 </div>
 
-<!-- ═══ Modal : Projet ═══ -->
-<div class="modal-overlay" id="project-modal-overlay" onclick="closeProjectModalOnBg(event)">
-  <div class="modal" style="width:580px">
+<!-- ═══ Modal : Suivi Projet ═══ -->
+<div class="modal-overlay" id="suivi-modal-overlay" onclick="closeSuiviModalOnBg(event)">
+  <div class="modal" style="width:600px">
     <div class="modal-header">
-      <h2 id="pm-title-label">Nouveau projet</h2>
-      <button class="modal-close" onclick="closeProjectModal()">×</button>
+      <h2 id="sm-title-label">Nouveau projet — Suivi</h2>
+      <button class="modal-close" onclick="closeSuiviModal()">×</button>
     </div>
+
+    <!-- Famille + Programme -->
     <div class="date-row">
-      <div class="field" style="flex:2"><label>Nom du projet</label><input id="pm-name" placeholder="ex: Refonte site CHAMORIN"/></div>
-      <div class="field"><label>Code</label><input id="pm-code" placeholder="ex: CH-01" style="text-transform:uppercase"/></div>
+      <div class="field" style="flex:1.5">
+        <label>📂 Famille de projet</label>
+        <input list="suivi-famille-list" id="sm-family" placeholder="ex: DIGITAL & OUTILS" autocomplete="off"/>
+        <datalist id="suivi-famille-list"></datalist>
+      </div>
+      <div class="field" style="flex:1">
+        <label>⌗ Programme</label>
+        <input id="sm-programme" placeholder="ex: PROG-2024-01"/>
+      </div>
     </div>
-    <div class="field"><label>Client / Périmètre</label><input id="pm-client" placeholder="ex: Client interne, Dupont SA..."/></div>
-    <div class="field"><label>Description</label><textarea id="pm-desc" placeholder="Contexte et objectifs du projet..."></textarea></div>
+
+    <div class="field"><label>🏷 Nom du projet</label><input id="sm-name" placeholder="ex: Refonte site CHAMORIN"/></div>
+
     <div class="date-row">
-      <div class="field"><label>Date de début</label><input type="date" id="pm-date-start"/></div>
-      <div class="field"><label>Date de fin prévue</label><input type="date" id="pm-date-end"/></div>
-    </div>
-    <div class="date-row">
-      <div class="field">
-        <label>Statut</label>
-        <select id="pm-status">
-          <option>Planifié</option>
-          <option selected>En cours</option>
-          <option>En pause</option>
-          <option>Terminé</option>
+      <div class="field" style="flex:1">
+        <label>🏢 Service</label>
+        <select id="sm-service">
+          <option value="">-- Choisir --</option>
+          <option value="ADV">ADV</option><option value="COMPTABILITE">COMPTABILITE</option>
+          <option value="ACHATS">ACHATS</option><option value="COMMERCE">COMMERCE</option>
+          <option value="QUALITE">QUALITE</option><option value="MARKETING">MARKETING</option>
+          <option value="LOGISTIQUE">LOGISTIQUE</option>
         </select>
       </div>
-      <div class="field">
-        <label>Priorité</label>
-        <select id="pm-priority">
-          <option>Haute</option>
-          <option selected>Moyenne</option>
-          <option>Basse</option>
+      <div class="field" style="flex:1">
+        <label>📌 Statut</label>
+        <select id="sm-status">
+          <option>Planifié</option><option selected>En cours</option>
+          <option>En pause</option><option>Terminé</option>
         </select>
       </div>
-      <div class="field">
-        <label>Avancement (%)</label>
-        <input type="number" id="pm-progress" min="0" max="100" value="0" placeholder="0"/>
+      <div class="field" style="flex:1">
+        <label>⚡ Priorité</label>
+        <select id="sm-priority">
+          <option>Haute</option><option selected>Moyenne</option><option>Basse</option>
+        </select>
       </div>
     </div>
-    <div class="field">
-      <label>Membres assignés</label>
-      <div id="pm-members-list" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div>
+
+    <div class="field"><label>📝 Description du projet / Ce que fait ce programme</label><textarea id="sm-desc" placeholder="Décrivez le contexte, les objectifs et ce que ce programme accomplit en production..." style="min-height:88px"></textarea></div>
+
+    <div class="date-row">
+      <div class="field"><label>📅 Date de début</label><input type="date" id="sm-date-start"/></div>
+      <div class="field"><label>🏁 Date de fin prévue</label><input type="date" id="sm-date-end"/></div>
+      <div class="field"><label>📈 Avancement (%)</label><input type="number" id="sm-progress" min="0" max="100" value="0"/></div>
     </div>
+
     <div class="field">
-      <label>Budget (€)</label>
-      <input type="number" id="pm-budget" placeholder="ex: 15000"/>
+      <label>👥 Membres assignés</label>
+      <div id="sm-members-list" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div>
     </div>
+
     <div class="field">
-      <label>Couleur du projet</label>
-      <div class="proj-colors" id="pm-colors"></div>
+      <label>🎨 Couleur du projet</label>
+      <div class="proj-colors" id="sm-colors"></div>
     </div>
+
     <div class="field">
-      <label>Étapes clés (une par ligne)</label>
-      <div id="pm-steps-list" style="margin-bottom:6px"></div>
+      <label>🔖 Étapes clés</label>
+      <div id="sm-steps-list" style="margin-bottom:6px"></div>
       <div style="display:flex;gap:8px">
-        <input id="pm-step-input" placeholder="Ajouter une étape..." style="flex:1"/>
-        <button onclick="addStep()">+</button>
+        <input id="sm-step-input" placeholder="Ajouter une étape clé..." style="flex:1"/>
+        <button onclick="addSuiviStep()">+</button>
       </div>
     </div>
+
     <div class="modal-footer">
-      <button class="danger" id="pm-delete-btn" onclick="deleteProject()" style="display:none">Supprimer</button>
-      <button class="ghost" onclick="closeProjectModal()">Annuler</button>
-      <button class="purple" onclick="saveProject()">Sauvegarder</button>
+      <button class="danger" id="sm-delete-btn" onclick="deleteSuiviProject()" style="display:none">Supprimer</button>
+      <button class="ghost" onclick="closeSuiviModal()">Annuler</button>
+      <button class="purple" onclick="saveSuiviProject()">💾 Sauvegarder</button>
     </div>
   </div>
 </div>
@@ -514,10 +810,8 @@
       <div class="field"><label>Préparé par</label><input id="rp-from"/></div>
       <div class="field"><label>Statuts tâches</label>
         <select id="rp-status-filter">
-          <option value="all">Tous</option>
-          <option value="done">Terminées</option>
-          <option value="done,prog">Terminées + En cours</option>
-          <option value="prog">En cours</option>
+          <option value="all">Tous</option><option value="done">Terminées</option>
+          <option value="done,prog">Terminées + En cours</option><option value="prog">En cours</option>
         </select>
       </div>
     </div>
@@ -579,37 +873,65 @@ const PALETTES=[
   {color:'#8A6A2E',bg:'#F5EDDA'},{color:'#5A4E8A',bg:'#EDEAF5'},
 ];
 const PROJ_COLORS=['#F4874B','#2E8B57','#534AB7','#185fa5','#993356','#854f0b','#0F6E56','#993C1D','#4A7C8A','#8A6A2E'];
-const TAG_STYLES={Dev:{color:'#1E6040',bg:'#E6F4ED'},Design:{color:'#C9602A',bg:'#FEF0E8'},Marketing:{color:'#F4874B',bg:'#FDE8D8'},Admin:{color:'#7A5C3A',bg:'#F5EDE3'},Réunion:{color:'#4A7C8A',bg:'#E3EFF2'},Autre:{color:'#8A8880',bg:'#F2F1EE'}};
-const AGENDA_TAGS={Achat:{color:'#185fa5',bg:'#E6F1FB'},Commerce:{color:'#F4874B',bg:'#FDE8D8'},Comptabilité:{color:'#1E6040',bg:'#E6F4ED'},Litige:{color:'#C0392B',bg:'#FCECEA'},Qualité:{color:'#534AB7',bg:'#EEEDFE'},Logistique:{color:'#854f0b',bg:'#FAEEDA'},ADV:{color:'#0F6E56',bg:'#E1F5EE'},Autre:{color:'#8A8880',bg:'#F2F1EE'}};
+
+// Couleur de fond légère pour chaque couleur de projet
+function colorLight(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},0.1)`;
+}
+
+const TAG_STYLES={
+  Commerce:{color:'#F4874B',bg:'#FDE8D8'},Comptabilité:{color:'#1E6040',bg:'#E6F4ED'},
+  Marketing:{color:'#C9602A',bg:'#FEF0E8'},Achats:{color:'#4A7C8A',bg:'#E3EFF2'},
+  Logistique:{color:'#7A5C3A',bg:'#F5EDE3'},Qualité:{color:'#534AB7',bg:'#EEEDFE'},
+  Admin:{color:'#8A6A2E',bg:'#F5EDDA'},Autre:{color:'#8A8880',bg:'#F2F1EE'}
+};
 const STATUS_LABELS={todo:'À faire',prog:'En cours',done:'Terminé'};
 const STATUS_STYLES={todo:{color:'#8A8880',bg:'#F2F1EE'},prog:{color:'#C9602A',bg:'#FEF0E8'},done:{color:'#1E6040',bg:'#E6F4ED'}};
 const PROJ_STATUS_STYLES={'En cours':{color:'#C9602A',bg:'#FEF0E8'},'Planifié':{color:'#185fa5',bg:'#E6F1FB'},'Terminé':{color:'#1E6040',bg:'#E6F4ED'},'En pause':{color:'#8A8880',bg:'#F2F1EE'}};
 const PRIORITY_STYLES={Haute:{color:'#C0392B',bg:'#FCECEA'},Moyenne:{color:'#854f0b',bg:'#FAEEDA'},Basse:{color:'#5f5e5a',bg:'#F1EFE8'}};
 const ABS_TYPES={CP:{label:'Congé payé',icon:'🏖',color:'#185fa5',bg:'#E6F1FB'},RTT:{label:'RTT',icon:'⏱',color:'#534AB7',bg:'#EEEDFE'},Maladie:{label:'Maladie',icon:'🤒',color:'#993356',bg:'#FBEAF0'},Autre:{label:'Autre',icon:'📋',color:'#7A5C3A',bg:'#F5EDE3'}};
 
-// ── État ────────────────────────────────────
+// Icônes familles automatiques
+const FAMILLE_ICONS=['💻','📦','🏭','📊','🎯','🔧','💰','🌐','🎨','📋','🚀','⚙️','🏗️','📱'];
+function getFamilleIcon(name, idx){
+  const n=name.toLowerCase();
+  if(n.includes('digital')||n.includes('tech')||n.includes('outil'))return '💻';
+  if(n.includes('commerce')||n.includes('vente'))return '📦';
+  if(n.includes('market'))return '🎯';
+  if(n.includes('compta')||n.includes('finance'))return '💰';
+  if(n.includes('qualit'))return '⭐';
+  if(n.includes('logis')||n.includes('supply'))return '🚚';
+  if(n.includes('adv')||n.includes('admin'))return '📋';
+  if(n.includes('achat'))return '🛒';
+  return FAMILLE_ICONS[idx % FAMILLE_ICONS.length];
+}
+
 const DEFAULT_STATE={
   members:[{id:'JU',name:'Julien',role:'Admin',paletteIdx:2}],
   tasks:[
     {id:1,title:'Configurer le repository',member:'JU',status:'todo',tag:'Admin',desc:'',done:[],dateStart:'',dateEnd:''},
-    {id:2,title:'Rédiger le README',member:'JU',status:'prog',tag:'Dev',desc:'',done:['Structure définie'],dateStart:'2026-04-21',dateEnd:'2026-04-25'},
-    {id:3,title:'Déployer sur GitHub Pages',member:'JU',status:'done',tag:'Dev',desc:'',done:['Repository créé','GitHub Pages activé'],dateStart:'2026-04-20',dateEnd:'2026-04-22'},
+    {id:2,title:'Rédiger le README',member:'JU',status:'prog',tag:'Comptabilité',desc:'',done:['Structure définie'],dateStart:'2026-04-21',dateEnd:'2026-04-25'},
+    {id:3,title:'Déployer sur GitHub Pages',member:'JU',status:'done',tag:'Commerce',desc:'',done:['Repository créé','GitHub Pages activé'],dateStart:'2026-04-20',dateEnd:'2026-04-22'},
   ],
-  projects:[],
-  events:[{id:1,time:'09:00',title:'Standup équipe',tag:'Réunion'},{id:2,time:'14:00',title:'Revue de code',tag:'Dev'}],
+  suiviProjects:[], // Nouveau : projets onglet Suivi
+  events:[{id:1,time:'09:00',title:'Standup équipe',tag:'Réunion',date:toISO(new Date())},{id:2,time:'14:00',title:'Revue de code',tag:'Commerce',date:toISO(new Date())}],
   absences:[],
-  nextId:4,nextEventId:3,nextAbsId:1,nextProjId:1,
+  nextId:4,nextEventId:3,nextAbsId:1,nextSuiviProjId:1,
 };
 let state=JSON.parse(JSON.stringify(DEFAULT_STATE));
 let selectedTasks=new Set();
 let currentTaskId=null;
-let currentProjId=null;
+let currentSuiviProjId=null;
 let selectedPalette=0;
-let selectedProjColor=0;
-let projMembersSelected=new Set();
-let projSteps=[];
+let selectedSuiviColor=0;
+let suiviMembersSelected=new Set();
+let suiviSteps=[];
+let suiviView='grid';
+let collapsedFamilies=new Set();
 let saveTimeout=null;
 let isRemoteUpdate=false;
+let planningDate = new Date();
 
 // ── Sync ────────────────────────────────────
 function setSyncStatus(s){
@@ -634,7 +956,8 @@ function startListening(){
     state=data;
     state.tasks=state.tasks||[]; state.members=state.members||[];
     state.events=state.events||[]; state.absences=state.absences||[];
-    state.projects=state.projects||[];
+    state.suiviProjects=state.suiviProjects||[];
+    if(!state.nextSuiviProjId)state.nextSuiviProjId=1;
     renderAll(); setSyncStatus('ok');
     isRemoteUpdate=false;
   },(err)=>{ console.error(err); setSyncStatus('error'); });
@@ -655,33 +978,40 @@ function memberById(id){return state.members.find(m=>m.id===id);}
 function tagStyle(tag){const s=TAG_STYLES[tag]||TAG_STYLES['Autre'];return `background:${s.bg};color:${s.color}`;}
 function genId(name){let base=(name.trim().slice(0,2).toUpperCase().replace(/[^A-Z]/g,'')||'XX'),id=base,i=2;while(state.members.some(m=>m.id===id))id=base+(i++);return id;}
 function fmtDate(iso){if(!iso)return '';const[y,m,d]=iso.split('-');return `${d}/${m}/${y.slice(2)}`;}
+function fmtDateFull(iso){if(!iso)return '';const[y,m,d]=iso.split('-');return `${d}/${m}/${y}`;}
 function isoWeek(date){const d=new Date(date);d.setHours(0,0,0,0);d.setDate(d.getDate()+3-(d.getDay()+6)%7);const w1=new Date(d.getFullYear(),0,4);return 1+Math.round(((d-w1)/86400000-3+(w1.getDay()+6)%7)/7);}
 function mondayOfWeek(year,week){const jan4=new Date(year,0,4);const dow=(jan4.getDay()+6)%7;const mon=new Date(jan4);mon.setDate(jan4.getDate()-dow+(week-1)*7);return mon;}
 function toISO(d){return d.toISOString().slice(0,10);}
 function dateStatus(t){if(!t.dateEnd)return null;const today=new Date();today.setHours(0,0,0,0);const due=new Date(t.dateEnd);const diff=Math.round((due-today)/86400000);return diff<0?'overdue':diff<=3?'soon':'ok';}
 function countWorkDays(start,end){let c=0,cur=new Date(start),last=new Date(end);while(cur<=last){const d=cur.getDay();if(d!==0&&d!==6)c++;cur.setDate(cur.getDate()+1);}return c;}
-function hexToRgb(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `${r},${g},${b}`;}
 
 // ── Tabs ────────────────────────────────────
-window.switchTab=function(id){
+window.switchTab=function(id, btn){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  event.currentTarget.classList.add('active');
-  if(id==='tab-projets'){renderProjects();}
+  if(btn) btn.classList.add('active');
+  if(id==='tab-planning'){renderPlanning();}
+  if(id==='tab-suivi'){renderSuivi();}
+}
+window.switchTabByName=function(id){
+  const tabs=document.querySelectorAll('.nav-tab');
+  const panels=document.querySelectorAll('.tab-panel');
+  const panel=document.getElementById(id);
+  if(!panel)return;
+  panels.forEach(p=>p.classList.remove('active'));
+  tabs.forEach(t=>t.classList.remove('active'));
+  panel.classList.add('active');
+  if(id==='tab-planning'){renderPlanning();}
+  if(id==='tab-suivi'){renderSuivi();}
 }
 
 // ── Render all ──────────────────────────────
 function renderAll(){
-  renderMemberSelects();
-  renderAbsMemberSelect();
-  renderKanban();
-  renderAgenda();
-  renderAbsences();
-  renderProjects();
+  renderMemberSelects();renderAbsMemberSelect();
+  renderKanban();renderAgenda();renderAbsences();
 }
 
-// ── Member selects ───────────────────────────
 function renderMemberSelects(){
   ['new-task-member'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
@@ -697,9 +1027,9 @@ function renderAbsMemberSelect(){
   if(state.members.some(m=>m.id===val))el.value=val;
 }
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  KANBAN
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 function renderKanban(){
   ['todo','prog','done'].forEach(s=>{
     const col=document.getElementById('col-'+s);
@@ -766,6 +1096,12 @@ function updateMetrics(){
   document.getElementById('m-prog').textContent=prog;
   document.getElementById('m-pct').textContent=pct+'%';
   const n=state.tasks.length||1;
+  const totalDaysTaken=(state.absences||[]).reduce((acc,abs)=>acc+countWorkDays(abs.dateStart,abs.dateEnd),0);
+  const rttTaken=(state.absences||[]).filter(a=>a.type==='RTT').reduce((acc,cur)=>acc+countWorkDays(cur.dateStart,cur.dateEnd),0);
+  const cpTaken=(state.absences||[]).filter(a=>a.type==='CP').reduce((acc,cur)=>acc+countWorkDays(cur.dateStart,cur.dateEnd),0);
+  const rttTotal=12,cpTotal=25;
+  const rttPct=Math.min(100,Math.round((rttTaken/rttTotal)*100));
+  const cpPct=Math.min(100,Math.round((cpTaken/cpTotal)*100));
   document.getElementById('kpi-list').innerHTML=[
     {label:'Terminées',val:done,max:n,color:'var(--green)'},
     {label:'En cours',val:prog,max:n,color:'var(--orange)'},
@@ -775,12 +1111,18 @@ function updateMetrics(){
     <span class="kpi-label">${k.label}</span>
     <div class="kpi-bar-bg"><div class="kpi-bar" style="width:${Math.round(k.val/k.max*100)}%;background:${k.color}"></div></div>
     <span class="kpi-val">${k.val}${k.suffix||''}</span>
-  </div>`).join('');
+  </div>`).join('')+`
+  <div class="barometer-section">
+    <div class="counter-days"><div class="counter-val">${totalDaysTaken}</div><div class="counter-lbl">Jours posés au total</div></div>
+    <div class="barometer-title" style="margin-top:12px">Baromètre Congés</div>
+    <div class="barometer-row"><div class="barometer-label">RTT</div><div class="barometer-track" style="background:#EEEDFE"><div class="barometer-fill" style="width:${rttPct}%;background:#534AB7"></div></div><div class="barometer-text">${rttTaken}/${rttTotal}</div></div>
+    <div class="barometer-row"><div class="barometer-label">CP</div><div class="barometer-track" style="background:#E6F1FB"><div class="barometer-fill" style="width:${cpPct}%;background:#185fa5"></div></div><div class="barometer-text">${cpTaken}/${cpTotal}</div></div>
+  </div>`;
 }
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  MODAL TÂCHE
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 window.openTaskModal=function(id){
   currentTaskId=id;const t=state.tasks.find(x=>x.id===id);if(!t)return;
   const m=memberById(t.member);const p=m?getPalette(m):PALETTES[0];const ss=STATUS_STYLES[t.status];
@@ -808,181 +1150,96 @@ window.deleteTaskFromModal=function(){if(!confirm('Supprimer ?'))return;state.ta
 window.closeTaskModal=function(){document.getElementById('task-modal-overlay').classList.remove('open');}
 window.closeTaskModalOnBg=function(e){if(e.target===document.getElementById('task-modal-overlay'))closeTaskModal();}
 
-// ════════════════════════════════════════════
-//  PROJETS
-// ════════════════════════════════════════════
-function renderProjects(){
-  const filter=document.getElementById('proj-filter-status')?.value||'all';
-  const projects=(state.projects||[]).filter(p=>filter==='all'||p.status===filter);
-
-  // Synthèse
-  const all=state.projects||[];
-  const synth=[
-    {label:'Total projets',val:all.length,color:'var(--purple)',icon:'🗂'},
-    {label:'En cours',val:all.filter(p=>p.status==='En cours').length,color:'var(--orange)',icon:'⚡'},
-    {label:'Terminés',val:all.filter(p=>p.status==='Terminé').length,color:'var(--green)',icon:'✅'},
-    {label:'Avancement moy.',val:all.length?Math.round(all.reduce((s,p)=>s+(p.progress||0),0)/all.length)+'%':'—',color:'var(--text)',icon:'📈'},
-  ];
-  document.getElementById('project-synth').innerHTML=synth.map(s=>`
-    <div class="synth-card">
-      <div style="font-size:22px;margin-bottom:4px">${s.icon}</div>
-      <div class="s-val" style="color:${s.color}">${s.val}</div>
-      <div class="s-lbl">${s.label}</div>
-    </div>`).join('');
-
-  const grid=document.getElementById('projects-grid');
-  if(!projects.length){
-    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:48px 0;color:var(--text3);font-size:14px">Aucun projet — cliquez sur <strong>+ Nouveau projet</strong> pour commencer</div>`;
-    return;
-  }
-
-  grid.innerHTML=projects.map(p=>{
-    const ss=PROJ_STATUS_STYLES[p.status]||PROJ_STATUS_STYLES['Planifié'];
-    const ps=PRIORITY_STYLES[p.priority]||PRIORITY_STYLES['Moyenne'];
-    const color=p.color||PROJ_COLORS[0];
-    const progress=p.progress||0;
-    const members=(p.members||[]).map(id=>memberById(id)).filter(Boolean);
-    const stepsTotal=(p.steps||[]).length;
-    const stepsDone=(p.steps||[]).filter(s=>s.done).length;
-    const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
-    return `<div class="project-card">
-      <div class="project-card-header">
-        <div class="project-color-bar" style="background:${color}"></div>
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:8px">
-          <div style="flex:1">
-            <div class="project-name" onclick="openProjectModal(${p.id})">${p.name}</div>
-            ${p.code?`<div class="project-client" style="font-weight:600;color:${color}">${p.code}</div>`:''}
-            ${p.client?`<div class="project-client">${p.client}</div>`:''}
-          </div>
-          <button class="proj-del-btn" onclick="confirmDeleteProject(${p.id})">×</button>
-        </div>
-        <div class="project-badges">
-          <span class="project-status-badge" style="background:${ss.bg};color:${ss.color}">${p.status}</span>
-          <span class="tag" style="background:${ps.bg};color:${ps.color}">${p.priority}</span>
-          ${daysLeft!==null?`<span style="font-size:11px;color:${daysLeft<0?'var(--red)':daysLeft<=7?'var(--orange-dark)':'var(--text3)'}">${daysLeft<0?'⚠ '+Math.abs(daysLeft)+'j dépassé':daysLeft===0?'Aujourd\'hui':daysLeft+'j restants'}</span>`:''}
-        </div>
-        ${p.desc?`<div style="font-size:12px;color:var(--text2);margin-top:8px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.desc}</div>`:''}
-        ${stepsTotal?`<div style="font-size:11px;color:var(--text3);margin-top:8px">Étapes : <strong style="color:var(--text)">${stepsDone}/${stepsTotal}</strong></div>`:''}
-      </div>
-      <div class="project-progress-wrap">
-        <div class="project-progress-label"><span>Avancement</span><span style="font-weight:700;color:var(--text)">${progress}%</span></div>
-        <div class="project-progress-bg"><div class="project-progress-fill" style="width:${progress}%;background:${color}"></div></div>
-      </div>
-      <div class="project-footer">
-        <div class="project-members">${members.map(m=>{const pl=getPalette(m);return `<span class="avatar" style="background:${pl.bg};color:${pl.color}">${initials(m.name)}</span>`;}).join('')}</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          ${p.budget?`<span style="font-size:11px;color:var(--text3)">${Number(p.budget).toLocaleString('fr-FR')} €</span>`:''}
-          ${p.dateStart&&p.dateEnd?`<span style="font-size:11px;color:var(--text3)">${fmtDate(p.dateStart)} → ${fmtDate(p.dateEnd)}</span>`:''}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ── Modal Projet ────────────────────────────
-window.openProjectModal=function(id){
-  currentProjId=id||null;
-  const p=id?state.projects.find(x=>x.id===id):null;
-  document.getElementById('pm-title-label').textContent=p?'Modifier le projet':'Nouveau projet';
-  document.getElementById('pm-delete-btn').style.display=p?'block':'none';
-  document.getElementById('pm-name').value=p?p.name:'';
-  document.getElementById('pm-code').value=p?p.code||'':'';
-  document.getElementById('pm-client').value=p?p.client||'':'';
-  document.getElementById('pm-desc').value=p?p.desc||'':'';
-  document.getElementById('pm-date-start').value=p?p.dateStart||'':'';
-  document.getElementById('pm-date-end').value=p?p.dateEnd||'':'';
-  document.getElementById('pm-status').value=p?p.status:'En cours';
-  document.getElementById('pm-priority').value=p?p.priority:'Moyenne';
-  document.getElementById('pm-progress').value=p?p.progress||0:0;
-  document.getElementById('pm-budget').value=p?p.budget||'':'';
-  projMembersSelected=new Set(p&&p.members?p.members:[]);
-  projSteps=p&&p.steps?JSON.parse(JSON.stringify(p.steps)):[];
-  selectedProjColor=p?PROJ_COLORS.indexOf(p.color)||0:0;
-  renderProjColorOpts();renderProjMembers();renderProjSteps();
-  document.getElementById('project-modal-overlay').classList.add('open');
-}
-window.closeProjectModal=function(){document.getElementById('project-modal-overlay').classList.remove('open');}
-window.closeProjectModalOnBg=function(e){if(e.target===document.getElementById('project-modal-overlay'))closeProjectModal();}
-function renderProjColorOpts(){
-  document.getElementById('pm-colors').innerHTML=PROJ_COLORS.map((c,i)=>
-    `<div class="proj-color-opt${i===selectedProjColor?' selected':''}" style="background:${c}" onclick="selectProjColor(${i})"></div>`
-  ).join('');
-}
-window.selectProjColor=function(i){selectedProjColor=i;renderProjColorOpts();}
-function renderProjMembers(){
-  document.getElementById('pm-members-list').innerHTML=state.members.map(m=>{
-    const p=getPalette(m);const sel=projMembersSelected.has(m.id);
-    return `<div onclick="toggleProjMember('${m.id}')" style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;cursor:pointer;background:${sel?p.bg:'var(--surface2)'};border:1.5px solid ${sel?p.color:'var(--border)'};transition:all .15s">
-      <span class="avatar" style="width:22px;height:22px;font-size:9px;background:${p.bg};color:${p.color}">${initials(m.name)}</span>
-      <span style="font-size:12px;font-weight:${sel?'600':'400'};color:${sel?p.color:'var(--text2)'}">${m.name}</span>
-    </div>`;
-  }).join('');
-}
-window.toggleProjMember=function(id){projMembersSelected.has(id)?projMembersSelected.delete(id):projMembersSelected.add(id);renderProjMembers();}
-function renderProjSteps(){
-  document.getElementById('pm-steps-list').innerHTML=projSteps.length?`<ul class="step-list">${projSteps.map((s,i)=>`
-    <li class="step-item">
-      <div class="step-check${s.done?' done':''}" onclick="toggleStep(${i})"></div>
-      <span class="step-label${s.done?' done':''}">${s.label}</span>
-      <button class="del-btn" onclick="removeStep(${i})">×</button>
-    </li>`).join('')}</ul>`:'';
-}
-window.toggleStep=function(i){projSteps[i].done=!projSteps[i].done;renderProjSteps();}
-window.removeStep=function(i){projSteps.splice(i,1);renderProjSteps();}
-window.addStep=function(){
-  const inp=document.getElementById('pm-step-input');const val=inp.value.trim();if(!val)return;
-  projSteps.push({label:val,done:false});inp.value='';renderProjSteps();
-}
-window.saveProject=function(){
-  const name=document.getElementById('pm-name').value.trim();if(!name){document.getElementById('pm-name').focus();return;}
-  const proj={
-    id:currentProjId||(state.nextProjId++),
-    name,code:document.getElementById('pm-code').value.trim().toUpperCase(),
-    client:document.getElementById('pm-client').value.trim(),
-    desc:document.getElementById('pm-desc').value.trim(),
-    dateStart:document.getElementById('pm-date-start').value,
-    dateEnd:document.getElementById('pm-date-end').value,
-    status:document.getElementById('pm-status').value,
-    priority:document.getElementById('pm-priority').value,
-    progress:parseInt(document.getElementById('pm-progress').value)||0,
-    budget:document.getElementById('pm-budget').value,
-    color:PROJ_COLORS[selectedProjColor],
-    members:[...projMembersSelected],
-    steps:JSON.parse(JSON.stringify(projSteps)),
-  };
-  if(currentProjId){
-    const idx=state.projects.findIndex(p=>p.id===currentProjId);
-    if(idx>=0)state.projects[idx]=proj; else state.projects.push(proj);
-  } else { state.projects.push(proj); }
-  renderProjects();saveState();closeProjectModal();
-}
-window.confirmDeleteProject=function(id){if(!confirm('Supprimer ce projet ?'))return;state.projects=state.projects.filter(p=>p.id!==id);renderProjects();saveState();}
-window.deleteProject=function(){if(currentProjId)confirmDeleteProject(currentProjId);closeProjectModal();}
-
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  AGENDA
-// ════════════════════════════════════════════
-function agendaTagStyle(tag){const s=AGENDA_TAGS[tag]||AGENDA_TAGS['Autre'];return `background:${s.bg};color:${s.color}`;}
-
+// ══════════════════════════════════════════
+function getEventsForDate(isoDate){
+  const todayStr=toISO(new Date());
+  return [...state.events].filter(e=>(e.date||todayStr)===isoDate).sort((a,b)=>a.time.localeCompare(b.time));
+}
 function renderAgenda(){
-  document.getElementById('agenda-list').innerHTML=[...state.events].sort((a,b)=>a.time.localeCompare(b.time)).map(e=>`
+  const todayStr=toISO(new Date());
+  const events=getEventsForDate(todayStr);
+  document.getElementById('agenda-list').innerHTML=events.map(e=>`
     <div class="agenda-item">
       <span class="agenda-time">${e.time}</span>
-      <div class="agenda-body"><div class="agenda-title-txt">${e.title}</div><div style="margin-top:3px"><span class="tag" style="${agendaTagStyle(e.tag)}">${e.tag}</span></div></div>
+      <div class="agenda-body"><div class="agenda-title-txt">${e.title}</div><div style="margin-top:3px"><span class="tag" style="${tagStyle(e.tag)}">${e.tag}</span></div></div>
       <button class="agenda-del" onclick="deleteEvent(${e.id})">×</button>
     </div>`).join('');
 }
 window.addEvent=function(){
-  const time=document.getElementById('new-event-time').value;const title=document.getElementById('new-event-title').value.trim();
-  const tag=document.getElementById('new-event-tag').value;
+  const time=document.getElementById('new-event-time').value;
+  const title=document.getElementById('new-event-title').value.trim();
   if(!title){document.getElementById('new-event-title').focus();return;}
-  state.events.push({id:state.nextEventId++,time,title,tag});document.getElementById('new-event-title').value='';renderAgenda();saveState();
+  state.events.push({id:state.nextEventId++,time,title,tag:'Autre',date:toISO(new Date())});
+  document.getElementById('new-event-title').value='';renderAgenda();saveState();
 }
-window.deleteEvent=function(id){state.events=state.events.filter(e=>e.id!==id);renderAgenda();saveState();}
+window.deleteEvent=function(id){state.events=state.events.filter(e=>e.id!==id);renderAgenda();renderPlanning();saveState();}
+window.toggleEventDone=function(id){
+  const e=state.events.find(x=>x.id===id);if(!e)return;
+  e.done=!e.done;
+  // Animate check
+  const card=document.querySelector(`.planning-event-card .pe-check[onclick="toggleEventDone(${id})"]`);
+  if(card){card.classList.add('popping');setTimeout(()=>card.classList.remove('popping'),300);}
+  renderDailySchedule();renderAgenda();saveState();
+}
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
+//  PLANNING
+// ══════════════════════════════════════════
+window.renderPlanning=function(){renderCalendarGrid();renderDailySchedule();}
+window.changeMonth=function(delta){planningDate.setMonth(planningDate.getMonth()+delta);renderCalendarGrid();}
+window.goToToday=function(){planningDate=new Date();renderCalendarGrid();}
+window.selectPlanningDate=function(d){planningDate=new Date(d);renderCalendarGrid();renderDailySchedule();}
+function renderCalendarGrid(){
+  const year=planningDate.getFullYear(),month=planningDate.getMonth();
+  const todayStr=toISO(new Date()),selectedStr=toISO(planningDate);
+  const monthNames=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+  document.getElementById('cal-month-year').textContent=`${monthNames[month]} ${year}`;
+  const firstDayOfMonth=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const startOffset=firstDayOfMonth===0?6:firstDayOfMonth-1;
+  const grid=document.querySelector('.calendar-grid');
+  grid.innerHTML=`<div class="cal-day-label">Lun</div><div class="cal-day-label">Mar</div><div class="cal-day-label">Mer</div><div class="cal-day-label">Jeu</div><div class="cal-day-label">Ven</div><div class="cal-day-label">Sam</div><div class="cal-day-label">Dim</div>`;
+  for(let i=0;i<startOffset;i++){const cell=document.createElement('div');cell.className='day-cell empty';grid.appendChild(cell);}
+  for(let d=1;d<=daysInMonth;d++){
+    const dateIso=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const hasEvent=state.events.some(e=>(e.date||todayStr)===dateIso);
+    const cell=document.createElement('div');cell.className='day-cell';cell.textContent=d;
+    if(dateIso===todayStr)cell.classList.add('today');
+    if(dateIso===selectedStr)cell.classList.add('selected');
+    if(hasEvent)cell.classList.add('has-event');
+    cell.onclick=()=>selectPlanningDate(dateIso);grid.appendChild(cell);
+  }
+}
+function renderDailySchedule(){
+  const dateStr=toISO(planningDate);
+  const options={weekday:'long',year:'numeric',month:'long',day:'numeric'};
+  document.getElementById('sched-date-title').textContent=planningDate.toLocaleDateString('fr-FR',options);
+  const events=getEventsForDate(dateStr);
+  const list=document.getElementById('schedule-list');
+  if(!events.length){list.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Aucun RDV ce jour-là.</div>`;return;}
+  list.innerHTML=events.map(e=>`<div class="planning-event-card${e.done?' done':''}">
+    <div class="pe-check" onclick="toggleEventDone(${e.id})" title="${e.done?'Marquer comme non réalisé':'Marquer comme réalisé'}">✓</div>
+    <span class="pe-time">${e.time}</span>
+    <span class="pe-title">${e.title}</span>
+    ${e.done?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--done-bg);color:var(--done-color);flex-shrink:0;margin-right:6px">✓ Réalisé</span>`:`<span class="tag" style="${tagStyle(e.tag)}">${e.tag}</span>`}
+    <button class="del-btn" onclick="deleteEvent(${e.id})">×</button>
+  </div>`).join('');
+}
+window.addPlanningEvent=function(){
+  const time=document.getElementById('plan-event-time').value;
+  const title=document.getElementById('plan-event-title').value.trim();
+  const tag=document.getElementById('plan-event-tag').value;
+  const dateStr=toISO(planningDate);
+  if(!title){document.getElementById('plan-event-title').focus();return;}
+  state.events.push({id:state.nextEventId++,time,title,tag,date:dateStr});
+  document.getElementById('plan-event-title').value='';renderDailySchedule();renderCalendarGrid();saveState();
+}
+
+// ══════════════════════════════════════════
 //  ABSENCES
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 function renderAbsences(){
   const list=document.getElementById('absence-list');
   const abs=[...(state.absences||[])].sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
@@ -1021,9 +1278,289 @@ window.addAbsence=function(){
 }
 window.deleteAbsence=function(id){state.absences=(state.absences||[]).filter(a=>a.id!==id);renderAbsences();saveState();}
 
-// ════════════════════════════════════════════
+
+// ══════════════════════════════════════════
+//  SUIVI PROJETS — Nouveau
+// ══════════════════════════════════════════
+
+window.setSuiviView=function(view){
+  suiviView=view;
+  document.getElementById('view-btn-grid').classList.toggle('active',view==='grid');
+  document.getElementById('view-btn-list').classList.toggle('active',view==='list');
+  renderSuivi();
+}
+
+window.toggleFamille=function(famKey){
+  if(collapsedFamilies.has(famKey))collapsedFamilies.delete(famKey);
+  else collapsedFamilies.add(famKey);
+  renderSuivi();
+}
+
+window.renderSuivi=function(){
+  const projs=state.suiviProjects||[];
+  const searchVal=(document.getElementById('suivi-search-input')?.value||'').toLowerCase();
+  const filterStatus=document.getElementById('suivi-filter-status')?.value||'all';
+  const filterService=document.getElementById('suivi-filter-service')?.value||'all';
+
+  // Filtrage
+  const filtered=projs.filter(p=>{
+    if(filterStatus!=='all'&&p.status!==filterStatus)return false;
+    if(filterService!=='all'&&p.service!==filterService)return false;
+    if(searchVal&&!p.name.toLowerCase().includes(searchVal)&&!p.programme?.toLowerCase().includes(searchVal)&&!p.family?.toLowerCase().includes(searchVal)&&!p.desc?.toLowerCase().includes(searchVal))return false;
+    return true;
+  });
+
+  // Synthèse
+  const all=projs;
+  document.getElementById('suivi-synth').innerHTML=`
+    <div class="suivi-synth-card purple"><div class="ss-icon">🗂</div><div class="ss-val" style="color:var(--purple)">${all.length}</div><div class="ss-lbl">Projets total</div></div>
+    <div class="suivi-synth-card orange"><div class="ss-icon">⚡</div><div class="ss-val" style="color:var(--orange)">${all.filter(p=>p.status==='En cours').length}</div><div class="ss-lbl">En cours</div></div>
+    <div class="suivi-synth-card green"><div class="ss-icon">✅</div><div class="ss-val" style="color:var(--green)">${all.filter(p=>p.status==='Terminé').length}</div><div class="ss-lbl">Terminés</div></div>
+    <div class="suivi-synth-card blue"><div class="ss-icon">📈</div><div class="ss-val" style="color:#185fa5">${all.length?Math.round(all.reduce((s,p)=>s+(p.progress||0),0)/all.length)+'%':'—'}</div><div class="ss-lbl">Avancement moyen</div></div>
+  `;
+
+  const container=document.getElementById('suivi-container');
+  const listeEl=document.getElementById('suivi-liste');
+
+  if(suiviView==='list'){
+    container.style.display='none';
+    listeEl.classList.add('active');
+    if(!filtered.length){listeEl.innerHTML=`<div style="text-align:center;padding:48px 0;color:var(--text3)">Aucun projet trouvé</div>`;return;}
+    listeEl.innerHTML=filtered.map(p=>{
+      const color=p.color||PROJ_COLORS[0];const ss=PROJ_STATUS_STYLES[p.status]||PROJ_STATUS_STYLES['Planifié'];
+      return `<div class="suivi-liste-row" onclick="openSuiviProjectModal(${p.id})">
+        <div class="slr-color-dot" style="background:${color}"></div>
+        <div class="slr-info">
+          <div class="slr-name">${p.name}</div>
+          <div class="slr-meta">${p.programme?`<span style="font-family:'Courier New',monospace;font-size:10px;color:${color}">${p.programme}</span> · `:''} ${p.family||'—'} · ${p.service||'—'}</div>
+        </div>
+        <span style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:${ss.bg};color:${ss.color};flex-shrink:0">${p.status}</span>
+        <div class="slr-prog">
+          <div class="slr-prog-bar"><div class="slr-prog-fill" style="width:${p.progress||0}%;background:${color}"></div></div>
+          <span class="slr-prog-pct">${p.progress||0}%</span>
+        </div>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  // Vue grille
+  container.style.display='block';
+  listeEl.classList.remove('active');
+
+  if(!filtered.length){
+    container.innerHTML=`<div style="text-align:center;padding:48px 0;color:var(--text3);font-size:14px">
+      ${projs.length===0?`Aucun projet — cliquez sur <strong>+ Nouveau projet</strong> pour commencer`:'Aucun projet ne correspond à votre recherche'}
+    </div>`;
+    return;
+  }
+
+  // Grouper par famille
+  const groups={};
+  filtered.forEach(p=>{
+    const fam=(p.family||'SANS FAMILLE').trim().toUpperCase();
+    if(!groups[fam])groups[fam]=[];groups[fam].push(p);
+  });
+  const sortedFamilies=Object.keys(groups).sort();
+
+  let html='';
+  sortedFamilies.forEach((famName,famIdx)=>{
+    const groupProjects=groups[famName];
+    const isCollapsed=collapsedFamilies.has(famName);
+
+    // Stats famille
+    const famAvg=groupProjects.length?Math.round(groupProjects.reduce((s,p)=>s+(p.progress||0),0)/groupProjects.length):0;
+    const famDone=groupProjects.filter(p=>p.status==='Terminé').length;
+    const famProg=groupProjects.filter(p=>p.status==='En cours').length;
+
+    // Couleur dominante de la famille (couleur du 1er projet)
+    const famColor=groupProjects[0]?.color||PROJ_COLORS[famIdx%PROJ_COLORS.length];
+    const famBg=colorLight(famColor);
+    const famIcon=getFamilleIcon(famName,famIdx);
+
+    html+=`<div class="suivi-famille-block">
+      <div class="suivi-famille-header" style="--fam-color:${famColor};--fam-bg:${famBg}" onclick="toggleFamille('${famName}')">
+        <div class="sfh-icon" style="background:${famBg}">${famIcon}</div>
+        <div class="sfh-info">
+          <div class="sfh-name">${famName}</div>
+          <div class="sfh-sub">${groupProjects.length} projet${groupProjects.length>1?'s':''} · ${famProg} en cours · ${famDone} terminé${famDone>1?'s':''}</div>
+        </div>
+        <div class="sfh-progress">
+          <div class="sfh-progress-track" style="background:${famBg}"><div class="sfh-progress-fill" style="width:${famAvg}%;background:${famColor}"></div></div>
+          <span class="sfh-progress-pct" style="color:${famColor}">${famAvg}%</span>
+        </div>
+        <span class="sfh-toggle${isCollapsed?' collapsed':''}">▾</span>
+      </div>
+      <div class="suivi-famille-prog-bar"><div class="suivi-famille-prog-fill" style="width:${famAvg}%;background:${famColor}"></div></div>
+      <div class="suivi-famille-grid${isCollapsed?' collapsed':''}">
+        ${groupProjects.map(p=>renderSuiviCard(p)).join('')}
+        <div class="spc-new-card" onclick="openSuiviProjectModal(null,'${famName}')">
+          <div class="plus">+</div>
+          <span>Nouveau projet</span>
+          <small>${famName}</small>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML=html;
+}
+
+function renderSuiviCard(p){
+  const color=p.color||PROJ_COLORS[0];
+  const light=colorLight(color);
+  const ss=PROJ_STATUS_STYLES[p.status]||PROJ_STATUS_STYLES['Planifié'];
+  const ps=PRIORITY_STYLES[p.priority]||PRIORITY_STYLES['Moyenne'];
+  const progress=p.progress||0;
+  const members=(p.members||[]).map(id=>memberById(id)).filter(Boolean);
+  const steps=p.steps||[];
+  const stepsTotal=steps.length,stepsDone=steps.filter(s=>s.done).length;
+  const stepsPct=stepsTotal?Math.round(stepsDone/stepsTotal*100):0;
+  const daysLeft=p.dateEnd?Math.round((new Date(p.dateEnd)-new Date())/86400000):null;
+
+  const stepDots=stepsTotal?steps.map((s,i)=>
+    `<div class="spc-step-dot ${s.done?'done':'todo'}" style="${s.done?`background:${color}`:'border-color:'+color+'40'}" data-label="${s.label}" title="${s.label}${s.done?' ✓':''}"></div>`
+  ).join(''):'';
+
+  return `<div class="suivi-proj-card" style="--proj-color:${color};--proj-light:${light}" onclick="openSuiviProjectModal(${p.id})">
+    <button class="spc-del" onclick="event.stopPropagation();deleteSuiviProjectById(${p.id})">×</button>
+    <div class="spc-top-bar" style="background:${color}"></div>
+    <div class="spc-body">
+      ${p.programme?`<div class="spc-programme" style="background:${light};color:${color}"><span>⌗</span>${p.programme}</div>`:''}
+      <div class="spc-name">${p.name}</div>
+      ${p.service?`<div class="spc-service" style="border-color:${color}30"><span style="font-size:10px">🏢</span>${p.service}</div>`:''}
+      ${p.desc?`<div class="spc-desc">${p.desc}</div>`:''}
+      <div class="spc-badges">
+        <span class="spc-badge" style="background:${ss.bg};color:${ss.color}">${p.status}</span>
+        <span class="spc-badge" style="background:${ps.bg};color:${ps.color}">${p.priority}</span>
+        ${daysLeft!==null?`<span style="font-size:11px;color:${daysLeft<0?'var(--red)':daysLeft<=7?'var(--orange-dark)':'var(--text3)'};font-weight:600">${daysLeft<0?'⚠ '+Math.abs(daysLeft)+'j dépassé':daysLeft===0?'Aujourd\'hui':daysLeft+'j restants'}</span>`:''}
+      </div>
+    </div>
+    ${stepsTotal?`<div class="spc-steps">
+      <div class="spc-steps-header">
+        <span class="spc-steps-label">Étapes clés</span>
+        <span class="spc-steps-count" style="color:${color}">${stepsDone}/${stepsTotal}</span>
+      </div>
+      <div class="spc-steps-bar-bg"><div class="spc-steps-bar-fill" style="width:${stepsPct}%;background:${color}"></div></div>
+      <div class="spc-steps-dots">${stepDots}</div>
+    </div>`:''}
+    <div class="spc-progress">
+      <div class="spc-progress-row"><span>Avancement global</span><strong>${progress}%</strong></div>
+      <div class="spc-progress-bg"><div class="spc-progress-fill" style="width:${progress}%;background:${color}"></div></div>
+    </div>
+    <div class="spc-footer">
+      <div class="spc-avatars">
+        ${members.map(m=>{const pl=getPalette(m);return `<div class="spc-avatar" style="background:${pl.bg};color:${pl.color}">${initials(m.name)}</div>`;}).join('')||`<span style="font-size:11px;color:var(--text3)">Non assigné</span>`}
+      </div>
+      ${p.dateEnd?`<span class="spc-date" style="${daysLeft!==null&&daysLeft<0?'color:var(--red);font-weight:600':''}">→ ${fmtDate(p.dateEnd)}</span>`:''}
+    </div>
+  </div>`;
+}
+
+// ── Modal Suivi ──────────────────────────────
+window.openSuiviProjectModal=function(id, prefillFamily){
+  currentSuiviProjId=id||null;
+  const p=id?state.suiviProjects.find(x=>x.id===id):null;
+  document.getElementById('sm-title-label').textContent=p?'Modifier le projet':'Nouveau projet — Suivi';
+  document.getElementById('sm-delete-btn').style.display=p?'block':'none';
+
+  // Familles autocomplete
+  const uniqueFamilies=[...new Set((state.suiviProjects||[]).map(p=>p.family).filter(Boolean))];
+  document.getElementById('suivi-famille-list').innerHTML=uniqueFamilies.map(f=>`<option value="${f}">`).join('');
+
+  document.getElementById('sm-family').value=p?p.family||'':(prefillFamily||'');
+  document.getElementById('sm-programme').value=p?p.programme||'':'';
+  document.getElementById('sm-name').value=p?p.name:'';
+  document.getElementById('sm-service').value=p?p.service||'':'';
+  document.getElementById('sm-desc').value=p?p.desc||'':'';
+  document.getElementById('sm-date-start').value=p?p.dateStart||'':'';
+  document.getElementById('sm-date-end').value=p?p.dateEnd||'':'';
+  document.getElementById('sm-status').value=p?p.status:'En cours';
+  document.getElementById('sm-priority').value=p?p.priority:'Moyenne';
+  document.getElementById('sm-progress').value=p?p.progress||0:0;
+
+  suiviMembersSelected=new Set(p&&p.members?p.members:[]);
+  suiviSteps=p&&p.steps?JSON.parse(JSON.stringify(p.steps)):[];
+  selectedSuiviColor=p?PROJ_COLORS.indexOf(p.color):-1;
+  if(selectedSuiviColor<0)selectedSuiviColor=0;
+
+  renderSuiviColorOpts();renderSuiviMembers();renderSuiviStepsList();
+  document.getElementById('suivi-modal-overlay').classList.add('open');
+}
+window.closeSuiviModal=function(){document.getElementById('suivi-modal-overlay').classList.remove('open');}
+window.closeSuiviModalOnBg=function(e){if(e.target===document.getElementById('suivi-modal-overlay'))closeSuiviModal();}
+
+function renderSuiviColorOpts(){
+  document.getElementById('sm-colors').innerHTML=PROJ_COLORS.map((c,i)=>
+    `<div class="proj-color-opt${i===selectedSuiviColor?' selected':''}" style="background:${c}" onclick="selectSuiviColor(${i})"></div>`
+  ).join('');
+}
+window.selectSuiviColor=function(i){selectedSuiviColor=i;renderSuiviColorOpts();}
+
+function renderSuiviMembers(){
+  document.getElementById('sm-members-list').innerHTML=state.members.map(m=>{
+    const p=getPalette(m);const sel=suiviMembersSelected.has(m.id);
+    return `<div onclick="toggleSuiviMember('${m.id}')" style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;cursor:pointer;background:${sel?p.bg:'var(--surface2)'};border:1.5px solid ${sel?p.color:'var(--border)'};transition:all .15s">
+      <span class="avatar" style="width:22px;height:22px;font-size:9px;background:${p.bg};color:${p.color}">${initials(m.name)}</span>
+      <span style="font-size:12px;font-weight:${sel?'600':'400'};color:${sel?p.color:'var(--text2)'}">${m.name}</span>
+    </div>`;
+  }).join('');
+}
+window.toggleSuiviMember=function(id){suiviMembersSelected.has(id)?suiviMembersSelected.delete(id):suiviMembersSelected.add(id);renderSuiviMembers();}
+
+function renderSuiviStepsList(){
+  document.getElementById('sm-steps-list').innerHTML=suiviSteps.length?`<ul class="step-list">${suiviSteps.map((s,i)=>`
+    <li class="step-item">
+      <div class="step-check${s.done?' done':''}" onclick="toggleSuiviStep(${i})"></div>
+      <span class="step-label${s.done?' done':''}">${s.label}</span>
+      <button class="del-btn" onclick="removeSuiviStep(${i})">×</button>
+    </li>`).join('')}</ul>`:'';
+}
+window.toggleSuiviStep=function(i){suiviSteps[i].done=!suiviSteps[i].done;renderSuiviStepsList();}
+window.removeSuiviStep=function(i){suiviSteps.splice(i,1);renderSuiviStepsList();}
+window.addSuiviStep=function(){
+  const inp=document.getElementById('sm-step-input');const val=inp.value.trim();
+  if(!val)return;suiviSteps.push({label:val,done:false});inp.value='';renderSuiviStepsList();
+}
+
+window.saveSuiviProject=function(){
+  const name=document.getElementById('sm-name').value.trim();
+  if(!name){document.getElementById('sm-name').focus();return;}
+  if(!state.suiviProjects)state.suiviProjects=[];
+  if(!state.nextSuiviProjId)state.nextSuiviProjId=1;
+  const proj={
+    id:currentSuiviProjId||(state.nextSuiviProjId++),
+    name,
+    family:document.getElementById('sm-family').value.trim(),
+    programme:document.getElementById('sm-programme').value.trim(),
+    service:document.getElementById('sm-service').value,
+    desc:document.getElementById('sm-desc').value.trim(),
+    dateStart:document.getElementById('sm-date-start').value,
+    dateEnd:document.getElementById('sm-date-end').value,
+    status:document.getElementById('sm-status').value,
+    priority:document.getElementById('sm-priority').value,
+    progress:parseInt(document.getElementById('sm-progress').value)||0,
+    color:PROJ_COLORS[selectedSuiviColor],
+    members:[...suiviMembersSelected],
+    steps:JSON.parse(JSON.stringify(suiviSteps)),
+  };
+  if(currentSuiviProjId){
+    const idx=state.suiviProjects.findIndex(p=>p.id===currentSuiviProjId);
+    if(idx>=0)state.suiviProjects[idx]=proj;else state.suiviProjects.push(proj);
+  }else{state.suiviProjects.push(proj);}
+  renderSuivi();saveState();closeSuiviModal();
+}
+
+window.deleteSuiviProjectById=function(id){
+  if(!confirm('Supprimer ce projet ?'))return;
+  state.suiviProjects=(state.suiviProjects||[]).filter(p=>p.id!==id);
+  renderSuivi();saveState();
+}
+window.deleteSuiviProject=function(){if(currentSuiviProjId)deleteSuiviProjectById(currentSuiviProjId);closeSuiviModal();}
+
+// ══════════════════════════════════════════
 //  RAPPORT PDF
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 function buildWeekButtons(){
   const wrap=document.getElementById('week-quick-btns');const today=new Date();const cw=isoWeek(today);const year=today.getFullYear();
   const weeks=[];for(let w=cw-3;w<=cw+1;w++){if(w<1||w>53)continue;const mon=mondayOfWeek(year,w);const fri=new Date(mon);fri.setDate(mon.getDate()+4);weeks.push({w,mon:toISO(mon),fri:toISO(fri),label:`S${w} — ${mon.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} au ${fri.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}`});}
@@ -1044,7 +1581,6 @@ window.generateReport=function(){
   const statusFilter=document.getElementById('rp-status-filter').value;
   const incProjects=document.getElementById('rp-inc-projects').checked;
   const statusList=statusFilter==='all'?['todo','prog','done']:statusFilter.split(',');
-
   const tasksFiltered=state.tasks.filter(t=>{
     if(!statusList.includes(t.status))return false;
     if(!dateS&&!dateE)return true;
@@ -1061,193 +1597,38 @@ window.generateReport=function(){
   const weekNum=dateS?isoWeek(new Date(dateS)):'';
   const mName=id=>{const m=memberById(id);return m?m.name:id;};
   const wdCount=(s,e)=>{let c=0,d=new Date(s),l=new Date(e);while(d<=l){const w=d.getDay();if(w!==0&&w!==6)c++;d.setDate(d.getDate()+1);}return c;};
-
   const taskRows=tasks=>tasks.map(t=>{
     const ss=STATUS_STYLES[t.status];const ts=TAG_STYLES[t.tag]||TAG_STYLES['Autre'];
     const dateStr=(t.dateStart||t.dateEnd)?`${fmtDate(t.dateStart)}${t.dateStart&&t.dateEnd?' → ':''}${fmtDate(t.dateEnd)}`:'—';
-    return `<tr>
-      <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top">
-        <div style="font-size:13px;font-weight:600;color:#1C1C1A;margin-bottom:4px">${t.title}</div>
-        ${t.desc?`<div style="font-size:12px;color:#6B6966;margin-bottom:6px;line-height:1.5">${t.desc}</div>`:''}
-        ${t.done&&t.done.length?`<div>${t.done.map(d=>`<div style="font-size:12px;color:#1E6040;display:flex;gap:6px;margin-bottom:3px"><span style="font-weight:700;flex-shrink:0">✓</span>${d}</div>`).join('')}</div>`:''}
-      </td>
-      <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;white-space:nowrap">
-        <div style="font-size:12px;font-weight:600;color:#1C1C1A">${mName(t.member)}</div>
-        <div style="font-size:11px;color:#9A9894;margin-top:2px">${dateStr}</div>
-      </td>
-      <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center">
-        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${ts.bg};color:${ts.color}">${t.tag}</span>
-      </td>
-      <td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center">
-        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${ss.bg};color:${ss.color}">${STATUS_LABELS[t.status]}</span>
-      </td>
-    </tr>`;
+    return `<tr><td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top"><div style="font-size:13px;font-weight:600;color:#1C1C1A;margin-bottom:4px">${t.title}</div>${t.desc?`<div style="font-size:12px;color:#6B6966;margin-bottom:6px;line-height:1.5">${t.desc}</div>`:''}${t.done&&t.done.length?`<div>${t.done.map(d=>`<div style="font-size:12px;color:#1E6040;display:flex;gap:6px;margin-bottom:3px"><span style="font-weight:700;flex-shrink:0">✓</span>${d}</div>`).join('')}</div>`:''}</td><td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;white-space:nowrap"><div style="font-size:12px;font-weight:600;color:#1C1C1A">${mName(t.member)}</div><div style="font-size:11px;color:#9A9894;margin-top:2px">${dateStr}</div></td><td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${ts.bg};color:${ts.color}">${t.tag}</span></td><td style="padding:12px 16px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${ss.bg};color:${ss.color}">${STATUS_LABELS[t.status]}</span></td></tr>`;
   }).join('');
-
   const section=(label,color,tasks)=>tasks.length===0?'':
-    `<div style="margin-top:32px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid ${color}30">
-        <div style="width:12px;height:12px;border-radius:50%;background:${color}"></div>
-        <h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${color};margin:0">${label}</h3>
-        <span style="font-size:12px;color:#9A9894">${tasks.length} tâche${tasks.length>1?'s':''}</span>
-      </div>
-      <table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden">
-        <thead><tr style="background:${color}12">
-          <th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:46%">Tâche</th>
-          <th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Responsable</th>
-          <th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Catégorie</th>
-          <th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Statut</th>
-        </tr></thead>
-        <tbody>${taskRows(tasks)}</tbody>
-      </table>
-    </div>`;
-
-  // Section projets rapport
+    `<div style="margin-top:32px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid ${color}30"><div style="width:12px;height:12px;border-radius:50%;background:${color}"></div><h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${color};margin:0">${label}</h3><span style="font-size:12px;color:#9A9894">${tasks.length} tâche${tasks.length>1?'s':''}</span></div><table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden"><thead><tr style="background:${color}12"><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:46%">Tâche</th><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Responsable</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Catégorie</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;width:18%">Statut</th></tr></thead><tbody>${taskRows(tasks)}</tbody></table></div>`;
   const projSection=()=>{
-    const projs=state.projects||[];if(!projs.length)return '';
+    const projs=(state.suiviProjects||[]);if(!projs.length)return '';
     const PSS={'En cours':{color:'#C9602A',bg:'#FEF0E8'},'Planifié':{color:'#185fa5',bg:'#E6F1FB'},'Terminé':{color:'#1E6040',bg:'#E6F4ED'},'En pause':{color:'#8A8880',bg:'#F2F1EE'}};
     const PRIO={Haute:{color:'#C0392B',bg:'#FCECEA'},Moyenne:{color:'#854f0b',bg:'#FAEEDA'},Basse:{color:'#5f5e5a',bg:'#F1EFE8'}};
-    return `<div style="margin-top:40px;page-break-before:auto">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #534AB730">
-        <div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div>
-        <h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#534AB7;margin:0">Suivi des projets</h3>
-        <span style="font-size:12px;color:#9A9894">${projs.length} projet${projs.length>1?'s':''}</span>
-      </div>
-      <!-- Synthèse projets -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
-        ${[
-          {l:'Total',v:projs.length,c:'#534AB7',bg:'#EEEDFE'},
-          {l:'En cours',v:projs.filter(p=>p.status==='En cours').length,c:'#C9602A',bg:'#FEF0E8'},
-          {l:'Terminés',v:projs.filter(p=>p.status==='Terminé').length,c:'#1E6040',bg:'#E6F4ED'},
-          {l:'Avancement moy.',v:projs.length?Math.round(projs.reduce((s,p)=>s+(p.progress||0),0)/projs.length)+'%':'—',c:'#1C1C1A',bg:'#F7F7F5'},
-        ].map(k=>`<div style="background:${k.bg};border-radius:10px;padding:14px 16px">
-          <div style="font-size:11px;font-weight:700;color:${k.c};text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${k.l}</div>
-          <div style="font-size:26px;font-weight:700;color:${k.c}">${k.v}</div>
-        </div>`).join('')}
-      </div>
-      <!-- Tableau projets -->
-      <table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden">
-        <thead><tr style="background:#534AB712">
-          <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:22%">Projet</th>
-          <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:16%">Client</th>
-          <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:12%">Statut</th>
-          <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Priorité</th>
-          <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:20%">Avancement</th>
-          <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Échéance</th>
-          <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:10%">Équipe</th>
-        </tr></thead>
-        <tbody>
-          ${projs.map(p=>{
-            const ps=PSS[p.status]||PSS['Planifié'];const pr=PRIO[p.priority]||PRIO['Moyenne'];
-            const stepsTotal=(p.steps||[]).length;const stepsDone=(p.steps||[]).filter(s=>s.done).length;
-            const members=(p.members||[]).map(id=>mName(id)).filter(Boolean).join(', ');
-            const color=p.color||'#534AB7';
-            return `<tr>
-              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-                  <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></div>
-                  <span style="font-size:13px;font-weight:600;color:#1C1C1A">${p.name}</span>
-                  ${p.code?`<span style="font-size:10px;font-weight:700;color:${color};background:${color}18;padding:1px 6px;border-radius:10px">${p.code}</span>`:''}
-                </div>
-                ${p.desc?`<div style="font-size:11px;color:#6B6966;line-height:1.4;margin-left:18px">${p.desc.slice(0,80)}${p.desc.length>80?'…':''}</div>`:''}
-                ${stepsTotal?`<div style="font-size:11px;color:#9A9894;margin-top:4px;margin-left:18px">Étapes : ${stepsDone}/${stepsTotal}</div>`:''}
-              </td>
-              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966">${p.client||'—'}</td>
-              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${ps.bg};color:${ps.color}">${p.status}</span></td>
-              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${pr.bg};color:${pr.color}">${p.priority}</span></td>
-              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:middle">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <div style="flex:1;background:#F0EDE8;border-radius:20px;height:7px;overflow:hidden"><div style="height:7px;border-radius:20px;background:${color};width:${p.progress||0}%"></div></div>
-                  <span style="font-size:12px;font-weight:700;color:#1C1C1A;min-width:30px;text-align:right">${p.progress||0}%</span>
-                </div>
-                ${p.budget?`<div style="font-size:11px;color:#9A9894;margin-top:4px">${Number(p.budget).toLocaleString('fr-FR')} €</div>`:''}
-              </td>
-              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;text-align:center;font-size:12px;color:#6B6966">${p.dateEnd?fmtDate(p.dateEnd):'—'}</td>
-              <td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top;font-size:12px;color:#6B6966">${members||'—'}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>`;
+    return `<div style="margin-top:40px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #534AB730"><div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div><h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#534AB7;margin:0">Suivi des projets</h3><span style="font-size:12px;color:#9A9894">${projs.length} projet${projs.length>1?'s':''}</span></div>
+    <table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden"><thead><tr style="background:#534AB712"><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em">Projet</th><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em">Service</th><th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em">Statut</th><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em">Avancement</th><th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em">Échéance</th></tr></thead><tbody>
+    ${projs.map(p=>{const ps=PSS[p.status]||PSS['Planifié'];const color=p.color||'#534AB7';return `<tr><td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;vertical-align:top"><div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></div><span style="font-size:13px;font-weight:600">${p.name}</span>${p.programme?`<span style="font-size:10px;font-weight:700;color:${color};background:${color}18;padding:1px 6px;border-radius:10px">${p.programme}</span>`:''}</div>${p.family?`<div style="font-size:11px;color:#534AB7;margin-left:18px;margin-top:2px">📂 ${p.family}</div>`:''}</td><td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;font-size:12px;color:#6B6966">${p.service||'—'}</td><td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;text-align:center"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${ps.bg};color:${ps.color}">${p.status}</span></td><td style="padding:12px 14px;border-bottom:1px solid #F0EDE8"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;background:#F0EDE8;border-radius:20px;height:6px;overflow:hidden"><div style="height:6px;border-radius:20px;background:${color};width:${p.progress||0}%"></div></div><span style="font-size:12px;font-weight:700">${p.progress||0}%</span></div></td><td style="padding:12px 14px;border-bottom:1px solid #F0EDE8;text-align:center;font-size:12px;color:#6B6966">${p.dateEnd?fmtDate(p.dateEnd):'—'}</td></tr>`;}).join('')}
+    </tbody></table></div>`;
   };
-
-  // Section absences
   const absSection=()=>{
-    const absAll=(state.absences||[]).filter(a=>{
-      if(!dateS&&!dateE)return true;
-      if(dateS&&a.dateEnd<dateS)return false;if(dateE&&a.dateStart>dateE)return false;return true;
-    }).sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
+    const absAll=(state.absences||[]).filter(a=>{if(!dateS&&!dateE)return true;if(dateS&&a.dateEnd<dateS)return false;if(dateE&&a.dateStart>dateE)return false;return true;}).sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
     if(!absAll.length)return '';
     const ABS=ABS_TYPES;
-    const recap=Object.entries(ABS).map(([key,t])=>{const items=absAll.filter(a=>a.type===key);if(!items.length)return '';const total=items.reduce((s,a)=>s+wdCount(a.dateStart,a.dateEnd),0);return `<div style="background:${t.bg};border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">${t.icon}</span><div><div style="font-size:11px;font-weight:700;color:${t.color};text-transform:uppercase;letter-spacing:.05em">${t.label}</div><div style="font-size:20px;font-weight:700;color:${t.color}">${total} <span style="font-size:12px;font-weight:400">jour${total>1?'s':''}</span></div></div></div>`;}).join('');
-    const rows=absAll.map(a=>{const m=memberById(a.member);const t=ABS[a.type]||ABS['Autre'];const days=wdCount(a.dateStart,a.dateEnd);const period=a.dateStart===a.dateEnd?fmtDate(a.dateStart):`${fmtDate(a.dateStart)} → ${fmtDate(a.dateEnd)}`;return `<tr><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle"><div style="font-size:13px;font-weight:600;color:#1C1C1A">${m?m.name:a.member}</div>${m&&m.role?`<div style="font-size:11px;color:#9A9894">${m.role}</div>`:''}</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;text-align:center"><span style="font-size:18px">${t.icon}</span><div style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${t.bg};color:${t.color};display:inline-block;margin-top:4px">${t.label}</div></td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;text-align:center;font-size:13px;font-weight:500;color:#1C1C1A">${period}</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;text-align:center"><div style="font-size:22px;font-weight:700;color:#1C1C1A">${days}</div><div style="font-size:11px;color:#9A9894">j. ouvré${days>1?'s':''}</div></td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;vertical-align:middle;font-size:12px;color:#6B6966;font-style:italic">${a.note||'—'}</td></tr>`;}).join('');
-    return `<div style="margin-top:32px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #534AB720"><div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div><h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#534AB7;margin:0">Planning — Absences</h3><span style="font-size:12px;color:#9A9894">${absAll.length} absence${absAll.length>1?'s':''}</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">${recap}</div><table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden"><thead><tr style="background:#534AB712"><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:22%">Collaborateur</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:18%">Type</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:25%">Période</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:15%">Durée</th><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;width:20%">Note</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    const recap=Object.entries(ABS).map(([key,t])=>{const items=absAll.filter(a=>a.type===key);if(!items.length)return '';const total=items.reduce((s,a)=>s+wdCount(a.dateStart,a.dateEnd),0);return `<div style="background:${t.bg};border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">${t.icon}</span><div><div style="font-size:11px;font-weight:700;color:${t.color};text-transform:uppercase">${t.label}</div><div style="font-size:20px;font-weight:700;color:${t.color}">${total} <span style="font-size:12px;font-weight:400">j</span></div></div></div>`;}).join('');
+    const rows=absAll.map(a=>{const m=memberById(a.member);const t=ABS[a.type]||ABS['Autre'];const days=wdCount(a.dateStart,a.dateEnd);return `<tr><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8">${m?m.name:a.member}</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;text-align:center"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${t.bg};color:${t.color}">${t.label}</span></td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;text-align:center">${a.dateStart===a.dateEnd?fmtDate(a.dateStart):`${fmtDate(a.dateStart)} → ${fmtDate(a.dateEnd)}`}</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;text-align:center;font-weight:700">${days} j</td><td style="padding:11px 16px;border-bottom:1px solid #F0EDE8;font-style:italic;color:#6B6966">${a.note||'—'}</td></tr>`;}).join('');
+    return `<div style="margin-top:32px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #534AB720"><div style="width:12px;height:12px;border-radius:50%;background:#534AB7"></div><h3 style="font-size:12px;font-weight:700;text-transform:uppercase;color:#534AB7;margin:0">Planning — Absences</h3></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">${recap}</div><table style="width:100%;border-collapse:collapse;border:1px solid #F0EDE8;border-radius:10px;overflow:hidden"><thead><tr style="background:#534AB712"><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase">Collaborateur</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase">Type</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase">Période</th><th style="padding:9px 16px;text-align:center;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase">Durée</th><th style="padding:9px 16px;text-align:left;font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase">Note</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   };
-
-  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>${title} — CHAMORIN</title>
-<style>
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.no-print{display:none!important;}@page{margin:15mm 12mm;size:A4;}}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F7F7F5;color:#1C1C1A;font-size:14px;}
-.page{max-width:860px;margin:0 auto;background:#fff;min-height:100vh;}
-.inner{padding:48px 52px 60px;}
-</style></head><body><div class="page">
-<div style="height:6px;background:linear-gradient(90deg,#F4874B,#2E8B57)"></div>
-<div class="inner">
-<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;padding-bottom:24px;border-bottom:1.5px solid #F0EDE8;gap:20px;flex-wrap:wrap">
-  <div>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-      <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">CH</div>
-      <div><div style="font-size:20px;font-weight:700;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div><div style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Dashboard équipe</div></div>
-    </div>
-    <div style="font-size:24px;font-weight:700;color:#1C1C1A;margin-bottom:6px">${title}</div>
-    ${weekNum?`<div style="display:inline-block;background:#FEF0E8;color:#C9602A;font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px">Semaine ${weekNum}</div>`:''}
-    <div style="font-size:13px;color:#6B6966;margin-top:6px">${periodLabel}</div>
-  </div>
-  <div style="text-align:right;font-size:13px;color:#6B6966;line-height:2">
-    <div><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Destinataire</span><br/><strong style="color:#1C1C1A;font-size:14px">${to}</strong></div>
-    <div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Préparé par</span><br/><strong style="color:#1C1C1A;font-size:14px">${from}</strong></div>
-    <div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Date</span><br/><strong style="color:#1C1C1A">${today}</strong></div>
-  </div>
-</div>
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
-  <div style="background:#E6F4ED;border-radius:12px;padding:18px 20px;border-left:4px solid #2E8B57"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1E6040;margin-bottom:6px">Réalisées</div><div style="font-size:32px;font-weight:700;color:#1E6040">${done.length}</div><div style="font-size:12px;color:#2E8B57;margin-top:4px">sur cette période</div></div>
-  <div style="background:#FEF0E8;border-radius:12px;padding:18px 20px;border-left:4px solid #F4874B"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:6px">En cours</div><div style="font-size:32px;font-weight:700;color:#C9602A">${prog.length}</div><div style="font-size:12px;color:#F4874B;margin-top:4px">à finaliser</div></div>
-  <div style="background:#F7F7F5;border-radius:12px;padding:18px 20px;border-left:4px solid #9A9894"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5A5956;margin-bottom:6px">Avancement</div><div style="font-size:32px;font-weight:700;color:#1C1C1A">${pctGlobal}%</div><div style="font-size:12px;color:#9A9894;margin-top:4px">${totalDone}/${totalAll} tâches</div></div>
-</div>
-<div style="margin-bottom:32px">
-  <div style="display:flex;justify-content:space-between;font-size:11px;color:#9A9894;margin-bottom:6px"><span>Progression globale</span><span style="font-weight:700;color:#1C1C1A">${pctGlobal}%</span></div>
-  <div style="background:#F0EDE8;border-radius:20px;height:10px;overflow:hidden"><div style="height:10px;border-radius:20px;background:linear-gradient(90deg,#F4874B,#2E8B57);width:${pctGlobal}%"></div></div>
-</div>
-${comment?`<div style="background:#FFFCF8;border:1px solid #F4874B30;border-left:4px solid #F4874B;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:28px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:8px">Note</div><div style="font-size:13px;color:#3A3936;line-height:1.7">${comment}</div></div>`:''}
-${section('Réalisations','#2E8B57',done)}
-${section('En cours','#C9602A',prog)}
-${section('À venir','#8A8880',todo)}
-${absSection()}
-${incProjects?projSection():''}
-<div style="margin-top:32px;padding-top:24px;border-top:1.5px solid #F0EDE8">
-  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9A9894;margin-bottom:14px">Équipe</div>
-  <div style="display:flex;gap:12px;flex-wrap:wrap">
-    ${state.members.map(m=>{const p=getPalette(m);const mT=tasksFiltered.filter(t=>t.member===m.id);return `<div style="display:flex;align-items:center;gap:10px;background:#F7F7F5;border-radius:10px;padding:10px 14px"><div style="width:36px;height:36px;border-radius:50%;background:${p.bg};color:${p.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${initials(m.name)}</div><div><div style="font-size:13px;font-weight:600;color:#1C1C1A">${m.name}</div><div style="font-size:11px;color:#9A9894">${m.role||'Collaborateur'} &bull; ${mT.length} tâche${mT.length>1?'s':''}</div></div></div>`;}).join('')}
-  </div>
-</div>
-<div style="margin-top:48px;padding-top:16px;border-top:1px solid #F0EDE8;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-  <div style="display:flex;align-items:center;gap:8px"><div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff">CH</div><span style="font-size:11px;color:#C0BDB8">CHAMORIN &mdash; Document confidentiel</span></div>
-  <span style="font-size:11px;color:#C0BDB8">Généré le ${today}</span>
-</div>
-<div class="no-print" style="text-align:center;margin-top:36px">
-  <button onclick="window.print()" style="background:linear-gradient(135deg,#F4874B,#C9602A);color:#fff;border:none;border-radius:12px;padding:14px 40px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🖨 Imprimer / Enregistrer en PDF</button>
-  <div style="font-size:12px;color:#9A9894;margin-top:10px">Choisir "Enregistrer en PDF" dans la boîte d'impression</div>
-</div>
-</div></div></body></html>`;
-
+  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>${title} — CHAMORIN</title><style>@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.no-print{display:none!important;}@page{margin:15mm 12mm;size:A4;}}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F7F7F5;color:#1C1C1A;font-size:14px;}.page{max-width:860px;margin:0 auto;background:#fff;min-height:100vh;}.inner{padding:48px 52px 60px;}</style></head><body><div class="page"><div style="height:6px;background:linear-gradient(90deg,#F4874B,#2E8B57)"></div><div class="inner"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;padding-bottom:24px;border-bottom:1.5px solid #F0EDE8;gap:20px;flex-wrap:wrap"><div><div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">CH</div><div><div style="font-size:20px;font-weight:700;color:#1C1C1A">CHAMO<span style="color:#F4874B">RIN</span></div><div style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.06em">Gestionnaire de tâches</div></div></div><div style="font-size:24px;font-weight:700;color:#1C1C1A;margin-bottom:6px">${title}</div>${weekNum?`<div style="display:inline-block;background:#FEF0E8;color:#C9602A;font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px">Semaine ${weekNum}</div>`:''}<div style="font-size:13px;color:#6B6966;margin-top:6px">${periodLabel}</div></div><div style="text-align:right;font-size:13px;color:#6B6966;line-height:2"><div><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Destinataire</span><br/><strong style="color:#1C1C1A;font-size:14px">${to}</strong></div><div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Préparé par</span><br/><strong style="color:#1C1C1A;font-size:14px">${from}</strong></div><div style="margin-top:8px"><span style="font-size:11px;color:#9A9894;text-transform:uppercase;letter-spacing:.05em">Date</span><br/><strong style="color:#1C1C1A">${today}</strong></div></div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px"><div style="background:#E6F4ED;border-radius:12px;padding:18px 20px;border-left:4px solid #2E8B57"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1E6040;margin-bottom:6px">Réalisées</div><div style="font-size:32px;font-weight:700;color:#1E6040">${done.length}</div></div><div style="background:#FEF0E8;border-radius:12px;padding:18px 20px;border-left:4px solid #F4874B"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:6px">En cours</div><div style="font-size:32px;font-weight:700;color:#C9602A">${prog.length}</div></div><div style="background:#F7F7F5;border-radius:12px;padding:18px 20px;border-left:4px solid #9A9894"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5A5956;margin-bottom:6px">Avancement</div><div style="font-size:32px;font-weight:700;color:#1C1C1A">${pctGlobal}%</div></div></div><div style="margin-bottom:32px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#9A9894;margin-bottom:6px"><span>Progression globale</span><span style="font-weight:700;color:#1C1C1A">${pctGlobal}%</span></div><div style="background:#F0EDE8;border-radius:20px;height:10px;overflow:hidden"><div style="height:10px;border-radius:20px;background:linear-gradient(90deg,#F4874B,#2E8B57);width:${pctGlobal}%"></div></div></div>${comment?`<div style="background:#FFFCF8;border:1px solid #F4874B30;border-left:4px solid #F4874B;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:28px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C9602A;margin-bottom:8px">Note</div><div style="font-size:13px;color:#3A3936;line-height:1.7">${comment}</div></div>`:''} ${section('Réalisations','#2E8B57',done)} ${section('En cours','#C9602A',prog)} ${section('À venir','#8A8880',todo)} ${absSection()} ${incProjects?projSection():''}<div style="margin-top:32px;padding-top:24px;border-top:1.5px solid #F0EDE8"><div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9A9894;margin-bottom:14px">Équipe</div><div style="display:flex;gap:12px;flex-wrap:wrap">${state.members.map(m=>{const p=getPalette(m);const mT=tasksFiltered.filter(t=>t.member===m.id);return `<div style="display:flex;align-items:center;gap:10px;background:#F7F7F5;border-radius:10px;padding:10px 14px"><div style="width:36px;height:36px;border-radius:50%;background:${p.bg};color:${p.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${initials(m.name)}</div><div><div style="font-size:13px;font-weight:600;color:#1C1C1A">${m.name}</div><div style="font-size:11px;color:#9A9894">${m.role||'Collaborateur'} · ${mT.length} tâche${mT.length>1?'s':''}</div></div></div>`;}).join('')}</div></div><div style="margin-top:48px;padding-top:16px;border-top:1px solid #F0EDE8;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div style="display:flex;align-items:center;gap:8px"><div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#F4874B,#2E8B57);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff">CH</div><span style="font-size:11px;color:#C0BDB8">CHAMORIN — Document confidentiel</span></div><span style="font-size:11px;color:#C0BDB8">Généré le ${today}</span></div><div class="no-print" style="text-align:center;margin-top:36px"><button onclick="window.print()" style="background:linear-gradient(135deg,#F4874B,#C9602A);color:#fff;border:none;border-radius:12px;padding:14px 40px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🖨 Imprimer / Enregistrer en PDF</button><div style="font-size:12px;color:#9A9894;margin-top:10px">Choisir "Enregistrer en PDF" dans la boîte d'impression</div></div></div></div></body></html>`;
   window.open(URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),'_blank');
   closeReportModal();
 }
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  COLLABORATEURS
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 function renderColorOpts(){document.getElementById('color-opts').innerHTML=PALETTES.map((p,i)=>`<div class="color-opt${i===selectedPalette?' selected':''}" style="background:${p.color}" onclick="selectPalette(${i})"></div>`).join('');}
 window.selectPalette=function(i){selectedPalette=i;renderColorOpts();}
 function renderMemberList(){
@@ -1269,15 +1650,17 @@ window.deleteMember=function(id){
   state.members=state.members.filter(m=>m.id!==id);renderMemberList();renderMemberSelects();renderKanban();saveState();
 }
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 //  INIT
-// ════════════════════════════════════════════
+// ══════════════════════════════════════════
 document.getElementById('today-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 document.getElementById('new-task-title').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
 document.getElementById('new-event-title').addEventListener('keydown',e=>{if(e.key==='Enter')addEvent();});
 document.getElementById('m-name').addEventListener('keydown',e=>{if(e.key==='Enter')addMember();});
 document.getElementById('tm-done-input').addEventListener('keydown',e=>{if(e.key==='Enter')addDoneItem();});
-document.getElementById('pm-step-input').addEventListener('keydown',e=>{if(e.key==='Enter')addStep();});
+document.getElementById('plan-event-title').addEventListener('keydown',e=>{if(e.key==='Enter')addPlanningEvent();});
+document.getElementById('sm-step-input').addEventListener('keydown',e=>{if(e.key==='Enter')addSuiviStep();});
+document.getElementById('sm-name').addEventListener('keydown',e=>{if(e.key==='Enter')saveSuiviProject();});
 
 initFirebase();
 </script>
