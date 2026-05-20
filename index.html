@@ -468,6 +468,50 @@
     .proj-color-opt { width:26px; height:26px; border-radius:50%; cursor:pointer; border:2.5px solid transparent; transition:border-color .15s; }
     .proj-color-opt.selected { border-color:var(--text); }
 
+
+    /* ── Synthèse layout ── */
+    .synthese-layout { display:grid; grid-template-columns:1fr 360px; gap:14px; }
+    @media(max-width:1000px){ .synthese-layout { grid-template-columns:1fr; } }
+    .synthese-tasks-card { overflow:hidden; }
+
+    /* Synthèse tâche inline */
+    .syn-task { display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:0.5px solid var(--border); }
+    .syn-task:last-child { border-bottom:none; }
+    .syn-task-check { width:16px; height:16px; border-radius:4px; border:1.5px solid var(--border2); flex-shrink:0; margin-top:2px; }
+    .syn-task-body { flex:1; min-width:0; }
+    .syn-task-title { font-size:13px; font-weight:500; color:var(--text); cursor:pointer; line-height:1.4; }
+    .syn-task-title:hover { color:var(--orange); }
+    .syn-task-meta { display:flex; align-items:center; gap:6px; margin-top:4px; flex-wrap:wrap; }
+    .syn-empty { font-size:13px; color:var(--text3); padding:16px 0; text-align:center; }
+
+    /* Absences */
+    .abs-top-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media(max-width:700px){ .abs-top-grid { grid-template-columns:1fr; } }
+
+    /* Planning annuel */
+    .annual-grid { display:grid; grid-template-columns:60px repeat(12,1fr); gap:0; font-size:11px; }
+    .annual-month-hdr { text-align:center; font-weight:700; color:var(--text2); padding:6px 2px; font-size:10px; text-transform:uppercase; letter-spacing:.04em; }
+    .annual-member-lbl { display:flex; align-items:center; padding:3px 6px 3px 0; font-size:12px; font-weight:600; color:var(--text2); border-bottom:0.5px solid var(--border); }
+    .annual-month-cell { border-bottom:0.5px solid var(--border); border-left:0.5px solid var(--border); position:relative; height:28px; }
+    .annual-absence-bar {
+      position:absolute; top:4px; bottom:4px; border-radius:3px;
+      cursor:pointer; transition:opacity .15s; opacity:.9;
+    }
+    .annual-absence-bar:hover { opacity:1; transform:scaleY(1.15); }
+    .annual-today-line { position:absolute; top:0; bottom:0; width:2px; background:var(--orange); opacity:.7; border-radius:1px; pointer-events:none; }
+    .annual-corner { border-bottom:0.5px solid var(--border); }
+
+    /* Barometre absences */
+    .baro-member-block { padding:10px 0; border-bottom:0.5px solid var(--border); }
+    .baro-member-block:last-child { border-bottom:none; }
+    .baro-member-name { font-size:13px; font-weight:600; color:var(--text); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+    .baro-row { display:flex; align-items:center; gap:10px; margin-bottom:5px; }
+    .baro-type-lbl { font-size:11px; font-weight:600; width:28px; }
+    .baro-track { flex:1; height:8px; border-radius:4px; overflow:hidden; }
+    .baro-fill { height:100%; border-radius:4px; transition:width .5s; }
+    .baro-text { font-size:11px; font-weight:700; min-width:52px; text-align:right; color:var(--text2); }
+    .baro-total { font-size:11px; color:var(--text3); margin-top:4px; }
+
     .app-footer { text-align:center; font-size:11px; color:var(--text3); padding:2rem 0 1rem; }
     .app-footer strong { color:var(--orange); }
     /* ══════════════════════════════════════
@@ -583,21 +627,60 @@
     </div>
   </div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('tab-dashboard',this)">📊 Dashboard</button>
+    <button class="nav-tab active" onclick="switchTab('tab-synthese',this)">🏠 Synthèse</button>
+    <button class="nav-tab" onclick="switchTab('tab-taches',this)">✅ Tâches & Statuts</button>
     <button class="nav-tab" onclick="switchTab('tab-planning',this)">📅 Planning</button>
+    <button class="nav-tab" onclick="switchTab('tab-absences',this)">🏖 Planning Absences</button>
     <button class="nav-tab" onclick="switchTab('tab-suivi',this)">🚀 Suivi Projets</button>
   </div>
 </div>
 
 <div class="app">
 
-  <!-- ════ TAB : DASHBOARD ════ -->
-  <div id="tab-dashboard" class="tab-panel active">
+  <!-- ════ TAB : SYNTHÈSE ════ -->
+  <div id="tab-synthese" class="tab-panel active">
+    <!-- Métriques rapides -->
     <div class="grid3-metrics" style="margin-bottom:16px">
       <div class="metric"><div class="lbl">Tâches terminées</div><div class="val" id="m-done">0</div></div>
       <div class="metric"><div class="lbl">En cours</div><div class="val" id="m-prog">0</div></div>
       <div class="metric"><div class="lbl">Avancement</div><div class="val" id="m-pct">0%</div></div>
     </div>
+
+    <!-- Tâches EN COURS + Agenda côte à côte -->
+    <div class="synthese-layout">
+
+      <!-- Tâches en cours -->
+      <div class="card synthese-tasks-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div class="section-title" style="margin-bottom:0">⚡ Tâches en cours</div>
+          <button class="ghost" style="font-size:11px;padding:4px 10px" onclick="switchTabByName('tab-taches')">Toutes les tâches →</button>
+        </div>
+        <div id="synthese-prog-list"></div>
+        <div style="margin-top:16px;padding-top:12px;border-top:0.5px solid var(--border)">
+          <div class="section-title" style="margin-bottom:10px">📋 À faire</div>
+          <div id="synthese-todo-list"></div>
+        </div>
+      </div>
+
+      <!-- Agenda du jour -->
+      <div class="card synthese-agenda-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div class="section-title" style="margin-bottom:0">📅 Agenda du jour</div>
+          <button class="ghost" style="font-size:11px;padding:4px 8px" onclick="switchTabByName('tab-planning')">Voir le calendrier →</button>
+        </div>
+        <div id="agenda-list"></div>
+        <div class="agenda-add" style="margin-top:12px">
+          <input type="time" id="new-event-time" value="09:00"/>
+          <input type="text" id="new-event-title" placeholder="Ajouter un événement..."/>
+          <button class="primary" onclick="addEvent()">+</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════ TAB : TÂCHES & STATUTS ════ -->
+  <div id="tab-taches" class="tab-panel">
     <div class="card" style="margin-bottom:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div class="section-title" style="margin-bottom:0">Tâches &amp; statuts</div>
@@ -639,43 +722,10 @@
         <button class="ghost" id="add-desc-btn" style="font-size:11px;padding:4px 10px;color:var(--text3)" onclick="toggleDescRow(true)">+ Ajouter une description</button>
       </div>
     </div>
-    <div class="grid3">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div class="section-title" style="margin-bottom:0">Agenda du jour</div>
-            <button class="ghost" style="font-size:11px;padding:4px 8px" onclick="switchTabByName('tab-planning')">Voir le calendrier</button>
-        </div>
-        <div id="agenda-list"></div>
-        <div class="agenda-add">
-          <input type="time" id="new-event-time" value="09:00"/>
-          <input type="text" id="new-event-title" placeholder="Événement..."/>
-          <button class="primary" onclick="addEvent()">+</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="section-title">KPIs</div>
-        <div id="kpi-list"></div>
-      </div>
-      <div class="card">
-        <div class="section-title">Planning — Absences</div>
-        <div id="absence-list"></div>
-        <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <select id="new-abs-member" style="flex:1;min-width:80px"></select>
-            <select id="new-abs-type" style="flex:1;min-width:80px">
-              <option value="CP">🏖 Congé payé</option><option value="RTT">⏱ RTT</option>
-              <option value="Maladie">🤒 Maladie</option><option value="Autre">📋 Autre</option>
-            </select>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <input type="date" id="new-abs-start" style="flex:1;min-width:100px"/>
-            <span style="font-size:12px;color:var(--text3)">→</span>
-            <input type="date" id="new-abs-end" style="flex:1;min-width:100px"/>
-          </div>
-          <input id="new-abs-note" placeholder="Note (optionnel)..." style="width:100%"/>
-          <button class="green" onclick="addAbsence()" style="width:100%">+ Ajouter une absence</button>
-        </div>
-      </div>
+    <!-- KPIs -->
+    <div class="card">
+      <div class="section-title">KPIs Tâches</div>
+      <div id="kpi-list"></div>
     </div>
   </div>
 
@@ -720,6 +770,64 @@
             </div>
         </div>
     </div>
+  </div>
+
+  <!-- ════ TAB : PLANNING ABSENCES ════ -->
+  <div id="tab-absences" class="tab-panel">
+
+    <!-- Baromètre congés en haut -->
+    <div class="abs-top-grid">
+      <div class="card">
+        <div class="section-title">🧭 Baromètre Congés</div>
+        <div id="barometre-list"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">➕ Déclarer une absence</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="new-abs-member" style="flex:1;min-width:80px"></select>
+            <select id="new-abs-type" style="flex:1;min-width:80px">
+              <option value="CP">🏖 Congé payé</option><option value="RTT">⏱ RTT</option>
+              <option value="Maladie">🤒 Maladie</option><option value="Autre">📋 Autre</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input type="date" id="new-abs-start" style="flex:1;min-width:100px"/>
+            <span style="font-size:12px;color:var(--text3)">→</span>
+            <input type="date" id="new-abs-end" style="flex:1;min-width:100px"/>
+          </div>
+          <input id="new-abs-note" placeholder="Note (optionnel)..." style="width:100%"/>
+          <button class="green" onclick="addAbsence()" style="width:100%">+ Ajouter une absence</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Planning annuel visuel -->
+    <div class="card" style="margin-top:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="section-title" style="margin-bottom:0">📆 Planning annuel des absences</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="cal-nav-btn" onclick="changeAbsYear(-1)">‹</button>
+          <span id="abs-year-label" style="font-size:14px;font-weight:700;color:var(--text)">2026</span>
+          <button class="cal-nav-btn" onclick="changeAbsYear(1)">›</button>
+        </div>
+      </div>
+      <!-- Légende -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:12px;height:12px;border-radius:3px;background:#185fa5"></div>Congé payé</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:12px;height:12px;border-radius:3px;background:#534AB7"></div>RTT</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:12px;height:12px;border-radius:3px;background:#993356"></div>Maladie</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:12px;height:12px;border-radius:3px;background:#7A5C3A"></div>Autre</div>
+      </div>
+      <div id="abs-annual-calendar" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- Liste des absences -->
+    <div class="card" style="margin-top:14px">
+      <div class="section-title">📋 Liste des absences</div>
+      <div id="absence-list"></div>
+    </div>
+
   </div>
 
   <!-- ════ TAB : SUIVI PROJETS ════ -->
@@ -1097,23 +1205,35 @@ window.switchTab=function(id, btn){
   if(btn) btn.classList.add('active');
   if(id==='tab-planning'){renderPlanning();}
   if(id==='tab-suivi'){renderSuivi();}
+  if(id==='tab-synthese'){renderSynthese();}
+  if(id==='tab-absences'){renderAbsencesTab();}
 }
 window.switchTabByName=function(id){
-  const tabs=document.querySelectorAll('.nav-tab');
   const panels=document.querySelectorAll('.tab-panel');
+  const tabs=document.querySelectorAll('.nav-tab');
   const panel=document.getElementById(id);
   if(!panel)return;
   panels.forEach(p=>p.classList.remove('active'));
   tabs.forEach(t=>t.classList.remove('active'));
   panel.classList.add('active');
+  // Activer le bon bouton nav
+  document.querySelectorAll('.nav-tab').forEach(t=>{
+    const onclick=t.getAttribute('onclick')||'';
+    if(onclick.includes("'"+id+"'"))t.classList.add('active');
+  });
   if(id==='tab-planning'){renderPlanning();}
   if(id==='tab-suivi'){renderSuivi();}
+  if(id==='tab-synthese'){renderSynthese();}
+  if(id==='tab-absences'){renderAbsencesTab();}
 }
 
 // ── Render all ──────────────────────────────
 function renderAll(){
   renderMemberSelects();renderAbsMemberSelect();
   renderKanban();renderAgenda();renderAbsences();
+  renderSynthese();
+  // Refresh absences tab if visible
+  if(document.getElementById('tab-absences')?.classList.contains('active'))renderAbsencesTab();
 }
 
 function renderMemberSelects(){
@@ -1211,13 +1331,8 @@ function updateMetrics(){
   document.getElementById('m-prog').textContent=prog;
   document.getElementById('m-pct').textContent=pct+'%';
   const n=state.tasks.length||1;
-  const totalDaysTaken=(state.absences||[]).reduce((acc,abs)=>acc+countWorkDays(abs.dateStart,abs.dateEnd),0);
-  const rttTaken=(state.absences||[]).filter(a=>a.type==='RTT').reduce((acc,cur)=>acc+countWorkDays(cur.dateStart,cur.dateEnd),0);
-  const cpTaken=(state.absences||[]).filter(a=>a.type==='CP').reduce((acc,cur)=>acc+countWorkDays(cur.dateStart,cur.dateEnd),0);
-  const rttTotal=12,cpTotal=25;
-  const rttPct=Math.min(100,Math.round((rttTaken/rttTotal)*100));
-  const cpPct=Math.min(100,Math.round((cpTaken/cpTotal)*100));
-  document.getElementById('kpi-list').innerHTML=[
+  const el=document.getElementById('kpi-list');
+  if(el)el.innerHTML=[
     {label:'Terminées',val:done,max:n,color:'var(--green)'},
     {label:'En cours',val:prog,max:n,color:'var(--orange)'},
     {label:'À faire',val:state.tasks.filter(t=>t.status==='todo').length,max:n,color:'var(--text3)'},
@@ -1226,13 +1341,177 @@ function updateMetrics(){
     <span class="kpi-label">${k.label}</span>
     <div class="kpi-bar-bg"><div class="kpi-bar" style="width:${Math.round(k.val/k.max*100)}%;background:${k.color}"></div></div>
     <span class="kpi-val">${k.val}${k.suffix||''}</span>
-  </div>`).join('')+`
-  <div class="barometer-section">
-    <div class="counter-days"><div class="counter-val">${totalDaysTaken}</div><div class="counter-lbl">Jours posés au total</div></div>
-    <div class="barometer-title" style="margin-top:12px">Baromètre Congés</div>
-    <div class="barometer-row"><div class="barometer-label">RTT</div><div class="barometer-track" style="background:#EEEDFE"><div class="barometer-fill" style="width:${rttPct}%;background:#534AB7"></div></div><div class="barometer-text">${rttTaken}/${rttTotal}</div></div>
-    <div class="barometer-row"><div class="barometer-label">CP</div><div class="barometer-track" style="background:#E6F1FB"><div class="barometer-fill" style="width:${cpPct}%;background:#185fa5"></div></div><div class="barometer-text">${cpTaken}/${cpTotal}</div></div>
-  </div>`;
+  </div>`).join('');
+}
+
+
+// ══════════════════════════════════════════
+//  SYNTHÈSE
+// ══════════════════════════════════════════
+window.renderSynthese=function(){
+  // Tâches en cours
+  const prog=state.tasks.filter(t=>t.status==='prog');
+  const todo=state.tasks.filter(t=>t.status==='todo');
+  const progEl=document.getElementById('synthese-prog-list');
+  const todoEl=document.getElementById('synthese-todo-list');
+  if(!progEl||!todoEl)return;
+
+  if(!prog.length){
+    progEl.innerHTML=`<div class="syn-empty">Aucune tâche en cours 🎉</div>`;
+  } else {
+    progEl.innerHTML=prog.map(t=>{
+      const m=memberById(t.member);const p=m?getPalette(m):PALETTES[0];const ds=dateStatus(t);
+      return `<div class="syn-task">
+        <div class="syn-task-check" style="background:var(--prog-bg);border-color:var(--orange)"></div>
+        <div class="syn-task-body">
+          <div class="syn-task-title" onclick="openTaskModal(${t.id})">${t.title}</div>
+          ${t.desc?`<div style="font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">${t.desc}</div>`:''}
+          <div class="syn-task-meta">
+            <span class="avatar" style="width:20px;height:20px;font-size:8px;background:${p.bg};color:${p.color}">${initials(m?m.name:t.member)}</span>
+            <span class="tag" style="${tagStyle(t.tag)}">${t.tag}</span>
+            ${t.dateEnd?`<span style="font-size:11px;color:${ds==='overdue'?'var(--red)':ds==='soon'?'var(--orange-dark)':'var(--text3)'}">${ds==='overdue'?'⚠ ':ds==='soon'?'⏰ ':'→ '}${fmtDate(t.dateEnd)}</span>`:''}
+          </div>
+        </div>
+        <button class="task-del" onclick="cycleTask(${t.id})" title="Marquer terminé" style="opacity:1;color:var(--green);font-size:14px">✓</button>
+      </div>`;
+    }).join('');
+  }
+
+  if(!todo.length){
+    todoEl.innerHTML=`<div class="syn-empty">Aucune tâche à faire</div>`;
+  } else {
+    const shown=todo.slice(0,5);
+    todoEl.innerHTML=shown.map(t=>{
+      const m=memberById(t.member);const p=m?getPalette(m):PALETTES[0];
+      return `<div class="syn-task">
+        <div class="syn-task-check"></div>
+        <div class="syn-task-body">
+          <div class="syn-task-title" onclick="openTaskModal(${t.id})">${t.title}</div>
+          <div class="syn-task-meta">
+            <span class="avatar" style="width:20px;height:20px;font-size:8px;background:${p.bg};color:${p.color}">${initials(m?m.name:t.member)}</span>
+            <span class="tag" style="${tagStyle(t.tag)}">${t.tag}</span>
+          </div>
+        </div>
+        <button class="cycle-btn" onclick="cycleTask(${t.id})" style="font-size:11px">→</button>
+      </div>`;
+    }).join('');
+    if(todo.length>5) todoEl.innerHTML+=`<div style="text-align:center;margin-top:8px"><button class="ghost" style="font-size:12px" onclick="switchTabByName('tab-taches')">Voir les ${todo.length-5} autres →</button></div>`;
+  }
+}
+
+
+// ══════════════════════════════════════════
+//  ONGLET PLANNING ABSENCES
+// ══════════════════════════════════════════
+let absYear = new Date().getFullYear();
+window.changeAbsYear=function(d){absYear+=d;document.getElementById('abs-year-label').textContent=absYear;renderAnnualCalendar();renderBarometre();}
+
+window.renderAbsencesTab=function(){
+  renderBarometre();
+  renderAnnualCalendar();
+  renderAbsences(); // La liste
+}
+
+function renderBarometre(){
+  const el=document.getElementById('barometre-list');if(!el)return;
+  const abs=state.absences||[];
+  const ABS_COLORS={CP:{color:'#185fa5',bg:'#E6F1FB',total:25},RTT:{color:'#534AB7',bg:'#EEEDFE',total:12},Maladie:{color:'#993356',bg:'#FBEAF0',total:null},Autre:{color:'#7A5C3A',bg:'#F5EDE3',total:null}};
+
+  if(!state.members.length){el.innerHTML='<div style="color:var(--text3);font-size:13px">Aucun collaborateur</div>';return;}
+
+  el.innerHTML=state.members.map(m=>{
+    const mAbs=abs.filter(a=>a.member===m.id);
+    const rttDays=mAbs.filter(a=>a.type==='RTT').reduce((s,a)=>s+countWorkDays(a.dateStart,a.dateEnd),0);
+    const cpDays=mAbs.filter(a=>a.type==='CP').reduce((s,a)=>s+countWorkDays(a.dateStart,a.dateEnd),0);
+    const malDays=mAbs.filter(a=>a.type==='Maladie').reduce((s,a)=>s+countWorkDays(a.dateStart,a.dateEnd),0);
+    const totalDays=mAbs.reduce((s,a)=>s+countWorkDays(a.dateStart,a.dateEnd),0);
+    const pl=getPalette(m);
+    return `<div class="baro-member-block">
+      <div class="baro-member-name">
+        <span class="avatar" style="width:24px;height:24px;font-size:9px;background:${pl.bg};color:${pl.color}">${initials(m.name)}</span>
+        ${m.name} <span style="font-size:11px;font-weight:400;color:var(--text3)">${totalDays} j. posés</span>
+      </div>
+      <div class="baro-row">
+        <span class="baro-type-lbl" style="color:#185fa5">CP</span>
+        <div class="baro-track" style="background:#E6F1FB"><div class="baro-fill" style="width:${Math.min(100,Math.round(cpDays/25*100))}%;background:#185fa5"></div></div>
+        <span class="baro-text">${cpDays}/25 j</span>
+      </div>
+      <div class="baro-row">
+        <span class="baro-type-lbl" style="color:#534AB7">RTT</span>
+        <div class="baro-track" style="background:#EEEDFE"><div class="baro-fill" style="width:${Math.min(100,Math.round(rttDays/12*100))}%;background:#534AB7"></div></div>
+        <span class="baro-text">${rttDays}/12 j</span>
+      </div>
+      ${malDays>0?`<div class="baro-row">
+        <span class="baro-type-lbl" style="color:#993356">Mal.</span>
+        <div class="baro-track" style="background:#FBEAF0"><div class="baro-fill" style="width:100%;background:#993356;opacity:0.5"></div></div>
+        <span class="baro-text">${malDays} j</span>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderAnnualCalendar(){
+  const container=document.getElementById('abs-annual-calendar');if(!container)return;
+  const abs=state.absences||[];
+  const today=new Date();
+  const MONTHS=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  const ABS_COLORS={CP:'#185fa5',RTT:'#534AB7',Maladie:'#993356',Autre:'#7A5C3A'};
+
+  // Calculer la largeur de chaque mois (proportionnel aux jours)
+  const monthDays=[31,28+(absYear%4===0?1:0),31,30,31,30,31,31,30,31,30,31];
+  const totalDays=monthDays.reduce((s,d)=>s+d,0);
+
+  let html=`<div class="annual-grid" style="grid-template-columns:70px ${monthDays.map(d=>`${Math.round(d/totalDays*100)}fr`).join(' ')}">`;
+
+  // Header ligne mois
+  html+=`<div class="annual-corner" style="border-bottom:0.5px solid var(--border)"></div>`;
+  MONTHS.forEach((m,i)=>{
+    html+=`<div class="annual-month-hdr" style="background:var(--surface2);border-left:0.5px solid var(--border);border-bottom:0.5px solid var(--border)">${m}</div>`;
+  });
+
+  // Lignes membres
+  state.members.forEach(mbr=>{
+    const pl=getPalette(mbr);
+    html+=`<div class="annual-member-lbl" style="background:var(--surface)">
+      <span class="avatar" style="width:20px;height:20px;font-size:8px;background:${pl.bg};color:${pl.color};margin-right:5px;flex-shrink:0">${initials(mbr.name)}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${mbr.name}</span>
+    </div>`;
+
+    // Cellules par mois
+    monthDays.forEach((daysInMonth,monthIdx)=>{
+      const monthStart=new Date(absYear,monthIdx,1);
+      const monthEnd=new Date(absYear,monthIdx,daysInMonth);
+
+      // Absences de ce membre ce mois
+      const mbrAbs=abs.filter(a=>a.member===mbr.id&&a.dateStart&&a.dateEnd).filter(a=>{
+        const aS=new Date(a.dateStart),aE=new Date(a.dateEnd);
+        return aS<=monthEnd&&aE>=monthStart;
+      });
+
+      // Indicateur "aujourd'hui" pour ce mois
+      const isCurrentMonth=today.getFullYear()===absYear&&today.getMonth()===monthIdx;
+      const todayPct=isCurrentMonth?Math.round((today.getDate()-1)/daysInMonth*100):null;
+
+      html+=`<div class="annual-month-cell" style="background:var(--surface)">`;
+
+      // Barres d'absences
+      mbrAbs.forEach(a=>{
+        const aS=new Date(a.dateStart),aE=new Date(a.dateEnd);
+        const startDay=Math.max(1,aS<=monthStart?1:aS.getDate());
+        const endDay=Math.min(daysInMonth,aE>=monthEnd?daysInMonth:aE.getDate());
+        const leftPct=Math.round((startDay-1)/daysInMonth*100);
+        const widthPct=Math.round((endDay-startDay+1)/daysInMonth*100);
+        const color=ABS_COLORS[a.type]||'#7A5C3A';
+        html+=`<div class="annual-absence-bar" style="left:${leftPct}%;width:${Math.max(widthPct,8)}%;background:${color}" title="${mbr.name} — ${a.type}: ${fmtDate(a.dateStart)}${a.dateStart!==a.dateEnd?' → '+fmtDate(a.dateEnd):''}${a.note?' ('+a.note+')':''}"></div>`;
+      });
+
+      if(todayPct!==null){html+=`<div class="annual-today-line" style="left:${todayPct}%"></div>`;}
+      html+=`</div>`;
+    });
+  });
+
+  html+='</div>';
+  container.innerHTML=html;
 }
 
 // ══════════════════════════════════════════
@@ -1778,6 +2057,7 @@ document.getElementById('sm-step-input').addEventListener('keydown',e=>{if(e.key
 document.getElementById('sm-name').addEventListener('keydown',e=>{if(e.key==='Enter')saveSuiviProject();});
 
 initFirebase();
+absYear=new Date().getFullYear();
 </script>
 </body>
 </html>
