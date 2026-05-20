@@ -512,6 +512,31 @@
     .baro-text { font-size:11px; font-weight:700; min-width:52px; text-align:right; color:var(--text2); }
     .baro-total { font-size:11px; color:var(--text3); margin-top:4px; }
 
+
+    /* ── Météo ── */
+    .weather-widget { display:flex; align-items:center; gap:7px; padding:5px 11px; background:var(--surface2); border:0.5px solid var(--border); border-radius:20px; cursor:default; position:relative; }
+    .weather-widget:hover .weather-tooltip { opacity:1; pointer-events:all; transform:translateY(0); }
+    .weather-icon { font-size:18px; line-height:1; }
+    .weather-temp { font-size:13px; font-weight:700; color:var(--text); }
+    .weather-cond { font-size:11px; color:var(--text3); }
+    .weather-tooltip {
+      position:absolute; top:calc(100% + 8px); right:0;
+      background:var(--surface); border:0.5px solid var(--border);
+      border-radius:12px; padding:12px 14px; width:220px;
+      box-shadow:0 8px 24px rgba(0,0,0,.12);
+      opacity:0; pointer-events:none; transform:translateY(-6px);
+      transition:opacity .2s, transform .2s; z-index:200;
+    }
+    .weather-tooltip-title { font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; }
+    .weather-forecast-row { display:flex; align-items:center; justify-content:space-between; padding:5px 0; border-bottom:0.5px solid var(--border); font-size:12px; }
+    .weather-forecast-row:last-child { border-bottom:none; }
+    .weather-forecast-day { color:var(--text2); min-width:50px; }
+    .weather-forecast-icon { font-size:14px; }
+    .weather-forecast-temp { font-weight:700; color:var(--text); }
+    .weather-forecast-rain { font-size:11px; color:#185fa5; }
+    @media(max-width:600px){ .weather-cond { display:none; } }
+    @media(max-width:400px){ .weather-widget { padding:4px 8px; } .weather-icon { font-size:15px; } }
+
     .app-footer { text-align:center; font-size:11px; color:var(--text3); padding:2rem 0 1rem; }
     .app-footer strong { color:var(--orange); }
     /* ══════════════════════════════════════
@@ -629,6 +654,15 @@
       <span class="brand-name">Gestion<span>360</span></span>
     </div>
     <div class="topbar-right">
+      <div class="weather-widget" id="weather-widget">
+        <span class="weather-icon" id="w-icon">⏳</span>
+        <span class="weather-temp" id="w-temp">—</span>
+        <span class="weather-cond" id="w-cond">Perpignan</span>
+        <div class="weather-tooltip" id="weather-tooltip">
+          <div class="weather-tooltip-title">📍 Perpignan — 5 jours</div>
+          <div id="weather-forecast"></div>
+        </div>
+      </div>
       <div class="sync-badge"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Connecté</span></div>
       <span class="date-label" id="today-date"></span>
       <button class="report-btn" onclick="openReportModal()">⬇ Rapport PDF</button>
@@ -2083,6 +2117,52 @@ document.getElementById('tm-done-input').addEventListener('keydown',e=>{if(e.key
 document.getElementById('plan-event-title').addEventListener('keydown',e=>{if(e.key==='Enter')addPlanningEvent();});
 document.getElementById('sm-step-input').addEventListener('keydown',e=>{if(e.key==='Enter')addSuiviStep();});
 document.getElementById('sm-name').addEventListener('keydown',e=>{if(e.key==='Enter')saveSuiviProject();});
+
+
+// ══════════════════════════════════════════
+//  MÉTÉO PERPIGNAN
+// ══════════════════════════════════════════
+const WEATHER_ICONS={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'🌨',73:'🌨',75:'❄️',80:'🌦',81:'🌧',82:'⛈',85:'🌨',86:'❄️',95:'⛈',96:'⛈',99:'⛈'};
+const WEATHER_LABELS={0:'Ensoleillé',1:'Peu nuageux',2:'Partiellement nuageux',3:'Nuageux',45:'Brumeux',51:'Bruine légère',61:'Pluie légère',63:'Pluie',65:'Forte pluie',80:'Averses',81:'Averses',82:'Orages',95:'Orage',99:'Orage violent'};
+const JOURS_FR=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+
+async function fetchWeather(){
+  try{
+    const url='https://api.open-meteo.com/v1/forecast?latitude=42.6886&longitude=2.8948&current=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,precipitation_probability_max&timezone=Europe%2FParis&forecast_days=5';
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const cur=data.current;
+    const daily=data.daily;
+    const icon=WEATHER_ICONS[cur.weathercode]||'🌡';
+    const label=WEATHER_LABELS[cur.weathercode]||'';
+    const temp=Math.round(cur.temperature_2m);
+    document.getElementById('w-icon').textContent=icon;
+    document.getElementById('w-temp').textContent=temp+'°C';
+    document.getElementById('w-cond').textContent=label||'Perpignan';
+    // Prévisions
+    const rows=daily.time.map((dateStr,i)=>{
+      const d=new Date(dateStr);const jour=JOURS_FR[d.getDay()];
+      const ico=WEATHER_ICONS[daily.weathercode[i]]||'🌡';
+      const maxT=Math.round(daily.temperature_2m_max[i]);
+      const rain=daily.precipitation_probability_max[i]||0;
+      return `<div class="weather-forecast-row">
+        <span class="weather-forecast-day">${i===0?'Auj.':jour}</span>
+        <span class="weather-forecast-icon">${ico}</span>
+        <span class="weather-forecast-temp">${maxT}°C</span>
+        ${rain>20?`<span class="weather-forecast-rain">💧${rain}%</span>`:'<span></span>'}
+      </div>`;
+    }).join('');
+    document.getElementById('weather-forecast').innerHTML=rows;
+  }catch(e){
+    console.warn('Météo indisponible',e);
+    document.getElementById('w-icon').textContent='🌡';
+    document.getElementById('w-temp').textContent='—';
+    document.getElementById('w-cond').textContent='Perpignan';
+  }
+}
+fetchWeather();
+setInterval(fetchWeather, 10*60*1000); // Refresh toutes les 10 min
 
 initFirebase();
 absYear=new Date().getFullYear();
